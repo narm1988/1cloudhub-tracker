@@ -686,10 +686,13 @@ function EditStoryModal({
   const [status, setStatus] = useState(story.status)
   const [priority, setPriority] = useState(story.priority)
   const [assigneeId, setAssigneeId] = useState(story.assignee_id || '')
+  const [startDate, setStartDate] = useState(story.start_date || '')
+  const [dueDate, setDueDate] = useState(story.due_date || '')
+  const [storyPoints, setStoryPoints] = useState(story.story_points?.toString() || '')
 
   return (
     <Modal title={`Edit ${story.display_id}`} onClose={onClose} width="max-w-lg">
-      <div className="space-y-4">
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
         <Input
           label="Title"
           value={title}
@@ -740,8 +743,39 @@ function EditStoryModal({
           </div>
         </div>
 
+        <div className="grid grid-cols-3 gap-3">
+          <Input
+            label="Start date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <Input
+            label="Due date"
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+          <Input
+            label="Story points"
+            type="number"
+            value={storyPoints}
+            onChange={(e) => setStoryPoints(e.target.value)}
+            placeholder="0"
+          />
+        </div>
+
         <Button
-          onClick={() => onSave({ title, description, status, priority, assignee_id: assigneeId || null } as any)}
+          onClick={() => onSave({
+            title,
+            description,
+            status,
+            priority,
+            assignee_id: assigneeId || null,
+            start_date: startDate || null,
+            due_date: dueDate || null,
+            story_points: storyPoints ? parseInt(storyPoints) : null,
+          } as any)}
           className="w-full"
           disabled={!title.trim()}
         >

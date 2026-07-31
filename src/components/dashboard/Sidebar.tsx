@@ -1,9 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LayoutGrid, Users, Settings, ArrowLeft, Cloud } from 'lucide-react'
+import { LayoutGrid, Users, Settings, ArrowLeft, Cloud, FolderKanban, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const NAV_ITEMS = [
+  { key: 'projects', label: 'Projects', icon: FolderKanban, path: '/projects' },
   { key: 'epics', label: 'Epics', icon: LayoutGrid, path: '/epics' },
+  { key: 'search', label: 'Search', icon: Search, path: '/search' },
   { key: 'people', label: 'People', icon: Users, path: '/people', admin: true },
   { key: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
 ]

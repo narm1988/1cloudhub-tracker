@@ -2,9 +2,12 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
 import DashboardLayout from './layouts/DashboardLayout'
+import ProjectsPage from './pages/ProjectsPage'
+import ProjectDetailPage from './pages/ProjectDetailPage'
 import EpicsPage from './pages/EpicsPage'
 import EpicDetailPage from './pages/EpicDetailPage'
 import StoryDetailPage from './pages/StoryDetailPage'
+import SearchPage from './pages/SearchPage'
 import PeoplePage from './pages/PeoplePage'
 import SettingsPage from './pages/SettingsPage'
 
@@ -27,10 +30,13 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/epics" replace />} />
+        <Route index element={<Navigate to="/projects" replace />} />
+        <Route path="projects" element={<ProjectsPage />} />
+        <Route path="projects/:projectId" element={<ProjectDetailPage />} />
         <Route path="epics" element={<EpicsPage />} />
         <Route path="epics/:epicId" element={<EpicDetailPage />} />
         <Route path="stories/:storyId" element={<StoryDetailPage />} />
+        <Route path="search" element={<SearchPage />} />
         <Route path="people" element={<PeoplePage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>

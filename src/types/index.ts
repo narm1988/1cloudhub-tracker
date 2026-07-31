@@ -33,6 +33,7 @@ export interface Story {
   id: string
   epic_id: string
   project_id?: string
+  sprint_id?: string
   title: string
   description?: string
   status: Status
@@ -42,6 +43,9 @@ export interface Story {
   reporter_id: string
   reporter?: User
   display_id: string
+  start_date?: string
+  due_date?: string
+  story_points?: number
   created_at: string
   updated_at: string
 }
@@ -60,6 +64,9 @@ export interface Issue {
   reporter_id: string
   reporter?: User
   display_id: string
+  start_date?: string
+  due_date?: string
+  story_points?: number
   created_at: string
   updated_at: string
 }
