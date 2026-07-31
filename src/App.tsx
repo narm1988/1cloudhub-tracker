@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardLayout from './layouts/DashboardLayout'
 import EpicsPage from './pages/EpicsPage'
 import EpicDetailPage from './pages/EpicDetailPage'
+import StoryDetailPage from './pages/StoryDetailPage'
 import PeoplePage from './pages/PeoplePage'
 import SettingsPage from './pages/SettingsPage'
 
@@ -29,6 +30,7 @@ function AppRoutes() {
         <Route index element={<Navigate to="/epics" replace />} />
         <Route path="epics" element={<EpicsPage />} />
         <Route path="epics/:epicId" element={<EpicDetailPage />} />
+        <Route path="stories/:storyId" element={<StoryDetailPage />} />
         <Route path="people" element={<PeoplePage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>

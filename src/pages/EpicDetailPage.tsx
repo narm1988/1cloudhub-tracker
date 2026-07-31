@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, BookOpen, MoreHorizontal } from 'lucide-react'
+import { ArrowLeft, Plus, BookOpen, MoreHorizontal, AlertCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { STATUS_OPTIONS, STATUS_META } from '../lib/constants'
-import type { Status } from '../lib/constants'
+import { STATUS_OPTIONS, STATUS_META, PRIORITY_OPTIONS, PRIORITY_META } from '../lib/constants'
+import type { Status, Priority } from '../lib/constants'
 import type { Epic, Story, User } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
@@ -21,7 +21,6 @@ export default function EpicDetailPage() {
   const [stories, setStories] = useState<Story[]>([])
   const [members, setMembers] = useState<User[]>([])
   const [showCreateStory, setShowCreateStory] = useState(false)
-  const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -45,7 +44,7 @@ export default function EpicDetailPage() {
   async function fetchStories() {
     const { data } = await supabase
       .from('stories')
-      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)')
+      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)')
       .eq('epic_id', epicId)
       .order('created_at', { ascending: false })
     if (data) setStories(data)
@@ -56,35 +55,29 @@ export default function EpicDetailPage() {
     if (data) setMembers(data)
   }
 
-  async function createStory(title: string, assigneeId: string, status: Status, type: string) {
+  async function createStory(data: {
+    title: string
+    description: string
+    assigneeId: string
+    status: Status
+    priority: Priority
+  }) {
     const storyCount = stories.length + 1
     const displayId = `1CH-${100 + storyCount}`
 
     const { error } = await supabase.from('stories').insert({
       epic_id: epicId,
-      title,
-      assignee_id: assigneeId || null,
+      title: data.title,
+      description: data.description,
+      assignee_id: data.assigneeId || null,
       reporter_id: user?.id,
-      status,
-      type,
-      priority: 'Medium',
+      status: data.status,
+      priority: data.priority,
       display_id: displayId,
     })
 
     if (!error) {
       setShowCreateStory(false)
-      fetchStories()
-    }
-  }
-
-  async function updateStory(storyId: string, updates: Partial<Story>) {
-    const { error } = await supabase
-      .from('stories')
-      .update(updates)
-      .eq('id', storyId)
-
-    if (!error) {
-      setSelectedStory(null)
       fetchStories()
     }
   }
@@ -97,6 +90,8 @@ export default function EpicDetailPage() {
     return <div className="text-gray-500">Epic not found.</div>
   }
 
+  const doneCount = stories.filter((s) => s.status === 'Done').length
+
   return (
     <div>
       {/* Back button */}
@@ -108,21 +103,26 @@ export default function EpicDetailPage() {
       </button>
 
       {/* Header */}
-      <div className="flex items-baseline justify-between mb-5">
+      <div className="flex items-start justify-between mb-6">
         <div>
           <span className="font-mono text-[12px] text-gray-400">{epic.id.slice(0, 8)}</span>
           <h1 className="font-display text-[22px] font-semibold text-ink mt-0.5">{epic.title}</h1>
-          <p className="text-[13px] text-gray-500 mt-1">
-            Owner: {epic.owner?.full_name || 'Unassigned'} · {stories.length} user stories
-          </p>
+          {epic.description && (
+            <p className="text-[13px] text-gray-500 mt-1.5 max-w-xl">{epic.description}</p>
+          )}
+          <div className="flex items-center gap-4 mt-2 text-[13px] text-gray-500">
+            <span>Owner: <strong className="text-ink">{epic.owner?.full_name || 'Unassigned'}</strong></span>
+            <span>{stories.length} stories</span>
+            <span>{doneCount}/{stories.length} done</span>
+          </div>
         </div>
         <Button onClick={() => setShowCreateStory(true)}>
-          <Plus size={14} /> New user story
+          <Plus size={14} /> New story
         </Button>
       </div>
 
       {/* Kanban board */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${STATUS_OPTIONS.length}, minmax(200px, 1fr))` }}>
+      <div className="grid gap-4 overflow-x-auto" style={{ gridTemplateColumns: `repeat(${STATUS_OPTIONS.length}, minmax(220px, 1fr))` }}>
         {STATUS_OPTIONS.map((status) => {
           const items = stories.filter((s) => s.status === status)
           return (
@@ -141,7 +141,7 @@ export default function EpicDetailPage() {
                   <StoryCard
                     key={story.id}
                     story={story}
-                    onClick={() => setSelectedStory(story)}
+                    onClick={() => navigate(`/stories/${story.id}`)}
                   />
                 ))}
                 {items.length === 0 && (
@@ -161,16 +161,6 @@ export default function EpicDetailPage() {
           members={members}
           onClose={() => setShowCreateStory(false)}
           onCreate={createStory}
-        />
-      )}
-
-      {/* Story Detail Modal */}
-      {selectedStory && (
-        <StoryDetailModal
-          story={selectedStory}
-          members={members}
-          onClose={() => setSelectedStory(null)}
-          onUpdate={updateStory}
         />
       )}
     </div>
@@ -193,7 +183,7 @@ function StoryCard({ story, onClick }: { story: Story; onClick: () => void }) {
           </div>
           <span className="font-mono text-[11px] text-gray-400">{story.display_id}</span>
         </div>
-        <MoreHorizontal size={13} className="text-gray-400" />
+        <span className="text-[11px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
       </div>
 
       {/* Perforation */}
@@ -205,8 +195,11 @@ function StoryCard({ story, onClick }: { story: Story; onClick: () => void }) {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10.5px] text-gray-400">Assignee</span>
-          {story.assignee && <Avatar name={story.assignee.full_name} size="sm" />}
+          {story.assignee ? (
+            <Avatar name={story.assignee.full_name} size="sm" />
+          ) : (
+            <span className="text-[10.5px] text-gray-400">Unassigned</span>
+          )}
         </div>
         <StatusBadge status={story.status as Status} />
       </div>
@@ -221,22 +214,33 @@ function CreateStoryModal({
 }: {
   members: User[]
   onClose: () => void
-  onCreate: (title: string, assigneeId: string, status: Status, type: string) => void
+  onCreate: (data: { title: string; description: string; assigneeId: string; status: Status; priority: Priority }) => void
 }) {
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [assigneeId, setAssigneeId] = useState('')
   const [status, setStatus] = useState<Status>('Created')
-  const [type, setType] = useState('Story')
+  const [priority, setPriority] = useState<Priority>('Medium')
 
   return (
-    <Modal title="New user story" onClose={onClose}>
+    <Modal title="New story" onClose={onClose} width="max-w-lg">
       <div className="space-y-4">
         <Input
           label="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="As a user, I want to..."
+          placeholder="e.g. User can reset their password via email"
         />
+
+        <div>
+          <label className="block text-[13px] font-semibold text-ink mb-1.5">Description</label>
+          <textarea
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[100px] resize-y"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe the feature, acceptance criteria, etc."
+          />
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -253,75 +257,21 @@ function CreateStoryModal({
             </select>
           </div>
           <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Status</label>
+            <label className="block text-[13px] font-semibold text-ink mb-1.5">Priority</label>
             <select
               className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as Priority)}
             >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s}>{s}</option>
+              {PRIORITY_OPTIONS.map((p) => (
+                <option key={p} value={p}>{PRIORITY_META[p].icon} {p}</option>
               ))}
             </select>
           </div>
         </div>
-
-        <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Type</label>
-          <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option>Epic</option>
-            <option>Story</option>
-            <option>Task</option>
-            <option>Bug</option>
-          </select>
-        </div>
-
-        <Button onClick={() => onCreate(title, assigneeId, status, type)} className="w-full" disabled={!title.trim()}>
-          Create story
-        </Button>
-      </div>
-    </Modal>
-  )
-}
-
-function StoryDetailModal({
-  story,
-  members,
-  onClose,
-  onUpdate,
-}: {
-  story: Story
-  members: User[]
-  onClose: () => void
-  onUpdate: (id: string, updates: Partial<Story>) => void
-}) {
-  const [status, setStatus] = useState(story.status)
-  const [assigneeId, setAssigneeId] = useState(story.assignee_id || '')
-
-  return (
-    <Modal title={story.display_id} onClose={onClose}>
-      <div className="space-y-4">
-        <div className="text-[15px] font-semibold text-ink">{story.title}</div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Assigned to</label>
-            <select
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-            >
-              <option value="">Unassigned</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>{m.full_name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
             <label className="block text-[13px] font-semibold text-ink mb-1.5">Status</label>
             <select
               className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
@@ -335,13 +285,12 @@ function StoryDetailModal({
           </div>
         </div>
 
-        <p className="text-[12px] text-gray-400">Reporter: {story.reporter?.full_name || 'Unknown'}</p>
-
         <Button
-          onClick={() => onUpdate(story.id, { status, assignee_id: assigneeId || null } as any)}
+          onClick={() => onCreate({ title, description, assigneeId, status, priority })}
           className="w-full"
+          disabled={!title.trim()}
         >
-          Save changes
+          Create story
         </Button>
       </div>
     </Modal>
