@@ -62,8 +62,12 @@ export default function EpicDetailPage() {
     status: Status
     priority: Priority
   }) {
-    const storyCount = stories.length + 1
-    const displayId = `1CH-${100 + storyCount}`
+    // Get total story count from DB to avoid duplicate display_id conflicts
+    const { count } = await supabase
+      .from('stories')
+      .select('id', { count: 'exact', head: true })
+
+    const displayId = `1CH-${100 + (count || 0) + 1}`
 
     const { error } = await supabase.from('stories').insert({
       epic_id: epicId,
