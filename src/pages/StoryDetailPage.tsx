@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Plus, Link2, Paperclip, MessageSquare,
-  Upload, X, Trash2, AlertCircle, CheckSquare, Bug
+  Upload, X, Trash2, AlertCircle, CheckSquare, Bug, Tags
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -164,9 +164,15 @@ export default function StoryDetailPage() {
 
     const { error: uploadError } = await supabase.storage
       .from('tracker-files')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
 
-    if (uploadError) return
+    if (uploadError) {
+      alert(`Upload failed: ${uploadError.message}. Make sure the "tracker-files" bucket exists in Supabase Storage and is set to public.`)
+      return
+    }
 
     const { data: urlData } = supabase.storage
       .from('tracker-files')
@@ -233,9 +239,13 @@ export default function StoryDetailPage() {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
+              <span className="text-[13px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">📗 Story</span>
               <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
               <StatusBadge status={story.status as Status} />
               <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon} {story.priority}</span>
+              {story.story_points && (
+                <span className="text-[11px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{story.story_points} pts</span>
+              )}
             </div>
             <h1 className="font-display text-xl font-semibold text-ink mb-2">{story.title}</h1>
             {story.description && (
@@ -261,9 +271,14 @@ export default function StoryDetailPage() {
             )}
           </div>
           <div>Reporter: <strong className="text-ink">{story.reporter?.full_name || 'Unknown'}</strong></div>
+          {story.start_date && <div>Start: <strong className="text-ink">{new Date(story.start_date).toLocaleDateString()}</strong></div>}
+          {story.due_date && <div>Due: <strong className="text-ink">{new Date(story.due_date).toLocaleDateString()}</strong></div>}
           <div>Created: {new Date(story.created_at).toLocaleDateString()}</div>
         </div>
       </div>
+
+      {/* Labels */}
+      <LabelsSection storyId={storyId!} />
 
       {/* Child Issues (Tasks/Bugs) */}
       <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
@@ -783,5 +798,169 @@ function EditStoryModal({
         </Button>
       </div>
     </Modal>
+  )
+}
+
+/* ---- Labels Section ---- */
+const LABEL_COLORS = ['#5B5FEF', '#1E9E6B', '#C6820F', '#E5484D', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6']
+
+function LabelsSection({ storyId }: { storyId: string }) {
+  const [labels, setLabels] = useState<{ id: string; name: string; color: string }[]>([])
+  const [allLabels, setAllLabels] = useState<{ id: string; name: string; color: string }[]>([])
+  const [showAdd, setShowAdd] = useState(false)
+  const [newLabelName, setNewLabelName] = useState('')
+  const [newLabelColor, setNewLabelColor] = useState(LABEL_COLORS[0])
+
+  useEffect(() => {
+    fetchLabels()
+    fetchAllLabels()
+  }, [storyId])
+
+  async function fetchLabels() {
+    const { data } = await supabase
+      .from('story_labels')
+      .select('label_id, labels:labels!story_labels_label_id_fkey(id, name, color)')
+      .eq('story_id', storyId)
+    if (data) {
+      const mapped = data.map((d: any) => d.labels).filter(Boolean)
+      setLabels(mapped)
+    }
+  }
+
+  async function fetchAllLabels() {
+    const { data } = await supabase.from('labels').select('*').order('name')
+    if (data) setAllLabels(data)
+  }
+
+  async function createAndAttachLabel() {
+    if (!newLabelName.trim()) return
+    // Create label
+    const { data } = await supabase.from('labels').insert({
+      name: newLabelName.trim(),
+      color: newLabelColor,
+      project_id: null,
+    }).select().single()
+
+    if (data) {
+      // Attach to story
+      await supabase.from('story_labels').insert({
+        story_id: storyId,
+        label_id: data.id,
+      })
+    }
+    setNewLabelName('')
+    setShowAdd(false)
+    fetchLabels()
+    fetchAllLabels()
+  }
+
+  async function attachExistingLabel(labelId: string) {
+    await supabase.from('story_labels').insert({
+      story_id: storyId,
+      label_id: labelId,
+    })
+    fetchLabels()
+  }
+
+  async function removeLabel(labelId: string) {
+    await supabase.from('story_labels').delete()
+      .eq('story_id', storyId)
+      .eq('label_id', labelId)
+    fetchLabels()
+  }
+
+  const unattachedLabels = allLabels.filter((l) => !labels.find((sl) => sl.id === l.id))
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-display text-[15px] font-semibold text-ink flex items-center gap-2">
+          <Tags size={15} /> Labels ({labels.length})
+        </h2>
+        <button
+          onClick={() => setShowAdd((s) => !s)}
+          className="text-[12px] text-brand hover:text-brand-deep font-medium"
+        >
+          + Add label
+        </button>
+      </div>
+
+      {/* Current labels */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {labels.map((label) => (
+          <span
+            key={label.id}
+            className="flex items-center gap-1 text-[12px] font-medium px-2.5 py-1 rounded-full text-white group"
+            style={{ backgroundColor: label.color }}
+          >
+            {label.name}
+            <button
+              onClick={() => removeLabel(label.id)}
+              className="opacity-0 group-hover:opacity-100 ml-0.5 hover:text-red-200"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        {labels.length === 0 && !showAdd && (
+          <span className="text-[12px] text-gray-400">No labels attached.</span>
+        )}
+      </div>
+
+      {/* Add label panel */}
+      {showAdd && (
+        <div className="border border-gray-200 rounded-lg p-3 space-y-3">
+          {/* Attach existing */}
+          {unattachedLabels.length > 0 && (
+            <div>
+              <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Existing labels</label>
+              <div className="flex flex-wrap gap-1.5">
+                {unattachedLabels.map((label) => (
+                  <button
+                    key={label.id}
+                    onClick={() => attachExistingLabel(label.id)}
+                    className="text-[11px] font-medium px-2 py-0.5 rounded-full text-white hover:opacity-80 transition-opacity"
+                    style={{ backgroundColor: label.color }}
+                  >
+                    + {label.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Create new */}
+          <div>
+            <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Create new label</label>
+            <div className="flex items-center gap-2">
+              <input
+                className="flex-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-[12px] outline-none focus:border-brand"
+                placeholder="Label name..."
+                value={newLabelName}
+                onChange={(e) => setNewLabelName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') createAndAttachLabel() }}
+              />
+              <div className="flex gap-1">
+                {LABEL_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setNewLabelColor(c)}
+                    className={`w-5 h-5 rounded-full border-2 ${newLabelColor === c ? 'border-ink' : 'border-transparent'}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={createAndAttachLabel}
+                disabled={!newLabelName.trim()}
+                className="text-[11px] font-semibold px-3 py-1.5 bg-brand text-white rounded-lg disabled:opacity-50"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
