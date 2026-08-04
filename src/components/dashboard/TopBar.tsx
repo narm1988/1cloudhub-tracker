@@ -23,6 +23,12 @@ export default function TopBar() {
   const [showNotifs, setShowNotifs] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  function handleSearchSubmit() {
+    if (!searchQuery.trim()) return
+    navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+  }
 
   useEffect(() => {
     if (!user) return
@@ -82,6 +88,9 @@ export default function TopBar() {
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           placeholder='Search 1CH-104, "migration"…'
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit() }}
           className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 text-[13px] outline-none bg-paper focus:border-brand focus:ring-1 focus:ring-brand/20"
         />
       </div>

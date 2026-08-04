@@ -9,6 +9,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage'
 import EpicsPage from './pages/EpicsPage'
 import EpicDetailPage from './pages/EpicDetailPage'
 import StoryDetailPage from './pages/StoryDetailPage'
+import IssueDetailPage from './pages/IssueDetailPage'
 import SearchPage from './pages/SearchPage'
 import PeoplePage from './pages/PeoplePage'
 import SettingsPage from './pages/SettingsPage'
@@ -39,6 +40,7 @@ function AppRoutes() {
         <Route path="epics" element={<EpicsPage />} />
         <Route path="epics/:epicId" element={<EpicDetailPage />} />
         <Route path="stories/:storyId" element={<StoryDetailPage />} />
+        <Route path="issues/:issueId" element={<IssueDetailPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="people" element={<PeoplePage />} />
         <Route path="settings" element={<SettingsPage />} />

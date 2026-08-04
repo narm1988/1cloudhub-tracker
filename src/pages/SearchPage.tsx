@@ -1,17 +1,30 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Search, Filter, BookOpen, Flag, Bug, CheckSquare } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Search, Filter } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { STATUS_OPTIONS, PRIORITY_OPTIONS, PRIORITY_META } from '../lib/constants'
+import { STATUS_OPTIONS, PRIORITY_OPTIONS, PRIORITY_META, ISSUE_TYPE_META } from '../lib/constants'
 import type { Status, Priority } from '../lib/constants'
-import type { Story, User } from '../types'
+import type { User } from '../types'
 import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
 
+interface SearchResult {
+  id: string
+  kind: 'story' | 'issue'
+  type: string
+  display_id: string
+  title: string
+  status: string
+  priority: string
+  due_date?: string | null
+  assignee?: { full_name: string } | null
+}
+
 export default function SearchPage() {
   const navigate = useNavigate()
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Story[]>([])
+  const [searchParams] = useSearchParams()
+  const [query, setQuery] = useState(searchParams.get('q') || '')
+  const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
 
@@ -22,7 +35,17 @@ export default function SearchPage() {
   const [members, setMembers] = useState<User[]>([])
   const [showFilters, setShowFilters] = useState(false)
 
-  async function handleSearch() {
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q) {
+      setQuery(q)
+      handleSearch(q)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function handleSearch(overrideQuery?: string) {
+    const q = overrideQuery ?? query
     setLoading(true)
     setSearched(true)
 
@@ -32,24 +55,49 @@ export default function SearchPage() {
       if (data) setMembers(data)
     }
 
-    let queryBuilder = supabase
+    let storyQuery = supabase
       .from('stories')
-      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)')
+      .select('id, display_id, title, status, priority, due_date, assignee:profiles!stories_assignee_id_fkey(full_name)')
       .order('updated_at', { ascending: false })
       .limit(50)
 
-    // Text search
-    if (query.trim()) {
-      queryBuilder = queryBuilder.or(`title.ilike.%${query}%,display_id.ilike.%${query}%,description.ilike.%${query}%`)
+    let issueQuery = supabase
+      .from('issues')
+      .select('id, type, display_id, title, status, priority, due_date, assignee:profiles!issues_assignee_id_fkey(full_name)')
+      .order('updated_at', { ascending: false })
+      .limit(50)
+
+    if (q.trim()) {
+      storyQuery = storyQuery.or(`title.ilike.%${q}%,display_id.ilike.%${q}%,description.ilike.%${q}%`)
+      issueQuery = issueQuery.or(`title.ilike.%${q}%,display_id.ilike.%${q}%,description.ilike.%${q}%`)
+    }
+    if (statusFilter) {
+      storyQuery = storyQuery.eq('status', statusFilter)
+      issueQuery = issueQuery.eq('status', statusFilter)
+    }
+    if (priorityFilter) {
+      storyQuery = storyQuery.eq('priority', priorityFilter)
+      issueQuery = issueQuery.eq('priority', priorityFilter)
+    }
+    if (assigneeFilter) {
+      storyQuery = storyQuery.eq('assignee_id', assigneeFilter)
+      issueQuery = issueQuery.eq('assignee_id', assigneeFilter)
     }
 
-    // Filters
-    if (statusFilter) queryBuilder = queryBuilder.eq('status', statusFilter)
-    if (priorityFilter) queryBuilder = queryBuilder.eq('priority', priorityFilter)
-    if (assigneeFilter) queryBuilder = queryBuilder.eq('assignee_id', assigneeFilter)
+    const [{ data: stories }, { data: issues }] = await Promise.all([storyQuery, issueQuery])
 
-    const { data } = await queryBuilder
-    setResults(data || [])
+    const combined: SearchResult[] = [
+      ...(stories || []).map((s: any) => ({
+        id: s.id, kind: 'story' as const, type: 'Story', display_id: s.display_id, title: s.title,
+        status: s.status, priority: s.priority, due_date: s.due_date, assignee: s.assignee,
+      })),
+      ...(issues || []).map((i: any) => ({
+        id: i.id, kind: 'issue' as const, type: i.type, display_id: i.display_id, title: i.title,
+        status: i.status, priority: i.priority, due_date: i.due_date, assignee: i.assignee,
+      })),
+    ]
+
+    setResults(combined)
     setLoading(false)
   }
 
@@ -78,7 +126,7 @@ export default function SearchPage() {
           <Filter size={14} /> Filters
         </button>
         <button
-          onClick={handleSearch}
+          onClick={() => handleSearch()}
           className="px-5 py-2.5 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand-deep transition-colors"
         >
           Search
@@ -142,23 +190,23 @@ export default function SearchPage() {
 
       {results.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {results.map((story, i) => (
+          {results.map((item, i) => (
             <div
-              key={story.id}
-              onClick={() => navigate(`/stories/${story.id}`)}
+              key={`${item.kind}-${item.id}`}
+              onClick={() => navigate(item.kind === 'story' ? `/stories/${item.id}` : `/issues/${item.id}`)}
               className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
                 i < results.length - 1 ? 'border-b border-gray-100' : ''
               }`}
             >
-              <span className="text-[13px]">📗</span>
-              <span className="font-mono text-[11px] text-gray-400 shrink-0 w-16">{story.display_id}</span>
-              <span className="text-[13px] text-ink font-medium flex-1 truncate">{story.title}</span>
-              <span className="text-[11px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
-              {story.assignee && <Avatar name={story.assignee.full_name} size="sm" />}
-              <StatusBadge status={story.status as Status} />
-              {story.due_date && (
+              <span className="text-[13px]">{ISSUE_TYPE_META[item.type as keyof typeof ISSUE_TYPE_META]?.icon || '📗'}</span>
+              <span className="font-mono text-[11px] text-gray-400 shrink-0 w-16">{item.display_id}</span>
+              <span className="text-[13px] text-ink font-medium flex-1 truncate">{item.title}</span>
+              <span className="text-[11px]">{PRIORITY_META[item.priority as Priority]?.icon}</span>
+              {item.assignee && <Avatar name={item.assignee.full_name} size="sm" />}
+              <StatusBadge status={item.status as Status} />
+              {item.due_date && (
                 <span className="text-[10.5px] text-gray-400 shrink-0">
-                  Due {new Date(story.due_date).toLocaleDateString()}
+                  Due {new Date(item.due_date).toLocaleDateString()}
                 </span>
               )}
             </div>

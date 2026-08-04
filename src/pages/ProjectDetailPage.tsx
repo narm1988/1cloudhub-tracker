@@ -107,11 +107,11 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
   }
 
   return (
-    <div className="grid gap-4 overflow-x-auto" style={{ gridTemplateColumns: `repeat(${STATUS_OPTIONS.length}, minmax(200px, 1fr))` }}>
+    <div className="flex gap-4 overflow-x-auto scroll-thin pb-3 -mx-1 px-1">
       {STATUS_OPTIONS.map((status) => {
         const items = stories.filter((s) => s.status === status)
         return (
-          <div key={status}>
+          <div key={status} className="w-[220px] shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-[12.5px] font-semibold text-gray-500 uppercase tracking-wide">{status}</span>
               <span className="text-[11.5px] text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{items.length}</span>

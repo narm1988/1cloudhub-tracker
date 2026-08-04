@@ -1,13 +1,21 @@
-export const STATUS_OPTIONS = ['Created', 'Draft', 'In Progress', 'In Review', 'Done'] as const
+// 'Draft' was folded into 'Created' (same meaning, kept one canonical label).
+// Closed/Archived are terminal states reachable only from Done; Reopen sends
+// an item back to an active state (see the Reopen control on the detail pages).
+export const STATUS_OPTIONS = ['Created', 'In Progress', 'In Review', 'Done', 'Closed', 'Archived'] as const
 export type Status = typeof STATUS_OPTIONS[number]
 
 export const STATUS_META: Record<Status, { color: string; bg: string; tailwind: string }> = {
   Created: { color: '#6B7280', bg: '#F0F1F3', tailwind: 'bg-slate-100 text-slate-600' },
-  Draft: { color: '#C6820F', bg: '#FBF0DD', tailwind: 'bg-amber-50 text-amber-700' },
   'In Progress': { color: '#3B82F6', bg: '#EAF1FE', tailwind: 'bg-blue-50 text-blue-600' },
   'In Review': { color: '#8B5CF6', bg: '#F2EEFD', tailwind: 'bg-violet-50 text-violet-600' },
   Done: { color: '#1E9E6B', bg: '#E7F6EF', tailwind: 'bg-emerald-50 text-emerald-600' },
+  Closed: { color: '#374151', bg: '#E5E7EB', tailwind: 'bg-gray-200 text-gray-700' },
+  Archived: { color: '#78716C', bg: '#F5F5F4', tailwind: 'bg-stone-100 text-stone-600' },
 }
+
+// Statuses that Done/Closed/Archived items can be sent back to via "Reopen".
+export const REOPEN_TARGETS: Status[] = ['Created', 'In Progress', 'In Review']
+export const TERMINAL_STATUSES: Status[] = ['Done', 'Closed', 'Archived']
 
 // Jira-style hierarchy: Epic > Story > Task/Bug/Sub-task
 export const ISSUE_TYPES = ['Story', 'Task', 'Bug', 'Sub-task'] as const

@@ -99,7 +99,7 @@ export const DEMO_EPICS: Epic[] = [
     description: 'Real-time billing dashboard with usage analytics, invoice history, and payment methods.',
     owner_id: 'demo-user-002',
     owner: DEMO_PEOPLE[1],
-    status: 'Draft',
+    status: 'Created',
     created_at: '2026-01-15T13:00:00Z',
   },
   {
