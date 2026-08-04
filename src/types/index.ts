@@ -24,6 +24,7 @@ export interface Epic {
   description?: string
   owner_id: string
   owner?: User
+  project?: Pick<Project, 'id' | 'name' | 'key'>
   status: Status
   created_at: string
 }

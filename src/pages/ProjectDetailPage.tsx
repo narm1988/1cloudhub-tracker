@@ -224,7 +224,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
             <div className="flex items-center justify-between mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-[15px] font-semibold text-ink">{sprint.name}</h3>
+                  <h3 className="font-display text-[14px] font-semibold text-ink">{sprint.name}</h3>
                   <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
                     sprint.status === 'active' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
                   }`}>
@@ -275,7 +275,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
 
       {/* Backlog */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
-        <h3 className="font-display text-[15px] font-semibold text-ink mb-3">
+        <h3 className="font-display text-[14px] font-semibold text-ink mb-3">
           Backlog ({backlogStories.length})
         </h3>
         {backlogStories.length === 0 ? (

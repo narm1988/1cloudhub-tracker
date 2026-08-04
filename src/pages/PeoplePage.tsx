@@ -8,10 +8,14 @@ import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 
+const ALLOWED_DOMAIN = '1cloudhub.com'
+
 export default function PeoplePage() {
   const [people, setPeople] = useState<User[]>([])
   const [showInvite, setShowInvite] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [inviteError, setInviteError] = useState('')
+  const [inviting, setInviting] = useState(false)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -28,17 +32,30 @@ export default function PeoplePage() {
   }
 
   async function inviteUser(email: string, role: string) {
-    // In production, this would call a backend endpoint to send an invite
-    // For now, we'll create the invite record in Supabase
-    const { error } = await supabase.from('invites').insert({
-      email,
-      role,
-      invited_by: user?.id,
-    })
+    setInviteError('')
 
-    if (!error) {
-      setShowInvite(false)
+    const normalized = email.trim().toLowerCase()
+    if (!normalized.endsWith(`@${ALLOWED_DOMAIN}`)) {
+      setInviteError(`Invites are only allowed for @${ALLOWED_DOMAIN} email addresses.`)
+      return
     }
+
+    setInviting(true)
+    const { data, error } = await supabase.functions.invoke('invite-user', {
+      body: { email: normalized, role, redirectTo: `${window.location.origin}/accept-invite` },
+    })
+    setInviting(false)
+
+    if (error) {
+      setInviteError(error.message || 'Failed to send invite.')
+      return
+    }
+    if (data?.error) {
+      setInviteError(data.error)
+      return
+    }
+
+    setShowInvite(false)
   }
 
   if (loading) {
@@ -95,16 +112,25 @@ export default function PeoplePage() {
       )}
 
       {showInvite && (
-        <InviteModal onClose={() => setShowInvite(false)} onInvite={inviteUser} />
+        <InviteModal
+          error={inviteError}
+          sending={inviting}
+          onClose={() => { setShowInvite(false); setInviteError('') }}
+          onInvite={inviteUser}
+        />
       )}
     </div>
   )
 }
 
 function InviteModal({
+  error,
+  sending,
   onClose,
   onInvite,
 }: {
+  error: string
+  sending: boolean
   onClose: () => void
   onInvite: (email: string, role: string) => void
 }) {
@@ -114,13 +140,20 @@ function InviteModal({
   return (
     <Modal title="Invite a teammate" onClose={onClose}>
       <div className="space-y-4">
-        <Input
-          label="Email address"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@1cloudhub.com"
-        />
+        {error && (
+          <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg">{error}</div>
+        )}
+
+        <div>
+          <Input
+            label="Email address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={`name@${ALLOWED_DOMAIN}`}
+          />
+          <p className="text-[11px] text-gray-400 mt-1">Must be a @{ALLOWED_DOMAIN} address.</p>
+        </div>
 
         <div>
           <label className="block text-[13px] font-semibold text-ink mb-1.5">Role</label>
@@ -137,9 +170,9 @@ function InviteModal({
         <Button
           onClick={() => onInvite(email, role)}
           className="w-full"
-          disabled={!email.trim()}
+          disabled={!email.trim() || sending}
         >
-          Send invite
+          {sending ? 'Sending invite...' : 'Send invite'}
         </Button>
       </div>
     </Modal>

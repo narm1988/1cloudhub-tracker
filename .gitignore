@@ -17,6 +17,7 @@ build/
 # IDE
 .vscode/
 .idea/
+.claude/
 *.swp
 
 # OS
@@ -25,3 +26,6 @@ Thumbs.db
 
 # Vercel
 .vercel/
+
+# Supabase local
+supabase/.temp/

@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, BookOpen, MoreHorizontal, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Plus, BookOpen } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { STATUS_OPTIONS, STATUS_META, PRIORITY_OPTIONS, PRIORITY_META } from '../lib/constants'
+import { STATUS_OPTIONS, STATUS_META, PRIORITY_META } from '../lib/constants'
 import type { Status, Priority } from '../lib/constants'
-import type { Epic, Story, User } from '../types'
+import type { Epic, Story } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
-import Modal from '../components/ui/Modal'
-import Input from '../components/ui/Input'
 
 export default function EpicDetailPage() {
   const { epicId } = useParams<{ epicId: string }>()
@@ -19,15 +17,12 @@ export default function EpicDetailPage() {
 
   const [epic, setEpic] = useState<Epic | null>(null)
   const [stories, setStories] = useState<Story[]>([])
-  const [members, setMembers] = useState<User[]>([])
-  const [showCreateStory, setShowCreateStory] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (epicId) {
       fetchEpic()
       fetchStories()
-      fetchMembers()
     }
   }, [epicId])
 
@@ -50,18 +45,7 @@ export default function EpicDetailPage() {
     if (data) setStories(data)
   }
 
-  async function fetchMembers() {
-    const { data } = await supabase.from('profiles').select('*')
-    if (data) setMembers(data)
-  }
-
-  async function createStory(data: {
-    title: string
-    description: string
-    assigneeId: string
-    status: Status
-    priority: Priority
-  }) {
+  async function createStory() {
     // Get total story count from DB to avoid duplicate display_id conflicts
     const { count } = await supabase
       .from('stories')
@@ -69,20 +53,17 @@ export default function EpicDetailPage() {
 
     const displayId = `1CH-${100 + (count || 0) + 1}`
 
-    const { error } = await supabase.from('stories').insert({
+    const { data, error } = await supabase.from('stories').insert({
       epic_id: epicId,
-      title: data.title,
-      description: data.description,
-      assignee_id: data.assigneeId || null,
+      title: 'Untitled story',
       reporter_id: user?.id,
-      status: data.status,
-      priority: data.priority,
+      status: 'Created',
+      priority: 'Medium',
       display_id: displayId,
-    })
+    }).select().single()
 
-    if (!error) {
-      setShowCreateStory(false)
-      fetchStories()
+    if (!error && data) {
+      navigate(`/stories/${data.id}`)
     }
   }
 
@@ -120,7 +101,7 @@ export default function EpicDetailPage() {
             <span>{doneCount}/{stories.length} done</span>
           </div>
         </div>
-        <Button onClick={() => setShowCreateStory(true)}>
+        <Button onClick={createStory}>
           <Plus size={14} /> New story
         </Button>
       </div>
@@ -159,14 +140,6 @@ export default function EpicDetailPage() {
         })}
       </div>
 
-      {/* Create Story Modal */}
-      {showCreateStory && (
-        <CreateStoryModal
-          members={members}
-          onClose={() => setShowCreateStory(false)}
-          onCreate={createStory}
-        />
-      )}
     </div>
   )
 }
@@ -211,92 +184,3 @@ function StoryCard({ story, onClick }: { story: Story; onClick: () => void }) {
   )
 }
 
-function CreateStoryModal({
-  members,
-  onClose,
-  onCreate,
-}: {
-  members: User[]
-  onClose: () => void
-  onCreate: (data: { title: string; description: string; assigneeId: string; status: Status; priority: Priority }) => void
-}) {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [assigneeId, setAssigneeId] = useState('')
-  const [status, setStatus] = useState<Status>('Created')
-  const [priority, setPriority] = useState<Priority>('Medium')
-
-  return (
-    <Modal title="New story" onClose={onClose} width="max-w-lg">
-      <div className="space-y-4">
-        <Input
-          label="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. User can reset their password via email"
-        />
-
-        <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Description</label>
-          <textarea
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[100px] resize-y"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the feature, acceptance criteria, etc."
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Assign to</label>
-            <select
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-            >
-              <option value="">Unassigned</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>{m.full_name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Priority</label>
-            <select
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as Priority)}
-            >
-              {PRIORITY_OPTIONS.map((p) => (
-                <option key={p} value={p}>{PRIORITY_META[p].icon} {p}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Status</label>
-            <select
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <Button
-          onClick={() => onCreate({ title, description, assigneeId, status, priority })}
-          className="w-full"
-          disabled={!title.trim()}
-        >
-          Create story
-        </Button>
-      </div>
-    </Modal>
-  )
-}

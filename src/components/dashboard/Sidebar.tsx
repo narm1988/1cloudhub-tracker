@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { LayoutGrid, Users, Settings, ArrowLeft, Cloud, FolderKanban, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 
 const NAV_ITEMS = [
   { key: 'projects', label: 'Projects', icon: FolderKanban, path: '/projects' },
@@ -14,6 +15,7 @@ export default function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { signOut, user } = useAuth()
+  const { theme } = useTheme()
 
   const handleSignOut = async () => {
     await signOut()
@@ -21,7 +23,10 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-56 bg-ink text-white flex flex-col p-5 shrink-0">
+    <aside
+      className="w-64 text-white flex flex-col p-5 shrink-0 transition-colors"
+      style={{ backgroundColor: theme.bg }}
+    >
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-2 pb-5">
         <div className="w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
@@ -45,14 +50,14 @@ export default function Sidebar() {
               onClick={() => navigate(item.path)}
               className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[13.5px] font-medium transition-colors ${
                 isActive
-                  ? 'bg-ink-faint text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-ink-faint/50'
+                  ? 'bg-white/10 text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <Icon size={15} />
               {item.label}
               {item.admin && (
-                <span className="ml-auto text-[9.5px] bg-ink-faint px-1.5 py-0.5 rounded text-gray-400">
+                <span className="ml-auto text-[9.5px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400">
                   ADMIN
                 </span>
               )}
@@ -63,7 +68,7 @@ export default function Sidebar() {
 
       {/* Bottom */}
       <div className="mt-auto">
-        <div className="my-3 h-px bg-[repeating-linear-gradient(90deg,#2A2F42_0,#2A2F42_3px,transparent_3px,transparent_7px)]" />
+        <div className="my-3 border-t border-white/10" />
         <button
           onClick={handleSignOut}
           className="flex items-center gap-2 text-gray-500 hover:text-gray-300 text-[13px] px-2 py-1.5 transition-colors"

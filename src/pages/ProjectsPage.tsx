@@ -13,6 +13,8 @@ export default function ProjectsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     fetchProjects()
@@ -28,45 +30,73 @@ export default function ProjectsPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading projects...</div>
+    return (
+      <div>
+        <div className="flex items-baseline justify-between mb-5">
+          <div>
+            <div className="h-6 w-28 rounded bg-gray-200 animate-pulse" />
+            <div className="h-4 w-40 rounded bg-gray-100 animate-pulse mt-2.5" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="bg-white border border-gray-200 rounded-xl p-5 animate-pulse"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className="w-9 h-9 rounded-lg bg-gray-200 mb-4" />
+              <div className="h-3.5 w-2/3 rounded bg-gray-200 mb-2" />
+              <div className="h-3 w-full rounded bg-gray-100 mb-1.5" />
+              <div className="h-3 w-4/5 rounded bg-gray-100" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-5">
+      <div className="flex items-baseline justify-between mb-5 animate-fade-in-up">
         <div>
           <h1 className="font-display text-[22px] font-semibold text-ink">Projects</h1>
           <p className="text-[13px] text-gray-500 mt-1">{projects.length} projects in your workspace</p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={14} /> New project
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus size={14} /> New project
+          </Button>
+        )}
       </div>
 
       {projects.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-gray-400 animate-fade-in">
           <FolderKanban size={40} className="mx-auto mb-4 text-gray-300" />
           <p className="text-lg font-medium text-gray-500">No projects yet</p>
-          <p className="text-sm mt-1">Create a project to organize your epics and stories.</p>
+          <p className="text-sm mt-1">
+            {isAdmin ? 'Create a project to organize your epics and stories.' : 'Ask an admin to create a project to get started.'}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {projects.map((project) => (
+          {projects.map((project, i) => (
             <div
               key={project.id}
               onClick={() => navigate(`/projects/${project.id}`)}
-              className="bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:border-brand/40 hover:shadow-sm transition-all"
+              className="group bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:border-brand/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 animate-fade-in-up"
+              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-brand-soft flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-lg bg-brand-soft flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
                     <FolderKanban size={18} className="text-brand" />
                   </div>
                   <span className="font-mono text-[12px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                     {project.key}
                   </span>
                 </div>
-                <ChevronRight size={14} className="text-gray-400" />
+                <ChevronRight size={14} className="text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5" />
               </div>
               <h3 className="text-[15px] font-semibold text-ink mb-1">{project.name}</h3>
               {project.description && (

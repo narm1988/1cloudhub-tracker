@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Plus, Link2, Paperclip, MessageSquare,
-  Upload, X, Trash2, AlertCircle, CheckSquare, Bug, Tags
+  Upload, X, Trash2, Tags, ChevronDown, History
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -14,9 +14,10 @@ import type { Status, Priority, IssueType, LinkType } from '../lib/constants'
 import type { Story, Issue, Comment, Attachment, User, IssueLink } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
-import StatusBadge from '../components/ui/StatusBadge'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
+
+const SECTION_HEADER = 'font-display text-[14px] font-semibold text-ink'
 
 export default function StoryDetailPage() {
   const { storyId } = useParams<{ storyId: string }>()
@@ -24,6 +25,7 @@ export default function StoryDetailPage() {
   const { user } = useAuth()
 
   const [story, setStory] = useState<Story | null>(null)
+  const [epic, setEpic] = useState<{ id: string; title: string } | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
   const [comments, setComments] = useState<Comment[]>([])
   const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -34,7 +36,6 @@ export default function StoryDetailPage() {
 
   const [showCreateIssue, setShowCreateIssue] = useState(false)
   const [showLinkModal, setShowLinkModal] = useState(false)
-  const [editingStory, setEditingStory] = useState(false)
 
   useEffect(() => {
     if (storyId) {
@@ -61,7 +62,15 @@ export default function StoryDetailPage() {
       .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)')
       .eq('id', storyId)
       .single()
-    if (data) setStory(data)
+    if (data) {
+      setStory(data)
+      if (data.epic_id) fetchEpic(data.epic_id)
+    }
+  }
+
+  async function fetchEpic(epicId: string) {
+    const { data } = await supabase.from('epics').select('id, title').eq('id', epicId).single()
+    if (data) setEpic(data)
   }
 
   async function fetchIssues() {
@@ -115,9 +124,10 @@ export default function StoryDetailPage() {
   }
 
   async function updateStory(updates: Partial<Story>) {
+    // optimistic local update so inline fields feel instant
+    setStory((prev) => (prev ? { ...prev, ...updates } : prev))
     await supabase.from('stories').update(updates).eq('id', storyId)
     fetchStory()
-    setEditingStory(false)
   }
 
   async function createIssue(data: {
@@ -190,7 +200,6 @@ export default function StoryDetailPage() {
   }
 
   async function deleteAttachment(att: Attachment) {
-    // Delete from storage
     const path = att.file_url.split('/tracker-files/').pop()
     if (path) {
       await supabase.storage.from('tracker-files').remove([path])
@@ -225,7 +234,7 @@ export default function StoryDetailPage() {
   }
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-[1600px]">
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
@@ -234,222 +243,292 @@ export default function StoryDetailPage() {
         <ArrowLeft size={14} /> Back
       </button>
 
-      {/* Story header */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[13px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">📗 Story</span>
-              <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
-              <StatusBadge status={story.status as Status} />
-              <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon} {story.priority}</span>
-              {story.story_points && (
-                <span className="text-[11px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{story.story_points} pts</span>
-              )}
-            </div>
-            <h1 className="font-display text-xl font-semibold text-ink mb-2">{story.title}</h1>
-            {story.description && (
-              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{story.description}</p>
-            )}
-          </div>
-          <Button variant="secondary" size="sm" onClick={() => setEditingStory(true)}>
-            Edit
-          </Button>
-        </div>
-
-        {/* Meta row */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100 text-[13px] text-gray-500">
-          <div className="flex items-center gap-1.5">
-            <span>Assignee:</span>
-            {story.assignee ? (
-              <span className="flex items-center gap-1">
-                <Avatar name={story.assignee.full_name} size="sm" />
-                <strong className="text-ink">{story.assignee.full_name}</strong>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
+        {/* ---- Main column ---- */}
+        <div className="min-w-0">
+          {/* Header card */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className="text-[13px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">
+                {ISSUE_TYPE_META.Story.icon} Story
               </span>
+              <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
+              <StatusSelect
+                status={story.status as Status}
+                onChange={(s) => updateStory({ status: s } as any)}
+              />
+            </div>
+
+            <InlineTitle value={story.title} onSave={(title) => updateStory({ title })} />
+          </div>
+
+          {/* Description */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+            <h2 className={`${SECTION_HEADER} mb-2`}>Description</h2>
+            <InlineDescription
+              value={story.description || ''}
+              onSave={(description) => updateStory({ description })}
+            />
+          </div>
+
+          {/* Child Issues (Tasks/Bugs) */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={SECTION_HEADER}>Child Issues ({issues.length})</h2>
+              <Button size="sm" onClick={() => setShowCreateIssue(true)}>
+                <Plus size={13} /> Add issue
+              </Button>
+            </div>
+
+            {issues.length === 0 ? (
+              <p className="text-[13px] text-gray-400 text-center py-4">
+                No tasks or bugs yet. Add one to break down this story.
+              </p>
             ) : (
-              <span className="text-gray-400">Unassigned</span>
-            )}
-          </div>
-          <div>Reporter: <strong className="text-ink">{story.reporter?.full_name || 'Unknown'}</strong></div>
-          {story.start_date && <div>Start: <strong className="text-ink">{new Date(story.start_date).toLocaleDateString()}</strong></div>}
-          {story.due_date && <div>Due: <strong className="text-ink">{new Date(story.due_date).toLocaleDateString()}</strong></div>}
-          <div>Created: {new Date(story.created_at).toLocaleDateString()}</div>
-        </div>
-      </div>
-
-      {/* Labels */}
-      <LabelsSection storyId={storyId!} />
-
-      {/* Child Issues (Tasks/Bugs) */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-[15px] font-semibold text-ink">
-            Child Issues ({issues.length})
-          </h2>
-          <Button size="sm" onClick={() => setShowCreateIssue(true)}>
-            <Plus size={13} /> Add issue
-          </Button>
-        </div>
-
-        {issues.length === 0 ? (
-          <p className="text-[13px] text-gray-400 text-center py-4">
-            No tasks or bugs yet. Add one to break down this story.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {issues.map((issue) => (
-              <div
-                key={issue.id}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
-              >
-                <span className="text-[14px]">
-                  {issue.type === 'Bug' ? '🐛' : issue.type === 'Sub-task' ? '📎' : '✅'}
-                </span>
-                <span className="font-mono text-[11px] text-gray-400 shrink-0">{issue.display_id}</span>
-                <span className="text-[13px] text-ink font-medium flex-1 truncate">{issue.title}</span>
-                <span className="text-[11px]">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
-                {issue.assignee && <Avatar name={issue.assignee.full_name} size="sm" />}
-                <StatusBadge status={issue.status as Status} />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Linked Issues */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-[15px] font-semibold text-ink flex items-center gap-2">
-            <Link2 size={15} /> Linked Issues ({links.length})
-          </h2>
-          <Button size="sm" variant="secondary" onClick={() => setShowLinkModal(true)}>
-            <Plus size={13} /> Link issue
-          </Button>
-        </div>
-
-        {links.length === 0 ? (
-          <p className="text-[13px] text-gray-400 text-center py-3">No linked issues.</p>
-        ) : (
-          <div className="space-y-2">
-            {links.map((link) => {
-              const isSource = link.source_id === storyId
-              const linkedId = isSource ? link.target_id : link.source_id
-              const linkedStory = allStories.find((s) => s.id === linkedId)
-              return (
-                <div key={link.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
-                  <span className="text-[12px] text-gray-500 italic shrink-0">{link.link_type}</span>
-                  <span className="font-mono text-[11px] text-gray-400">
-                    {linkedStory?.display_id || linkedId.slice(0, 8)}
-                  </span>
-                  <span className="text-[13px] text-ink flex-1 truncate">
-                    {linkedStory?.title || 'Unknown'}
-                  </span>
-                  <button
-                    onClick={() => removeLink(link.id)}
-                    className="text-gray-400 hover:text-danger transition-colors"
+              <div className="space-y-2">
+                {issues.map((issue) => (
+                  <div
+                    key={issue.id}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Attachments */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-[15px] font-semibold text-ink flex items-center gap-2">
-            <Paperclip size={15} /> Attachments ({attachments.length})
-          </h2>
-          <FileUploadButton onUpload={uploadFile} />
-        </div>
-
-        {attachments.length === 0 ? (
-          <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {attachments.map((att) => {
-              const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(att.file_name)
-              return (
-                <div key={att.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 group">
-                  {isImage ? (
-                    <img
-                      src={att.file_url}
-                      alt={att.file_name}
-                      className="w-10 h-10 rounded object-cover shrink-0"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                      <Paperclip size={16} className="text-gray-400" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <a
-                      href={att.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[13px] text-brand hover:underline truncate block"
-                    >
-                      {att.file_name}
-                    </a>
-                    <span className="text-[11px] text-gray-400">
-                      {(att.file_size / 1024).toFixed(1)} KB
+                    <span className="text-[14px]">
+                      {issue.type === 'Bug' ? '🐛' : issue.type === 'Sub-task' ? '📎' : '✅'}
+                    </span>
+                    <span className="font-mono text-[11px] text-gray-400 shrink-0">{issue.display_id}</span>
+                    <span className="text-[13px] text-ink font-medium flex-1 truncate">{issue.title}</span>
+                    <span className="text-[11px]">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
+                    {issue.assignee && <Avatar name={issue.assignee.full_name} size="sm" />}
+                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
+                      {issue.status}
                     </span>
                   </div>
-                  <button
-                    onClick={() => deleteAttachment(att)}
-                    className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Comments */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-display text-[15px] font-semibold text-ink flex items-center gap-2 mb-4">
-          <MessageSquare size={15} /> Comments ({comments.length})
-        </h2>
-
-        <div className="space-y-3 mb-4">
-          {comments.map((comment) => (
-            <div key={comment.id} className="flex gap-3">
-              <Avatar name={comment.author?.full_name || 'User'} size="md" />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-semibold text-ink">
-                    {comment.author?.full_name}
-                  </span>
-                  <span className="text-[11px] text-gray-400">
-                    {new Date(comment.created_at).toLocaleString()}
-                  </span>
-                  {comment.author_id === user?.id && (
-                    <button
-                      onClick={() => deleteComment(comment.id)}
-                      className="text-gray-300 hover:text-danger ml-auto"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  )}
-                </div>
-                <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
-                  {comment.content}
-                </p>
+                ))}
               </div>
+            )}
+          </div>
+
+          {/* Linked Issues */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
+                <Link2 size={15} /> Linked Issues ({links.length})
+              </h2>
+              <Button size="sm" variant="secondary" onClick={() => setShowLinkModal(true)}>
+                <Plus size={13} /> Link issue
+              </Button>
             </div>
-          ))}
-          {comments.length === 0 && (
-            <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
-          )}
+
+            {links.length === 0 ? (
+              <p className="text-[13px] text-gray-400 text-center py-3">No linked issues.</p>
+            ) : (
+              <div className="space-y-2">
+                {links.map((link) => {
+                  const isSource = link.source_id === storyId
+                  const linkedId = isSource ? link.target_id : link.source_id
+                  const linkedStory = allStories.find((s) => s.id === linkedId)
+                  return (
+                    <div key={link.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
+                      <span className="text-[12px] text-gray-500 italic shrink-0">{link.link_type}</span>
+                      <span className="font-mono text-[11px] text-gray-400">
+                        {linkedStory?.display_id || linkedId.slice(0, 8)}
+                      </span>
+                      <span className="text-[13px] text-ink flex-1 truncate">
+                        {linkedStory?.title || 'Unknown'}
+                      </span>
+                      <button
+                        onClick={() => removeLink(link.id)}
+                        className="text-gray-400 hover:text-danger transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Attachments */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
+                <Paperclip size={15} /> Attachments ({attachments.length})
+              </h2>
+              <FileUploadButton onUpload={uploadFile} />
+            </div>
+
+            {attachments.length === 0 ? (
+              <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {attachments.map((att) => {
+                  const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(att.file_name)
+                  return (
+                    <div key={att.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 group">
+                      {isImage ? (
+                        <img
+                          src={att.file_url}
+                          alt={att.file_name}
+                          className="w-10 h-10 rounded object-cover shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
+                          <Paperclip size={16} className="text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <a
+                          href={att.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[13px] text-brand hover:underline truncate block"
+                        >
+                          {att.file_name}
+                        </a>
+                        <span className="text-[11px] text-gray-400">
+                          {(att.file_size / 1024).toFixed(1)} KB
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => deleteAttachment(att)}
+                        className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Comments */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+            <h2 className={`${SECTION_HEADER} flex items-center gap-2 mb-4`}>
+              <MessageSquare size={15} /> Comments ({comments.length})
+            </h2>
+
+            <div className="space-y-3 mb-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <Avatar name={comment.author?.full_name || 'User'} size="md" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold text-ink">
+                        {comment.author?.full_name}
+                      </span>
+                      <span className="text-[11px] text-gray-400">
+                        {new Date(comment.created_at).toLocaleString()}
+                      </span>
+                      {comment.author_id === user?.id && (
+                        <button
+                          onClick={() => deleteComment(comment.id)}
+                          className="text-gray-300 hover:text-danger ml-auto"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
+                      {comment.content}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {comments.length === 0 && (
+                <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
+              )}
+            </div>
+
+            <CommentInput onSubmit={addComment} />
+          </div>
+
+          {/* Audit Log */}
+          <AuditLogSection storyId={storyId!} />
         </div>
 
-        <CommentInput onSubmit={addComment} />
+        {/* ---- Sidebar ---- */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 lg:sticky lg:top-4">
+          <h3 className={`${SECTION_HEADER} mb-1`}>Details</h3>
+
+          <div className="divide-y divide-gray-100">
+            <DetailRow label="Assignee">
+              <AssigneeField
+                story={story}
+                members={members}
+                currentUserId={user?.id}
+                onChange={(assigneeId) => updateStory({ assignee_id: assigneeId || null } as any)}
+              />
+            </DetailRow>
+
+            <div className="py-2.5">
+              <LabelsField storyId={storyId!} />
+            </div>
+
+            <DetailRow label="Parent">
+              {epic ? (
+                <button
+                  onClick={() => navigate(`/epics/${epic.id}`)}
+                  className="text-[13px] text-brand hover:underline font-medium truncate max-w-[170px] text-right"
+                >
+                  {epic.title}
+                </button>
+              ) : (
+                <span className="text-[13px] text-gray-400">None</span>
+              )}
+            </DetailRow>
+
+            <DetailRow label="Reporter">
+              <span className="text-[13px] text-ink font-medium">{story.reporter?.full_name || 'Unknown'}</span>
+            </DetailRow>
+
+            <DetailRow label="Priority">
+              <select
+                value={story.priority}
+                onChange={(e) => updateStory({ priority: e.target.value as Priority } as any)}
+                className="text-[13px] text-ink font-medium bg-transparent outline-none cursor-pointer hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right"
+              >
+                {PRIORITY_OPTIONS.map((p) => (
+                  <option key={p} value={p}>{PRIORITY_META[p].icon} {p}</option>
+                ))}
+              </select>
+            </DetailRow>
+
+            <DetailRow label="Story points">
+              <input
+                type="number"
+                min={0}
+                value={story.story_points ?? ''}
+                onChange={(e) => updateStory({ story_points: e.target.value ? parseInt(e.target.value) : null } as any)}
+                placeholder="None"
+                className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
+              />
+            </DetailRow>
+
+            <DetailRow label="Start date">
+              <input
+                type="date"
+                value={story.start_date || ''}
+                onChange={(e) => updateStory({ start_date: e.target.value || null } as any)}
+                className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+              />
+            </DetailRow>
+
+            <DetailRow label="Due date">
+              <input
+                type="date"
+                value={story.due_date || ''}
+                onChange={(e) => updateStory({ due_date: e.target.value || null } as any)}
+                className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+              />
+            </DetailRow>
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-400 space-y-0.5">
+            <div>Created {new Date(story.created_at).toLocaleDateString()}</div>
+            <div>Updated {new Date(story.updated_at).toLocaleDateString()}</div>
+          </div>
+        </div>
       </div>
 
       {/* Modals */}
@@ -468,20 +547,183 @@ export default function StoryDetailPage() {
           onLink={addLink}
         />
       )}
-
-      {editingStory && (
-        <EditStoryModal
-          story={story}
-          members={members}
-          onClose={() => setEditingStory(false)}
-          onSave={updateStory}
-        />
-      )}
     </div>
   )
 }
 
-/* ---- Sub-components ---- */
+/* ---- Sidebar helpers ---- */
+
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between py-2.5 gap-3">
+      <span className="text-[12px] text-gray-500 shrink-0">{label}</span>
+      {children}
+    </div>
+  )
+}
+
+function InlineTitle({ value, onSave }: { value: string; onSave: (v: string) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+
+  useEffect(() => {
+    if (!editing) setDraft(value)
+  }, [value, editing])
+
+  if (!editing) {
+    return (
+      <h1
+        onClick={() => setEditing(true)}
+        title="Click to edit"
+        className="font-display text-[22px] font-semibold text-ink cursor-text rounded-md px-1.5 -mx-1.5 py-0.5 hover:bg-gray-50 transition-colors"
+      >
+        {value}
+      </h1>
+    )
+  }
+
+  return (
+    <input
+      autoFocus
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        setEditing(false)
+        const trimmed = draft.trim()
+        if (trimmed && trimmed !== value) onSave(trimmed)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur()
+        if (e.key === 'Escape') { setDraft(value); setEditing(false) }
+      }}
+      className="font-display text-[22px] font-semibold text-ink w-full px-1.5 -mx-1.5 py-0.5 rounded-md border border-brand outline-none focus:ring-1 focus:ring-brand/30"
+    />
+  )
+}
+
+function InlineDescription({ value, onSave }: { value: string; onSave: (v: string) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+
+  useEffect(() => {
+    if (!editing) setDraft(value)
+  }, [value, editing])
+
+  if (!editing) {
+    return (
+      <div
+        onClick={() => setEditing(true)}
+        className="text-[13.5px] text-gray-700 leading-relaxed whitespace-pre-wrap rounded-md px-1.5 -mx-1.5 py-1 hover:bg-gray-50 transition-colors cursor-text min-h-[32px]"
+      >
+        {value || <span className="text-gray-400">Add a description...</span>}
+      </div>
+    )
+  }
+
+  return (
+    <textarea
+      autoFocus
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        setEditing(false)
+        if (draft !== value) onSave(draft)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') { setDraft(value); setEditing(false) }
+      }}
+      placeholder="Add a description..."
+      className="w-full px-2.5 py-2 rounded-lg border border-brand text-[13.5px] outline-none focus:ring-1 focus:ring-brand/30 resize-y min-h-[100px]"
+    />
+  )
+}
+
+function StatusSelect({ status, onChange }: { status: Status; onChange: (s: Status) => void }) {
+  const meta = STATUS_META[status]
+  return (
+    <select
+      value={status}
+      onChange={(e) => onChange(e.target.value as Status)}
+      className={`text-[11px] font-semibold pl-2.5 pr-6 py-0.5 rounded-md whitespace-nowrap outline-none cursor-pointer border-0 appearance-none ${meta.tailwind}`}
+      style={{
+        backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'><path d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 4px center',
+        backgroundSize: '12px',
+      }}
+    >
+      {STATUS_OPTIONS.map((s) => (
+        <option key={s} value={s}>{s}</option>
+      ))}
+    </select>
+  )
+}
+
+function AssigneeField({
+  story,
+  members,
+  currentUserId,
+  onChange,
+}: {
+  story: Story
+  members: User[]
+  currentUserId?: string
+  onChange: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const assignee = story.assignee
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 hover:bg-gray-50 rounded-md px-1.5 -mx-1.5 py-1 transition-colors"
+      >
+        {assignee ? (
+          <>
+            <span className="text-[13px] text-ink font-medium">{assignee.full_name}</span>
+            <Avatar name={assignee.full_name} size="sm" />
+          </>
+        ) : (
+          <span className="text-[13px] text-gray-400">Unassigned</span>
+        )}
+        <ChevronDown size={12} className="text-gray-400" />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-64 overflow-y-auto">
+            {currentUserId && story.assignee_id !== currentUserId && (
+              <button
+                onClick={() => { onChange(currentUserId); setOpen(false) }}
+                className="w-full text-left px-3 py-1.5 text-[12.5px] text-brand hover:bg-gray-50 font-medium"
+              >
+                Assign to me
+              </button>
+            )}
+            <button
+              onClick={() => { onChange(''); setOpen(false) }}
+              className="w-full text-left px-3 py-1.5 text-[12.5px] text-gray-500 hover:bg-gray-50"
+            >
+              Unassigned
+            </button>
+            <div className="h-px bg-gray-100 my-1" />
+            {members.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => { onChange(m.id); setOpen(false) }}
+                className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12.5px] text-ink hover:bg-gray-50"
+              >
+                <Avatar name={m.full_name} size="sm" /> {m.full_name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 function CommentInput({ onSubmit }: { onSubmit: (content: string) => void }) {
   const [content, setContent] = useState('')
@@ -685,126 +927,96 @@ function LinkIssueModal({
   )
 }
 
-function EditStoryModal({
-  story,
-  members,
-  onClose,
-  onSave,
-}: {
-  story: Story
-  members: User[]
-  onClose: () => void
-  onSave: (updates: Partial<Story>) => void
-}) {
-  const [title, setTitle] = useState(story.title)
-  const [description, setDescription] = useState(story.description || '')
-  const [status, setStatus] = useState(story.status)
-  const [priority, setPriority] = useState(story.priority)
-  const [assigneeId, setAssigneeId] = useState(story.assignee_id || '')
-  const [startDate, setStartDate] = useState(story.start_date || '')
-  const [dueDate, setDueDate] = useState(story.due_date || '')
-  const [storyPoints, setStoryPoints] = useState(story.story_points?.toString() || '')
+/* ---- Audit Log ---- */
+interface ActivityLogEntry {
+  id: string
+  action: string
+  field_name: string | null
+  old_value: string | null
+  new_value: string | null
+  created_at: string
+  user: { id: string; full_name: string } | null
+}
+
+function describeActivity(log: ActivityLogEntry) {
+  const name = log.user?.full_name || 'Someone'
+  switch (log.action) {
+    case 'created':
+      return `${name} created this story`
+    case 'comment_added':
+      return `${name} added a comment`
+    case 'attachment_added':
+      return `${name} attached "${log.new_value}"`
+    case 'label_added':
+      return `${name} added label "${log.new_value}"`
+    case 'updated': {
+      const field = log.field_name || 'a field'
+      const from = log.old_value || 'empty'
+      const to = log.new_value || 'empty'
+      return `${name} changed ${field} from "${from}" to "${to}"`
+    }
+    default:
+      return `${name} ${log.action}`
+  }
+}
+
+function AuditLogSection({ storyId }: { storyId: string }) {
+  const [logs, setLogs] = useState<ActivityLogEntry[]>([])
+  const [open, setOpen] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+
+  async function fetchLogs() {
+    const { data } = await supabase
+      .from('activity_log')
+      .select('*, user:profiles!activity_log_user_id_fkey(id, full_name)')
+      .eq('parent_id', storyId)
+      .eq('parent_type', 'story')
+      .order('created_at', { ascending: false })
+    if (data) setLogs(data as unknown as ActivityLogEntry[])
+    setLoaded(true)
+  }
+
+  function toggle() {
+    setOpen((o) => !o)
+    if (!loaded) fetchLogs()
+  }
 
   return (
-    <Modal title={`Edit ${story.display_id}`} onClose={onClose} width="max-w-lg">
-      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-        <Input
-          label="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+    <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+      <button onClick={toggle} className="w-full flex items-center justify-between">
+        <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
+          <History size={15} /> Audit Log{loaded ? ` (${logs.length})` : ''}
+        </h2>
+        <ChevronDown size={16} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
 
-        <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Description</label>
-          <textarea
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 min-h-[100px] resize-y"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add details, acceptance criteria..."
-          />
+      {open && (
+        <div className="mt-4 space-y-3">
+          {!loaded ? (
+            <p className="text-[13px] text-gray-400 text-center py-2">Loading...</p>
+          ) : logs.length === 0 ? (
+            <p className="text-[13px] text-gray-400 text-center py-2">No activity yet.</p>
+          ) : (
+            logs.map((log) => (
+              <div key={log.id} className="flex items-start gap-2.5">
+                <Avatar name={log.user?.full_name || 'User'} size="sm" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-[12.5px] text-gray-700">{describeActivity(log)}</span>
+                  <span className="text-[11px] text-gray-400 ml-2">{new Date(log.created_at).toLocaleString()}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Status</label>
-            <select
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as Status)}
-            >
-              {STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Priority</label>
-            <select
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as Priority)}
-            >
-              {PRIORITY_OPTIONS.map((p) => <option key={p} value={p}>{PRIORITY_META[p].icon} {p}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Assignee</label>
-            <select
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-            >
-              <option value="">Unassigned</option>
-              {members.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <Input
-            label="Start date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <Input
-            label="Due date"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
-          <Input
-            label="Story points"
-            type="number"
-            value={storyPoints}
-            onChange={(e) => setStoryPoints(e.target.value)}
-            placeholder="0"
-          />
-        </div>
-
-        <Button
-          onClick={() => onSave({
-            title,
-            description,
-            status,
-            priority,
-            assignee_id: assigneeId || null,
-            start_date: startDate || null,
-            due_date: dueDate || null,
-            story_points: storyPoints ? parseInt(storyPoints) : null,
-          } as any)}
-          className="w-full"
-          disabled={!title.trim()}
-        >
-          Save changes
-        </Button>
-      </div>
-    </Modal>
+      )}
+    </div>
   )
 }
 
-/* ---- Labels Section ---- */
+/* ---- Labels Field (sidebar) ---- */
 const LABEL_COLORS = ['#5B5FEF', '#1E9E6B', '#C6820F', '#E5484D', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6']
 
-function LabelsSection({ storyId }: { storyId: string }) {
+function LabelsField({ storyId }: { storyId: string }) {
   const [labels, setLabels] = useState<{ id: string; name: string; color: string }[]>([])
   const [allLabels, setAllLabels] = useState<{ id: string; name: string; color: string }[]>([])
   const [showAdd, setShowAdd] = useState(false)
@@ -834,7 +1046,6 @@ function LabelsSection({ storyId }: { storyId: string }) {
 
   async function createAndAttachLabel() {
     if (!newLabelName.trim()) return
-    // Create label
     const { data } = await supabase.from('labels').insert({
       name: newLabelName.trim(),
       color: newLabelColor,
@@ -842,7 +1053,6 @@ function LabelsSection({ storyId }: { storyId: string }) {
     }).select().single()
 
     if (data) {
-      // Attach to story
       await supabase.from('story_labels').insert({
         story_id: storyId,
         label_id: data.id,
@@ -872,25 +1082,24 @@ function LabelsSection({ storyId }: { storyId: string }) {
   const unattachedLabels = allLabels.filter((l) => !labels.find((sl) => sl.id === l.id))
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-display text-[15px] font-semibold text-ink flex items-center gap-2">
-          <Tags size={15} /> Labels ({labels.length})
-        </h2>
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[12px] text-gray-500 flex items-center gap-1">
+          <Tags size={12} /> Labels
+        </span>
         <button
           onClick={() => setShowAdd((s) => !s)}
-          className="text-[12px] text-brand hover:text-brand-deep font-medium"
+          className="text-[11px] text-brand hover:text-brand-deep font-medium"
         >
-          + Add label
+          + Add
         </button>
       </div>
 
-      {/* Current labels */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="flex flex-wrap gap-1.5 justify-end">
         {labels.map((label) => (
           <span
             key={label.id}
-            className="flex items-center gap-1 text-[12px] font-medium px-2.5 py-1 rounded-full text-white group"
+            className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full text-white group"
             style={{ backgroundColor: label.color }}
           >
             {label.name}
@@ -903,23 +1112,21 @@ function LabelsSection({ storyId }: { storyId: string }) {
           </span>
         ))}
         {labels.length === 0 && !showAdd && (
-          <span className="text-[12px] text-gray-400">No labels attached.</span>
+          <span className="text-[12px] text-gray-400">None</span>
         )}
       </div>
 
-      {/* Add label panel */}
       {showAdd && (
-        <div className="border border-gray-200 rounded-lg p-3 space-y-3">
-          {/* Attach existing */}
+        <div className="border border-gray-200 rounded-lg p-2.5 mt-2 space-y-2.5">
           {unattachedLabels.length > 0 && (
             <div>
-              <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Existing labels</label>
+              <label className="block text-[10.5px] font-semibold text-gray-500 mb-1.5">Existing labels</label>
               <div className="flex flex-wrap gap-1.5">
                 {unattachedLabels.map((label) => (
                   <button
                     key={label.id}
                     onClick={() => attachExistingLabel(label.id)}
-                    className="text-[11px] font-medium px-2 py-0.5 rounded-full text-white hover:opacity-80 transition-opacity"
+                    className="text-[10.5px] font-medium px-2 py-0.5 rounded-full text-white hover:opacity-80 transition-opacity"
                     style={{ backgroundColor: label.color }}
                   >
                     + {label.name}
@@ -929,35 +1136,34 @@ function LabelsSection({ storyId }: { storyId: string }) {
             </div>
           )}
 
-          {/* Create new */}
           <div>
-            <label className="block text-[11px] font-semibold text-gray-500 mb-1.5">Create new label</label>
-            <div className="flex items-center gap-2">
+            <label className="block text-[10.5px] font-semibold text-gray-500 mb-1.5">Create new label</label>
+            <div className="flex items-center gap-1.5">
               <input
-                className="flex-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-[12px] outline-none focus:border-brand"
+                className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-gray-200 text-[11.5px] outline-none focus:border-brand"
                 placeholder="Label name..."
                 value={newLabelName}
                 onChange={(e) => setNewLabelName(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') createAndAttachLabel() }}
               />
-              <div className="flex gap-1">
-                {LABEL_COLORS.map((c) => (
+              <div className="flex gap-1 shrink-0">
+                {LABEL_COLORS.slice(0, 4).map((c) => (
                   <button
                     key={c}
                     onClick={() => setNewLabelColor(c)}
-                    className={`w-5 h-5 rounded-full border-2 ${newLabelColor === c ? 'border-ink' : 'border-transparent'}`}
+                    className={`w-4 h-4 rounded-full border-2 ${newLabelColor === c ? 'border-ink' : 'border-transparent'}`}
                     style={{ backgroundColor: c }}
                   />
                 ))}
               </div>
-              <button
-                onClick={createAndAttachLabel}
-                disabled={!newLabelName.trim()}
-                className="text-[11px] font-semibold px-3 py-1.5 bg-brand text-white rounded-lg disabled:opacity-50"
-              >
-                Create
-              </button>
             </div>
+            <button
+              onClick={createAndAttachLabel}
+              disabled={!newLabelName.trim()}
+              className="w-full mt-1.5 text-[11px] font-semibold px-3 py-1.5 bg-brand text-white rounded-lg disabled:opacity-50"
+            >
+              Create
+            </button>
           </div>
         </div>
       )}

@@ -41,6 +41,25 @@ export default {
         body: ["'Inter'", 'sans-serif'],
         mono: ["'IBM Plex Mono'", 'monospace'],
       },
+      keyframes: {
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        popIn: {
+          '0%': { opacity: '0', transform: 'scale(0.97)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        'fade-in-up': 'fadeInUp 0.4s ease-out both',
+        'fade-in': 'fadeIn 0.35s ease-out both',
+        'pop-in': 'popIn 0.18s ease-out both',
+      },
     },
   },
   plugins: [],

@@ -10,12 +10,12 @@ interface ModalProps {
 export default function Modal({ title, onClose, children, width = 'max-w-md' }: ModalProps) {
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white rounded-xl ${width} w-full p-6 font-body shadow-xl`}
+        className={`bg-white rounded-xl ${width} w-full p-6 font-body shadow-xl animate-pop-in`}
       >
         <div className="flex justify-between items-center mb-5">
           <h3 className="font-display text-lg font-semibold text-ink">{title}</h3>
