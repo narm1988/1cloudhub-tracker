@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Shield } from 'lucide-react'
+import { Plus, Shield, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { User } from '../types'
@@ -31,6 +31,7 @@ export default function PeoplePage() {
   const [loading, setLoading] = useState(true)
   const [inviteError, setInviteError] = useState('')
   const [inviting, setInviting] = useState(false)
+  const [removingId, setRemovingId] = useState<string | null>(null)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -72,6 +73,29 @@ export default function PeoplePage() {
     }
 
     setShowInvite(false)
+    fetchPeople()
+  }
+
+  async function removePerson(person: User) {
+    if (!window.confirm(`Remove ${person.full_name} from the team? This cannot be undone.`)) return
+
+    setRemovingId(person.id)
+    const { data, error } = await supabase.functions.invoke('remove-person', {
+      body: { userId: person.id },
+    })
+    setRemovingId(null)
+
+    if (error) {
+      const detailed = await extractFunctionErrorMessage(error)
+      alert(detailed || error.message || 'Failed to remove person.')
+      return
+    }
+    if (data?.error) {
+      alert(data.error)
+      return
+    }
+
+    setPeople((prev) => prev.filter((p) => p.id !== person.id))
   }
 
   if (loading) {
@@ -116,6 +140,17 @@ export default function PeoplePage() {
                 {person.role === 'admin' && <Shield size={11} />}
                 {person.role === 'admin' ? 'Admin' : 'Member'}
               </span>
+              {user?.role === 'admin' && person.id !== user.id && (
+                <button
+                  onClick={() => removePerson(person)}
+                  disabled={removingId === person.id}
+                  className="text-gray-400 hover:text-danger transition-colors disabled:opacity-50"
+                  aria-label={`Remove ${person.full_name}`}
+                  title="Remove person"
+                >
+                  <Trash2 size={15} />
+                </button>
+              )}
             </div>
           ))
         )}
