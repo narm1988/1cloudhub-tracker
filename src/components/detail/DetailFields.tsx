@@ -17,7 +17,15 @@ export function DetailRow({ label, children }: { label: string; children: React.
   )
 }
 
-export function InlineTitle({ value, onSave }: { value: string; onSave: (v: string) => void }) {
+export function InlineTitle({
+  value,
+  onSave,
+  placeholder,
+}: {
+  value: string
+  onSave: (v: string) => void
+  placeholder?: string
+}) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value)
 
@@ -30,9 +38,13 @@ export function InlineTitle({ value, onSave }: { value: string; onSave: (v: stri
       <h1
         onClick={() => setEditing(true)}
         title="Click to edit"
-        className="font-display text-[22px] font-semibold text-ink cursor-text rounded-md px-1.5 -mx-1.5 py-0.5 hover:bg-gray-50 transition-colors"
+        className="font-display text-[22px] font-semibold cursor-text rounded-md px-1.5 -mx-1.5 py-0.5 hover:bg-gray-50 transition-colors"
       >
-        {value}
+        {value ? (
+          <span className="text-ink">{value}</span>
+        ) : (
+          <span className="text-gray-400">{placeholder || 'Untitled'}</span>
+        )}
       </h1>
     )
   }
@@ -42,10 +54,11 @@ export function InlineTitle({ value, onSave }: { value: string; onSave: (v: stri
       autoFocus
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
+      placeholder={placeholder}
       onBlur={() => {
         setEditing(false)
         const trimmed = draft.trim()
-        if (trimmed && trimmed !== value) onSave(trimmed)
+        if (trimmed !== value) onSave(trimmed)
       }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') e.currentTarget.blur()

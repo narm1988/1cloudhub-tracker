@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, BookOpen } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../context/AuthContext'
 import { STATUS_OPTIONS, STATUS_META, PRIORITY_META } from '../lib/constants'
 import type { Status, Priority } from '../lib/constants'
 import type { Epic, Story } from '../types'
@@ -13,7 +12,6 @@ import StatusBadge from '../components/ui/StatusBadge'
 export default function EpicDetailPage() {
   const { epicId } = useParams<{ epicId: string }>()
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   const [epic, setEpic] = useState<Epic | null>(null)
   const [stories, setStories] = useState<Story[]>([])
@@ -43,28 +41,6 @@ export default function EpicDetailPage() {
       .eq('epic_id', epicId)
       .order('created_at', { ascending: false })
     if (data) setStories(data)
-  }
-
-  async function createStory() {
-    // Get total story count from DB to avoid duplicate display_id conflicts
-    const { count } = await supabase
-      .from('stories')
-      .select('id', { count: 'exact', head: true })
-
-    const displayId = `1CH-${100 + (count || 0) + 1}`
-
-    const { data, error } = await supabase.from('stories').insert({
-      epic_id: epicId,
-      title: 'Untitled story',
-      reporter_id: user?.id,
-      status: 'Created',
-      priority: 'Medium',
-      display_id: displayId,
-    }).select().single()
-
-    if (!error && data) {
-      navigate(`/stories/${data.id}`)
-    }
   }
 
   if (loading) {
@@ -101,7 +77,7 @@ export default function EpicDetailPage() {
             <span>{doneCount}/{stories.length} done</span>
           </div>
         </div>
-        <Button onClick={createStory}>
+        <Button onClick={() => navigate(`/stories/new?epicId=${epicId}`)}>
           <Plus size={14} /> New story
         </Button>
       </div>

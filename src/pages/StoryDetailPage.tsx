@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft, Plus, Link2, Paperclip, MessageSquare,
   X, Trash2, ChevronDown
@@ -30,6 +30,17 @@ interface StoryDraft {
   due_date: string | null
 }
 
+const EMPTY_DRAFT: StoryDraft = {
+  title: '',
+  description: '',
+  status: 'Created',
+  priority: 'Medium',
+  assignee_id: null,
+  story_points: null,
+  start_date: null,
+  due_date: null,
+}
+
 function seedDraft(s: Story): StoryDraft {
   return {
     title: s.title,
@@ -49,8 +60,12 @@ function normalize(v: string | number | null | undefined) {
 
 export default function StoryDetailPage() {
   const { storyId } = useParams<{ storyId: string }>()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+
+  const isNew = storyId === 'new'
+  const epicIdParam = searchParams.get('epicId')
 
   const [story, setStory] = useState<Story | null>(null)
   const [epic, setEpic] = useState<{ id: string; title: string } | null>(null)
@@ -68,9 +83,15 @@ export default function StoryDetailPage() {
   const [showLinkModal, setShowLinkModal] = useState(false)
 
   useEffect(() => {
-    if (storyId) {
-      fetchAll()
+    if (!storyId) return
+    if (isNew) {
+      fetchMembers()
+      if (epicIdParam) fetchEpic(epicIdParam)
+      setLoading(false)
+      return
     }
+    fetchAll()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storyId])
 
   // Switching to a different story should drop any in-progress draft from the last one.
@@ -159,47 +180,57 @@ export default function StoryDetailPage() {
   }
 
   async function saveChanges() {
-    if (!draft) return
+    if (!current.title.trim()) return
     setSaving(true)
+
+    if (isNew) {
+      const { count } = await supabase.from('stories').select('id', { count: 'exact', head: true })
+      const displayId = `1CH-${100 + (count || 0) + 1}`
+
+      const { data, error } = await supabase.from('stories').insert({
+        epic_id: epicIdParam,
+        title: current.title,
+        description: current.description || null,
+        status: current.status,
+        priority: current.priority,
+        assignee_id: current.assignee_id,
+        story_points: current.story_points,
+        start_date: current.start_date,
+        due_date: current.due_date,
+        reporter_id: user?.id,
+        display_id: displayId,
+      }).select().single()
+
+      setSaving(false)
+      if (!error && data) navigate(`/stories/${data.id}`, { replace: true })
+      return
+    }
+
     await supabase.from('stories').update({
-      title: draft.title,
-      description: draft.description || null,
-      status: draft.status,
-      priority: draft.priority,
-      assignee_id: draft.assignee_id,
-      story_points: draft.story_points,
-      start_date: draft.start_date,
-      due_date: draft.due_date,
+      title: current.title,
+      description: current.description || null,
+      status: current.status,
+      priority: current.priority,
+      assignee_id: current.assignee_id,
+      story_points: current.story_points,
+      start_date: current.start_date,
+      due_date: current.due_date,
     }).eq('id', storyId)
     await fetchStory()
     setSaving(false)
   }
 
   function cancelChanges() {
+    if (isNew) {
+      if (epicIdParam) navigate(`/epics/${epicIdParam}`)
+      else navigate(-1)
+      return
+    }
     if (story) setDraft(seedDraft(story))
   }
 
   async function createIssue(type: IssueType) {
-    const { count } = await supabase
-      .from('issues')
-      .select('id', { count: 'exact', head: true })
-
-    const prefix = type === 'Bug' ? 'BUG' : type === 'Sub-task' ? 'SUB' : 'TSK'
-    const displayId = `${prefix}-${100 + (count || 0) + 1}`
-
-    const { data, error } = await supabase.from('issues').insert({
-      story_id: storyId,
-      title: `Untitled ${type.toLowerCase()}`,
-      type,
-      status: 'Created',
-      priority: 'Medium',
-      reporter_id: user?.id,
-      display_id: displayId,
-    }).select().single()
-
-    if (!error && data) {
-      navigate(`/issues/${data.id}`)
-    }
+    navigate(`/issues/new?storyId=${storyId}&type=${encodeURIComponent(type)}`)
   }
 
   async function addComment(content: string) {
@@ -278,12 +309,12 @@ export default function StoryDetailPage() {
     return <div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>
   }
 
-  if (!story) {
+  if (!isNew && !story) {
     return <div className="text-gray-500">Story not found.</div>
   }
 
-  const current = draft ?? seedDraft(story)
-  const isDirty =
+  const current = draft ?? (story ? seedDraft(story) : EMPTY_DRAFT)
+  const isDirty = story ? (
     current.title !== story.title ||
     normalize(current.description) !== normalize(story.description) ||
     current.status !== story.status ||
@@ -292,14 +323,19 @@ export default function StoryDetailPage() {
     normalize(current.story_points) !== normalize(story.story_points) ||
     normalize(current.start_date) !== normalize(story.start_date) ||
     normalize(current.due_date) !== normalize(story.due_date)
+  ) : false
+  const hasNewContent = isNew && (current.title.trim() !== '' || current.description.trim() !== '')
+  const showBar = isNew || isDirty
 
   function updateDraft(patch: Partial<StoryDraft>) {
     setDraft({ ...current, ...patch })
   }
 
   function handleBack() {
-    if (isDirty && !window.confirm('You have unsaved changes. Leave without saving?')) return
-    navigate(-1)
+    const dirty = isNew ? hasNewContent : isDirty
+    if (dirty && !window.confirm(isNew ? 'Discard this new story?' : 'You have unsaved changes. Leave without saving?')) return
+    if (isNew && epicIdParam) navigate(`/epics/${epicIdParam}`)
+    else navigate(-1)
   }
 
   return (
@@ -321,14 +357,22 @@ export default function StoryDetailPage() {
               <span className="text-[13px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">
                 {ISSUE_TYPE_META.Story.icon} Story
               </span>
-              <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
+              {isNew ? (
+                <span className="text-[12px] text-brand font-semibold">New — not yet saved</span>
+              ) : (
+                <span className="font-mono text-[12px] text-gray-400">{story!.display_id}</span>
+              )}
               <StatusField
                 status={current.status}
                 onChange={(status) => updateDraft({ status })}
               />
             </div>
 
-            <InlineTitle value={current.title} onSave={(title) => updateDraft({ title })} />
+            <InlineTitle
+              value={current.title}
+              onSave={(title) => updateDraft({ title })}
+              placeholder={isNew ? 'Click to add a title' : undefined}
+            />
           </div>
 
           {/* Description */}
@@ -340,177 +384,181 @@ export default function StoryDetailPage() {
             />
           </div>
 
-          {/* Child Issues (Tasks/Bugs) */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={SECTION_HEADER}>Child Issues ({issues.length})</h2>
-              <IssueTypePicker onCreate={createIssue} />
-            </div>
+          {!isNew && (
+            <>
+              {/* Child Issues (Tasks/Bugs) */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className={SECTION_HEADER}>Child Issues ({issues.length})</h2>
+                  <IssueTypePicker onCreate={createIssue} />
+                </div>
 
-            {issues.length === 0 ? (
-              <p className="text-[13px] text-gray-400 text-center py-4">
-                No tasks or bugs yet. Add one to break down this story.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {issues.map((issue) => (
-                  <div
-                    key={issue.id}
-                    onClick={() => navigate(`/issues/${issue.id}`)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-brand/30 hover:shadow-sm cursor-pointer transition-all"
-                  >
-                    <span className="text-[14px]">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
-                    <span className="font-mono text-[11px] text-gray-400 shrink-0">{issue.display_id}</span>
-                    <span className="text-[13px] text-ink font-medium flex-1 truncate">{issue.title}</span>
-                    <span className="text-[11px]">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
-                    {issue.assignee && <Avatar name={issue.assignee.full_name} size="sm" />}
-                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
-                      {issue.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Linked Issues */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
-                <Link2 size={15} /> Linked Issues ({links.length})
-              </h2>
-              <Button size="sm" variant="secondary" onClick={() => setShowLinkModal(true)}>
-                <Plus size={13} /> Link issue
-              </Button>
-            </div>
-
-            {links.length === 0 ? (
-              <p className="text-[13px] text-gray-400 text-center py-3">No linked issues.</p>
-            ) : (
-              <div className="space-y-2">
-                {links.map((link) => {
-                  const isSource = link.source_id === storyId
-                  const linkedId = isSource ? link.target_id : link.source_id
-                  const linkedStory = allStories.find((s) => s.id === linkedId)
-                  return (
-                    <div key={link.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
-                      <span className="text-[12px] text-gray-500 italic shrink-0">{link.link_type}</span>
-                      <span className="font-mono text-[11px] text-gray-400">
-                        {linkedStory?.display_id || linkedId.slice(0, 8)}
-                      </span>
-                      <span className="text-[13px] text-ink flex-1 truncate">
-                        {linkedStory?.title || 'Unknown'}
-                      </span>
-                      <button
-                        onClick={() => removeLink(link.id)}
-                        className="text-gray-400 hover:text-danger transition-colors"
+                {issues.length === 0 ? (
+                  <p className="text-[13px] text-gray-400 text-center py-4">
+                    No tasks or bugs yet. Add one to break down this story.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {issues.map((issue) => (
+                      <div
+                        key={issue.id}
+                        onClick={() => navigate(`/issues/${issue.id}`)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-brand/30 hover:shadow-sm cursor-pointer transition-all"
                       >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Attachments */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
-                <Paperclip size={15} /> Attachments ({attachments.length})
-              </h2>
-              <FileUploadButton onUpload={uploadFile} />
-            </div>
-
-            {attachments.length === 0 ? (
-              <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {attachments.map((att) => {
-                  const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(att.file_name)
-                  return (
-                    <div key={att.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 group">
-                      {isImage ? (
-                        <img
-                          src={att.file_url}
-                          alt={att.file_name}
-                          className="w-10 h-10 rounded object-cover shrink-0"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                          <Paperclip size={16} className="text-gray-400" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <a
-                          href={att.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[13px] text-brand hover:underline truncate block"
-                        >
-                          {att.file_name}
-                        </a>
-                        <span className="text-[11px] text-gray-400">
-                          {(att.file_size / 1024).toFixed(1)} KB
+                        <span className="text-[14px]">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
+                        <span className="font-mono text-[11px] text-gray-400 shrink-0">{issue.display_id}</span>
+                        <span className="text-[13px] text-ink font-medium flex-1 truncate">{issue.title}</span>
+                        <span className="text-[11px]">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
+                        {issue.assignee && <Avatar name={issue.assignee.full_name} size="sm" />}
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
+                          {issue.status}
                         </span>
                       </div>
-                      <button
-                        onClick={() => deleteAttachment(att)}
-                        className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Comments */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-            <h2 className={`${SECTION_HEADER} flex items-center gap-2 mb-4`}>
-              <MessageSquare size={15} /> Comments ({comments.length})
-            </h2>
-
-            <div className="space-y-3 mb-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3">
-                  <Avatar name={comment.author?.full_name || 'User'} size="md" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-semibold text-ink">
-                        {comment.author?.full_name}
-                      </span>
-                      <span className="text-[11px] text-gray-400">
-                        {new Date(comment.created_at).toLocaleString()}
-                      </span>
-                      {comment.author_id === user?.id && (
-                        <button
-                          onClick={() => deleteComment(comment.id)}
-                          className="text-gray-300 hover:text-danger ml-auto"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
-                      {comment.content}
-                    </p>
+                    ))}
                   </div>
+                )}
+              </div>
+
+              {/* Linked Issues */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
+                    <Link2 size={15} /> Linked Issues ({links.length})
+                  </h2>
+                  <Button size="sm" variant="secondary" onClick={() => setShowLinkModal(true)}>
+                    <Plus size={13} /> Link issue
+                  </Button>
                 </div>
-              ))}
-              {comments.length === 0 && (
-                <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
-              )}
-            </div>
 
-            <CommentInput onSubmit={addComment} />
-          </div>
+                {links.length === 0 ? (
+                  <p className="text-[13px] text-gray-400 text-center py-3">No linked issues.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {links.map((link) => {
+                      const isSource = link.source_id === storyId
+                      const linkedId = isSource ? link.target_id : link.source_id
+                      const linkedStory = allStories.find((s) => s.id === linkedId)
+                      return (
+                        <div key={link.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
+                          <span className="text-[12px] text-gray-500 italic shrink-0">{link.link_type}</span>
+                          <span className="font-mono text-[11px] text-gray-400">
+                            {linkedStory?.display_id || linkedId.slice(0, 8)}
+                          </span>
+                          <span className="text-[13px] text-ink flex-1 truncate">
+                            {linkedStory?.title || 'Unknown'}
+                          </span>
+                          <button
+                            onClick={() => removeLink(link.id)}
+                            className="text-gray-400 hover:text-danger transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
 
-          {/* Audit Log */}
-          <AuditLogSection parentId={storyId!} parentType="story" />
+              {/* Attachments */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
+                    <Paperclip size={15} /> Attachments ({attachments.length})
+                  </h2>
+                  <FileUploadButton onUpload={uploadFile} />
+                </div>
+
+                {attachments.length === 0 ? (
+                  <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {attachments.map((att) => {
+                      const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(att.file_name)
+                      return (
+                        <div key={att.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 group">
+                          {isImage ? (
+                            <img
+                              src={att.file_url}
+                              alt={att.file_name}
+                              className="w-10 h-10 rounded object-cover shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
+                              <Paperclip size={16} className="text-gray-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <a
+                              href={att.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[13px] text-brand hover:underline truncate block"
+                            >
+                              {att.file_name}
+                            </a>
+                            <span className="text-[11px] text-gray-400">
+                              {(att.file_size / 1024).toFixed(1)} KB
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => deleteAttachment(att)}
+                            className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Comments */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+                <h2 className={`${SECTION_HEADER} flex items-center gap-2 mb-4`}>
+                  <MessageSquare size={15} /> Comments ({comments.length})
+                </h2>
+
+                <div className="space-y-3 mb-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar name={comment.author?.full_name || 'User'} size="md" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-semibold text-ink">
+                            {comment.author?.full_name}
+                          </span>
+                          <span className="text-[11px] text-gray-400">
+                            {new Date(comment.created_at).toLocaleString()}
+                          </span>
+                          {comment.author_id === user?.id && (
+                            <button
+                              onClick={() => deleteComment(comment.id)}
+                              className="text-gray-300 hover:text-danger ml-auto"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
+                          {comment.content}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {comments.length === 0 && (
+                    <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
+                  )}
+                </div>
+
+                <CommentInput onSubmit={addComment} />
+              </div>
+
+              {/* Audit Log */}
+              <AuditLogSection parentId={storyId!} parentType="story" />
+            </>
+          )}
         </div>
 
         {/* ---- Sidebar ---- */}
@@ -527,9 +575,11 @@ export default function StoryDetailPage() {
               />
             </DetailRow>
 
-            <div className="py-2.5">
-              <LabelsField parentId={storyId!} kind="story" />
-            </div>
+            {!isNew && (
+              <div className="py-2.5">
+                <LabelsField parentId={storyId!} kind="story" />
+              </div>
+            )}
 
             <DetailRow label="Parent">
               {epic ? (
@@ -545,7 +595,9 @@ export default function StoryDetailPage() {
             </DetailRow>
 
             <DetailRow label="Reporter">
-              <span className="text-[13px] text-ink font-medium">{story.reporter?.full_name || 'Unknown'}</span>
+              <span className="text-[13px] text-ink font-medium">
+                {isNew ? (user?.full_name || 'You') : (story!.reporter?.full_name || 'Unknown')}
+              </span>
             </DetailRow>
 
             <DetailRow label="Priority">
@@ -585,23 +637,27 @@ export default function StoryDetailPage() {
             </DetailRow>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-400 space-y-0.5">
-            <div>Created {new Date(story.created_at).toLocaleDateString()}</div>
-            <div>Updated {new Date(story.updated_at).toLocaleDateString()}</div>
-          </div>
+          {!isNew && story && (
+            <div className="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-400 space-y-0.5">
+              <div>Created {new Date(story.created_at).toLocaleDateString()}</div>
+              <div>Updated {new Date(story.updated_at).toLocaleDateString()}</div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Save / Cancel bar */}
-      {isDirty && (
+      {showBar && (
         <div className="sticky bottom-0 z-30 -mx-6 -mb-6 mt-4 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-6 py-3.5 flex items-center justify-between animate-fade-in-up">
-          <span className="text-[13px] text-gray-600">You have unsaved changes.</span>
+          <span className="text-[13px] text-gray-600">
+            {isNew ? 'This story has not been created yet.' : 'You have unsaved changes.'}
+          </span>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={cancelChanges} disabled={saving}>
               Cancel
             </Button>
-            <Button size="sm" onClick={saveChanges} disabled={saving}>
-              {saving ? 'Saving...' : 'Save changes'}
+            <Button size="sm" onClick={saveChanges} disabled={saving || !current.title.trim()}>
+              {saving ? 'Saving...' : isNew ? 'Create story' : 'Save changes'}
             </Button>
           </div>
         </div>

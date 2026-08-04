@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Paperclip, MessageSquare, Trash2, ChevronDown } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -27,6 +27,20 @@ interface IssueDraft {
   due_date: string | null
 }
 
+function emptyDraft(type: IssueType): IssueDraft {
+  return {
+    title: '',
+    description: '',
+    type,
+    status: 'Created',
+    priority: 'Medium',
+    assignee_id: null,
+    story_points: null,
+    start_date: null,
+    due_date: null,
+  }
+}
+
 function seedDraft(i: Issue): IssueDraft {
   return {
     title: i.title,
@@ -47,8 +61,13 @@ function normalize(v: string | number | null | undefined) {
 
 export default function IssueDetailPage() {
   const { issueId } = useParams<{ issueId: string }>()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+
+  const isNew = issueId === 'new'
+  const storyIdParam = searchParams.get('storyId')
+  const typeParam = (searchParams.get('type') as IssueType) || 'Task'
 
   const [issue, setIssue] = useState<Issue | null>(null)
   const [parentStory, setParentStory] = useState<{ id: string; title: string; display_id: string } | null>(null)
@@ -61,7 +80,15 @@ export default function IssueDetailPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (issueId) fetchAll()
+    if (!issueId) return
+    if (isNew) {
+      fetchMembers()
+      if (storyIdParam) fetchParentStory(storyIdParam)
+      setLoading(false)
+      return
+    }
+    fetchAll()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [issueId])
 
   useEffect(() => {
@@ -116,24 +143,55 @@ export default function IssueDetailPage() {
   }
 
   async function saveChanges() {
-    if (!draft) return
+    if (!current.title.trim()) return
     setSaving(true)
+
+    if (isNew) {
+      const { count } = await supabase.from('issues').select('id', { count: 'exact', head: true })
+      const prefix = current.type === 'Bug' ? 'BUG' : current.type === 'Sub-task' ? 'SUB' : 'TSK'
+      const displayId = `${prefix}-${100 + (count || 0) + 1}`
+
+      const { data, error } = await supabase.from('issues').insert({
+        story_id: storyIdParam,
+        title: current.title,
+        description: current.description || null,
+        type: current.type,
+        status: current.status,
+        priority: current.priority,
+        assignee_id: current.assignee_id,
+        story_points: current.story_points,
+        start_date: current.start_date,
+        due_date: current.due_date,
+        reporter_id: user?.id,
+        display_id: displayId,
+      }).select().single()
+
+      setSaving(false)
+      if (!error && data) navigate(`/issues/${data.id}`, { replace: true })
+      return
+    }
+
     await supabase.from('issues').update({
-      title: draft.title,
-      description: draft.description || null,
-      type: draft.type,
-      status: draft.status,
-      priority: draft.priority,
-      assignee_id: draft.assignee_id,
-      story_points: draft.story_points,
-      start_date: draft.start_date,
-      due_date: draft.due_date,
+      title: current.title,
+      description: current.description || null,
+      type: current.type,
+      status: current.status,
+      priority: current.priority,
+      assignee_id: current.assignee_id,
+      story_points: current.story_points,
+      start_date: current.start_date,
+      due_date: current.due_date,
     }).eq('id', issueId)
     await fetchIssue()
     setSaving(false)
   }
 
   function cancelChanges() {
+    if (isNew) {
+      if (storyIdParam) navigate(`/stories/${storyIdParam}`)
+      else navigate(-1)
+      return
+    }
     if (issue) setDraft(seedDraft(issue))
   }
 
@@ -191,12 +249,12 @@ export default function IssueDetailPage() {
     return <div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>
   }
 
-  if (!issue) {
+  if (!isNew && !issue) {
     return <div className="text-gray-500">Issue not found.</div>
   }
 
-  const current = draft ?? seedDraft(issue)
-  const isDirty =
+  const current = draft ?? (issue ? seedDraft(issue) : emptyDraft(typeParam))
+  const isDirty = issue ? (
     current.title !== issue.title ||
     normalize(current.description) !== normalize(issue.description) ||
     current.type !== issue.type ||
@@ -206,14 +264,19 @@ export default function IssueDetailPage() {
     normalize(current.story_points) !== normalize(issue.story_points) ||
     normalize(current.start_date) !== normalize(issue.start_date) ||
     normalize(current.due_date) !== normalize(issue.due_date)
+  ) : false
+  const hasNewContent = isNew && (current.title.trim() !== '' || current.description.trim() !== '')
+  const showBar = isNew || isDirty
 
   function updateDraft(patch: Partial<IssueDraft>) {
     setDraft({ ...current, ...patch })
   }
 
   function handleBack() {
-    if (isDirty && !window.confirm('You have unsaved changes. Leave without saving?')) return
-    navigate(-1)
+    const dirty = isNew ? hasNewContent : isDirty
+    if (dirty && !window.confirm(isNew ? 'Discard this new issue?' : 'You have unsaved changes. Leave without saving?')) return
+    if (isNew && storyIdParam) navigate(`/stories/${storyIdParam}`)
+    else navigate(-1)
   }
 
   return (
@@ -233,14 +296,22 @@ export default function IssueDetailPage() {
           <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
               <TypeField type={current.type} onChange={(type) => updateDraft({ type })} />
-              <span className="font-mono text-[12px] text-gray-400">{issue.display_id}</span>
+              {isNew ? (
+                <span className="text-[12px] text-brand font-semibold">New — not yet saved</span>
+              ) : (
+                <span className="font-mono text-[12px] text-gray-400">{issue!.display_id}</span>
+              )}
               <StatusField
                 status={current.status}
                 onChange={(status) => updateDraft({ status })}
               />
             </div>
 
-            <InlineTitle value={current.title} onSave={(title) => updateDraft({ title })} />
+            <InlineTitle
+              value={current.title}
+              onSave={(title) => updateDraft({ title })}
+              placeholder={isNew ? 'Click to add a title' : undefined}
+            />
           </div>
 
           {/* Description */}
@@ -252,88 +323,92 @@ export default function IssueDetailPage() {
             />
           </div>
 
-          {/* Attachments */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
-                <Paperclip size={15} /> Attachments ({attachments.length})
-              </h2>
-              <FileUploadButton onUpload={uploadFile} />
-            </div>
-
-            {attachments.length === 0 ? (
-              <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {attachments.map((att) => {
-                  const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(att.file_name)
-                  return (
-                    <div key={att.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 group">
-                      {isImage ? (
-                        <img src={att.file_url} alt={att.file_name} className="w-10 h-10 rounded object-cover shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                          <Paperclip size={16} className="text-gray-400" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <a
-                          href={att.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[13px] text-brand hover:underline truncate block"
-                        >
-                          {att.file_name}
-                        </a>
-                        <span className="text-[11px] text-gray-400">{(att.file_size / 1024).toFixed(1)} KB</span>
-                      </div>
-                      <button
-                        onClick={() => deleteAttachment(att)}
-                        className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Comments */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-            <h2 className={`${SECTION_HEADER} flex items-center gap-2 mb-4`}>
-              <MessageSquare size={15} /> Comments ({comments.length})
-            </h2>
-
-            <div className="space-y-3 mb-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3">
-                  <Avatar name={comment.author?.full_name || 'User'} size="md" />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-semibold text-ink">{comment.author?.full_name}</span>
-                      <span className="text-[11px] text-gray-400">{new Date(comment.created_at).toLocaleString()}</span>
-                      {comment.author_id === user?.id && (
-                        <button onClick={() => deleteComment(comment.id)} className="text-gray-300 hover:text-danger ml-auto">
-                          <Trash2 size={12} />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">{comment.content}</p>
-                  </div>
+          {!isNew && (
+            <>
+              {/* Attachments */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
+                    <Paperclip size={15} /> Attachments ({attachments.length})
+                  </h2>
+                  <FileUploadButton onUpload={uploadFile} />
                 </div>
-              ))}
-              {comments.length === 0 && (
-                <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
-              )}
-            </div>
 
-            <CommentInput onSubmit={addComment} />
-          </div>
+                {attachments.length === 0 ? (
+                  <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {attachments.map((att) => {
+                      const isImage = /\.(png|jpg|jpeg|gif|webp)$/i.test(att.file_name)
+                      return (
+                        <div key={att.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 group">
+                          {isImage ? (
+                            <img src={att.file_url} alt={att.file_name} className="w-10 h-10 rounded object-cover shrink-0" />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center shrink-0">
+                              <Paperclip size={16} className="text-gray-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <a
+                              href={att.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[13px] text-brand hover:underline truncate block"
+                            >
+                              {att.file_name}
+                            </a>
+                            <span className="text-[11px] text-gray-400">{(att.file_size / 1024).toFixed(1)} KB</span>
+                          </div>
+                          <button
+                            onClick={() => deleteAttachment(att)}
+                            className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
 
-          {/* Audit Log */}
-          <AuditLogSection parentId={issueId!} parentType="issue" />
+              {/* Comments */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+                <h2 className={`${SECTION_HEADER} flex items-center gap-2 mb-4`}>
+                  <MessageSquare size={15} /> Comments ({comments.length})
+                </h2>
+
+                <div className="space-y-3 mb-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar name={comment.author?.full_name || 'User'} size="md" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-semibold text-ink">{comment.author?.full_name}</span>
+                          <span className="text-[11px] text-gray-400">{new Date(comment.created_at).toLocaleString()}</span>
+                          {comment.author_id === user?.id && (
+                            <button onClick={() => deleteComment(comment.id)} className="text-gray-300 hover:text-danger ml-auto">
+                              <Trash2 size={12} />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">{comment.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {comments.length === 0 && (
+                    <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
+                  )}
+                </div>
+
+                <CommentInput onSubmit={addComment} />
+              </div>
+
+              {/* Audit Log */}
+              <AuditLogSection parentId={issueId!} parentType="issue" />
+            </>
+          )}
         </div>
 
         {/* ---- Sidebar ---- */}
@@ -350,9 +425,11 @@ export default function IssueDetailPage() {
               />
             </DetailRow>
 
-            <div className="py-2.5">
-              <LabelsField parentId={issueId!} kind="issue" />
-            </div>
+            {!isNew && (
+              <div className="py-2.5">
+                <LabelsField parentId={issueId!} kind="issue" />
+              </div>
+            )}
 
             <DetailRow label="Parent">
               {parentStory ? (
@@ -368,7 +445,9 @@ export default function IssueDetailPage() {
             </DetailRow>
 
             <DetailRow label="Reporter">
-              <span className="text-[13px] text-ink font-medium">{issue.reporter?.full_name || 'Unknown'}</span>
+              <span className="text-[13px] text-ink font-medium">
+                {isNew ? (user?.full_name || 'You') : (issue!.reporter?.full_name || 'Unknown')}
+              </span>
             </DetailRow>
 
             <DetailRow label="Priority">
@@ -405,23 +484,27 @@ export default function IssueDetailPage() {
             </DetailRow>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-400 space-y-0.5">
-            <div>Created {new Date(issue.created_at).toLocaleDateString()}</div>
-            <div>Updated {new Date(issue.updated_at).toLocaleDateString()}</div>
-          </div>
+          {!isNew && issue && (
+            <div className="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-400 space-y-0.5">
+              <div>Created {new Date(issue.created_at).toLocaleDateString()}</div>
+              <div>Updated {new Date(issue.updated_at).toLocaleDateString()}</div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Save / Cancel bar */}
-      {isDirty && (
+      {showBar && (
         <div className="sticky bottom-0 z-30 -mx-6 -mb-6 mt-4 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-6 py-3.5 flex items-center justify-between animate-fade-in-up">
-          <span className="text-[13px] text-gray-600">You have unsaved changes.</span>
+          <span className="text-[13px] text-gray-600">
+            {isNew ? 'This item has not been created yet.' : 'You have unsaved changes.'}
+          </span>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={cancelChanges} disabled={saving}>
               Cancel
             </Button>
-            <Button size="sm" onClick={saveChanges} disabled={saving}>
-              {saving ? 'Saving...' : 'Save changes'}
+            <Button size="sm" onClick={saveChanges} disabled={saving || !current.title.trim()}>
+              {saving ? 'Saving...' : isNew ? `Create ${current.type.toLowerCase()}` : 'Save changes'}
             </Button>
           </div>
         </div>
