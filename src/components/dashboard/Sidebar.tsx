@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LayoutGrid, Users, Settings, ArrowLeft, Cloud, FolderKanban, Search } from 'lucide-react'
+import { LayoutGrid, Users, Settings, LogOut, Cloud, FolderKanban, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 
@@ -9,6 +9,16 @@ const NAV_ITEMS = [
   { key: 'search', label: 'Search', icon: Search, path: '/search' },
   { key: 'people', label: 'People', icon: Users, path: '/people', admin: true },
   { key: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
+]
+
+const SIDEBAR_STARS = [
+  { top: '6%', left: '75%', size: 2, delay: 0.2 },
+  { top: '16%', left: '20%', size: 2, delay: 1.4 },
+  { top: '34%', left: '85%', size: 2, delay: 0.8 },
+  { top: '48%', left: '12%', size: 2, delay: 2.1 },
+  { top: '62%', left: '68%', size: 2, delay: 0.4 },
+  { top: '76%', left: '30%', size: 2, delay: 1.7 },
+  { top: '88%', left: '80%', size: 2, delay: 1.0 },
 ]
 
 export default function Sidebar() {
@@ -24,13 +34,36 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-64 text-white flex flex-col p-5 shrink-0 transition-colors"
+      className="w-64 text-white flex flex-col p-5 shrink-0 transition-colors relative overflow-hidden"
       style={{ backgroundColor: theme.bg }}
     >
-      {/* Logo */}
+      {/* Starfield */}
+      <div className="absolute inset-0 -z-10 pointer-events-none">
+        {SIDEBAR_STARS.map((s, i) => (
+          <span
+            key={i}
+            className="absolute rounded-full bg-white animate-twinkle"
+            style={{
+              top: s.top,
+              left: s.left,
+              width: s.size,
+              height: s.size,
+              animationDelay: `${s.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Logo, orbited by a small satellite dot */}
       <div className="flex items-center gap-2.5 px-2 pb-5">
-        <div className="w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
-          <Cloud size={14} className="text-white" />
+        <div className="relative w-7 h-7 shrink-0">
+          <div className="absolute -inset-2 rounded-full border border-dashed border-white/15 animate-orbit-spin-slow" />
+          <div className="absolute -inset-2 animate-orbit-spin">
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-brand shadow-[0_0_6px_2px_rgba(91,95,239,0.7)]" />
+          </div>
+          <div className="relative w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
+            <Cloud size={14} className="text-white" />
+          </div>
         </div>
         <div>
           <div className="font-display font-bold text-[15px] leading-none">1CloudHub</div>
@@ -71,9 +104,9 @@ export default function Sidebar() {
         <div className="my-3 border-t border-white/10" />
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-300 text-[13px] px-2 py-1.5 transition-colors"
+          className="w-full flex items-center gap-2.5 text-gray-400 hover:text-danger hover:bg-danger/10 text-[13.5px] font-medium rounded-lg px-2.5 py-2 transition-colors"
         >
-          <ArrowLeft size={14} /> Sign out
+          <LogOut size={15} /> Sign out
         </button>
       </div>
     </aside>
