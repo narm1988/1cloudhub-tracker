@@ -19,6 +19,34 @@ import Input from '../components/ui/Input'
 
 const SECTION_HEADER = 'font-display text-[14px] font-semibold text-ink'
 
+interface StoryDraft {
+  title: string
+  description: string
+  status: Status
+  priority: Priority
+  assignee_id: string | null
+  story_points: number | null
+  start_date: string | null
+  due_date: string | null
+}
+
+function seedDraft(s: Story): StoryDraft {
+  return {
+    title: s.title,
+    description: s.description || '',
+    status: s.status as Status,
+    priority: s.priority as Priority,
+    assignee_id: s.assignee_id || null,
+    story_points: s.story_points ?? null,
+    start_date: s.start_date || null,
+    due_date: s.due_date || null,
+  }
+}
+
+function normalize(v: string | number | null | undefined) {
+  return v === undefined || v === null || v === '' ? null : v
+}
+
 export default function StoryDetailPage() {
   const { storyId } = useParams<{ storyId: string }>()
   const navigate = useNavigate()
@@ -34,6 +62,9 @@ export default function StoryDetailPage() {
   const [allStories, setAllStories] = useState<{ id: string; title: string; display_id: string }[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [draft, setDraft] = useState<StoryDraft | null>(null)
+  const [saving, setSaving] = useState(false)
+
   const [showCreateIssue, setShowCreateIssue] = useState(false)
   const [showLinkModal, setShowLinkModal] = useState(false)
 
@@ -41,6 +72,11 @@ export default function StoryDetailPage() {
     if (storyId) {
       fetchAll()
     }
+  }, [storyId])
+
+  // Switching to a different story should drop any in-progress draft from the last one.
+  useEffect(() => {
+    setDraft(null)
   }, [storyId])
 
   async function fetchAll() {
@@ -123,11 +159,25 @@ export default function StoryDetailPage() {
     if (data) setAllStories(data)
   }
 
-  async function updateStory(updates: Partial<Story>) {
-    // optimistic local update so inline fields feel instant
-    setStory((prev) => (prev ? { ...prev, ...updates } : prev))
-    await supabase.from('stories').update(updates).eq('id', storyId)
-    fetchStory()
+  async function saveChanges() {
+    if (!draft) return
+    setSaving(true)
+    await supabase.from('stories').update({
+      title: draft.title,
+      description: draft.description || null,
+      status: draft.status,
+      priority: draft.priority,
+      assignee_id: draft.assignee_id,
+      story_points: draft.story_points,
+      start_date: draft.start_date,
+      due_date: draft.due_date,
+    }).eq('id', storyId)
+    await fetchStory()
+    setSaving(false)
+  }
+
+  function cancelChanges() {
+    if (story) setDraft(seedDraft(story))
   }
 
   async function createIssue(data: {
@@ -233,11 +283,31 @@ export default function StoryDetailPage() {
     return <div className="text-gray-500">Story not found.</div>
   }
 
+  const current = draft ?? seedDraft(story)
+  const isDirty =
+    current.title !== story.title ||
+    normalize(current.description) !== normalize(story.description) ||
+    current.status !== story.status ||
+    current.priority !== story.priority ||
+    normalize(current.assignee_id) !== normalize(story.assignee_id) ||
+    normalize(current.story_points) !== normalize(story.story_points) ||
+    normalize(current.start_date) !== normalize(story.start_date) ||
+    normalize(current.due_date) !== normalize(story.due_date)
+
+  function updateDraft(patch: Partial<StoryDraft>) {
+    setDraft({ ...current, ...patch })
+  }
+
+  function handleBack() {
+    if (isDirty && !window.confirm('You have unsaved changes. Leave without saving?')) return
+    navigate(-1)
+  }
+
   return (
     <div className="max-w-[1600px]">
       {/* Back */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={handleBack}
         className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 mb-4"
       >
         <ArrowLeft size={14} /> Back
@@ -254,20 +324,20 @@ export default function StoryDetailPage() {
               </span>
               <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
               <StatusSelect
-                status={story.status as Status}
-                onChange={(s) => updateStory({ status: s } as any)}
+                status={current.status}
+                onChange={(status) => updateDraft({ status })}
               />
             </div>
 
-            <InlineTitle value={story.title} onSave={(title) => updateStory({ title })} />
+            <InlineTitle value={current.title} onSave={(title) => updateDraft({ title })} />
           </div>
 
           {/* Description */}
           <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
             <h2 className={`${SECTION_HEADER} mb-2`}>Description</h2>
             <InlineDescription
-              value={story.description || ''}
-              onSave={(description) => updateStory({ description })}
+              value={current.description}
+              onSave={(description) => updateDraft({ description })}
             />
           </div>
 
@@ -454,10 +524,10 @@ export default function StoryDetailPage() {
           <div className="divide-y divide-gray-100">
             <DetailRow label="Assignee">
               <AssigneeField
-                story={story}
+                assigneeId={current.assignee_id}
                 members={members}
                 currentUserId={user?.id}
-                onChange={(assigneeId) => updateStory({ assignee_id: assigneeId || null } as any)}
+                onChange={(assigneeId) => updateDraft({ assignee_id: assigneeId })}
               />
             </DetailRow>
 
@@ -483,23 +553,18 @@ export default function StoryDetailPage() {
             </DetailRow>
 
             <DetailRow label="Priority">
-              <select
-                value={story.priority}
-                onChange={(e) => updateStory({ priority: e.target.value as Priority } as any)}
-                className="text-[13px] text-ink font-medium bg-transparent outline-none cursor-pointer hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right"
-              >
-                {PRIORITY_OPTIONS.map((p) => (
-                  <option key={p} value={p}>{PRIORITY_META[p].icon} {p}</option>
-                ))}
-              </select>
+              <PriorityField
+                value={current.priority}
+                onChange={(priority) => updateDraft({ priority })}
+              />
             </DetailRow>
 
             <DetailRow label="Story points">
               <input
                 type="number"
                 min={0}
-                value={story.story_points ?? ''}
-                onChange={(e) => updateStory({ story_points: e.target.value ? parseInt(e.target.value) : null } as any)}
+                value={current.story_points ?? ''}
+                onChange={(e) => updateDraft({ story_points: e.target.value ? parseInt(e.target.value) : null })}
                 placeholder="None"
                 className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
               />
@@ -508,8 +573,8 @@ export default function StoryDetailPage() {
             <DetailRow label="Start date">
               <input
                 type="date"
-                value={story.start_date || ''}
-                onChange={(e) => updateStory({ start_date: e.target.value || null } as any)}
+                value={current.start_date || ''}
+                onChange={(e) => updateDraft({ start_date: e.target.value || null })}
                 className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
@@ -517,8 +582,8 @@ export default function StoryDetailPage() {
             <DetailRow label="Due date">
               <input
                 type="date"
-                value={story.due_date || ''}
-                onChange={(e) => updateStory({ due_date: e.target.value || null } as any)}
+                value={current.due_date || ''}
+                onChange={(e) => updateDraft({ due_date: e.target.value || null })}
                 className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
@@ -530,6 +595,21 @@ export default function StoryDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Save / Cancel bar */}
+      {isDirty && (
+        <div className="sticky bottom-0 z-30 -mx-6 -mb-6 mt-4 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-6 py-3.5 flex items-center justify-between animate-fade-in-up">
+          <span className="text-[13px] text-gray-600">You have unsaved changes.</span>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={cancelChanges} disabled={saving}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={saveChanges} disabled={saving}>
+              {saving ? 'Saving...' : 'Save changes'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {showCreateIssue && (
@@ -660,18 +740,18 @@ function StatusSelect({ status, onChange }: { status: Status; onChange: (s: Stat
 }
 
 function AssigneeField({
-  story,
+  assigneeId,
   members,
   currentUserId,
   onChange,
 }: {
-  story: Story
+  assigneeId: string | null
   members: User[]
   currentUserId?: string
-  onChange: (id: string) => void
+  onChange: (id: string | null) => void
 }) {
   const [open, setOpen] = useState(false)
-  const assignee = story.assignee
+  const assignee = members.find((m) => m.id === assigneeId) || null
 
   return (
     <div className="relative">
@@ -694,7 +774,7 @@ function AssigneeField({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1 max-h-64 overflow-y-auto">
-            {currentUserId && story.assignee_id !== currentUserId && (
+            {currentUserId && assigneeId !== currentUserId && (
               <button
                 onClick={() => { onChange(currentUserId); setOpen(false) }}
                 className="w-full text-left px-3 py-1.5 text-[12.5px] text-brand hover:bg-gray-50 font-medium"
@@ -703,7 +783,7 @@ function AssigneeField({
               </button>
             )}
             <button
-              onClick={() => { onChange(''); setOpen(false) }}
+              onClick={() => { onChange(null); setOpen(false) }}
               className="w-full text-left px-3 py-1.5 text-[12.5px] text-gray-500 hover:bg-gray-50"
             >
               Unassigned
@@ -716,6 +796,50 @@ function AssigneeField({
                 className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12.5px] text-ink hover:bg-gray-50"
               >
                 <Avatar name={m.full_name} size="sm" /> {m.full_name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function PriorityField({
+  value,
+  onChange,
+}: {
+  value: Priority
+  onChange: (p: Priority) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const meta = PRIORITY_META[value]
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1.5 hover:bg-gray-50 rounded-md px-1.5 -mx-1.5 py-1 transition-colors"
+      >
+        <span className="text-[13px] leading-none">{meta.icon}</span>
+        <span className="text-[13px] text-ink font-medium">{value}</span>
+        <ChevronDown size={12} className="text-gray-400" />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+            {PRIORITY_OPTIONS.map((p) => (
+              <button
+                key={p}
+                onClick={() => { onChange(p); setOpen(false) }}
+                className={`w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12.5px] transition-colors ${
+                  p === value ? 'bg-brand-soft text-brand font-semibold' : 'text-ink hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-[13px] leading-none">{PRIORITY_META[p].icon}</span>
+                {p}
               </button>
             ))}
           </div>

@@ -12,13 +12,19 @@ const NAV_ITEMS = [
 ]
 
 const SIDEBAR_STARS = [
-  { top: '6%', left: '75%', size: 2, delay: 0.2 },
-  { top: '16%', left: '20%', size: 2, delay: 1.4 },
-  { top: '34%', left: '85%', size: 2, delay: 0.8 },
-  { top: '48%', left: '12%', size: 2, delay: 2.1 },
-  { top: '62%', left: '68%', size: 2, delay: 0.4 },
-  { top: '76%', left: '30%', size: 2, delay: 1.7 },
-  { top: '88%', left: '80%', size: 2, delay: 1.0 },
+  { top: '5%', left: '78%', size: 3, delay: 0.2 },
+  { top: '12%', left: '18%', size: 2, delay: 1.4 },
+  { top: '20%', left: '55%', size: 2, delay: 2.4 },
+  { top: '30%', left: '88%', size: 3, delay: 0.8 },
+  { top: '38%', left: '10%', size: 2, delay: 1.9 },
+  { top: '45%', left: '40%', size: 3, delay: 0.5 },
+  { top: '52%', left: '70%', size: 2, delay: 2.1 },
+  { top: '60%', left: '15%', size: 3, delay: 1.1 },
+  { top: '67%', left: '50%', size: 2, delay: 0.3 },
+  { top: '74%', left: '85%', size: 3, delay: 1.7 },
+  { top: '82%', left: '28%', size: 2, delay: 0.9 },
+  { top: '89%', left: '65%', size: 3, delay: 2.6 },
+  { top: '94%', left: '10%', size: 2, delay: 1.3 },
 ]
 
 export default function Sidebar() {
@@ -38,7 +44,7 @@ export default function Sidebar() {
       style={{ backgroundColor: theme.bg }}
     >
       {/* Starfield */}
-      <div className="absolute inset-0 -z-10 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         {SIDEBAR_STARS.map((s, i) => (
           <span
             key={i}
@@ -48,6 +54,7 @@ export default function Sidebar() {
               left: s.left,
               width: s.size,
               height: s.size,
+              boxShadow: '0 0 4px 1px rgba(255,255,255,0.5)',
               animationDelay: `${s.delay}s`,
             }}
           />
@@ -55,7 +62,7 @@ export default function Sidebar() {
       </div>
 
       {/* Logo, orbited by a small satellite dot */}
-      <div className="flex items-center gap-2.5 px-2 pb-5">
+      <div className="relative z-10 flex items-center gap-2.5 px-2 pb-5">
         <div className="relative w-7 h-7 shrink-0">
           <div className="absolute -inset-2 rounded-full border border-dashed border-white/15 animate-orbit-spin-slow" />
           <div className="absolute -inset-2 animate-orbit-spin">
@@ -72,7 +79,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex flex-col gap-0.5">
+      <nav className="relative z-10 flex flex-col gap-0.5">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = location.pathname.startsWith(item.path)
@@ -100,7 +107,7 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="mt-auto">
+      <div className="relative z-10 mt-auto">
         <div className="my-3 border-t border-white/10" />
         <button
           onClick={handleSignOut}
