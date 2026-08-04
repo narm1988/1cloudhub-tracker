@@ -54,11 +54,31 @@ export default {
           '0%': { opacity: '0', transform: 'scale(0.97)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
+        orbitSpin: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        orbitSpinReverse: {
+          '0%': { transform: 'rotate(360deg)' },
+          '100%': { transform: 'rotate(0deg)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-9px)' },
+        },
+        twinkle: {
+          '0%, 100%': { opacity: '0.15', transform: 'scale(0.85)' },
+          '50%': { opacity: '0.9', transform: 'scale(1)' },
+        },
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.4s ease-out both',
         'fade-in': 'fadeIn 0.35s ease-out both',
         'pop-in': 'popIn 0.18s ease-out both',
+        'orbit-spin': 'orbitSpin 16s linear infinite',
+        'orbit-spin-slow': 'orbitSpinReverse 26s linear infinite',
+        float: 'float 6s ease-in-out infinite',
+        twinkle: 'twinkle 3.2s ease-in-out infinite',
       },
     },
   },
