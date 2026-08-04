@@ -10,6 +10,21 @@ import Input from '../components/ui/Input'
 
 const ALLOWED_DOMAIN = '1cloudhub.com'
 
+// supabase.functions.invoke() only gives a generic "non-2xx status code"
+// message on failure — the actual { error: "..." } JSON body the function
+// sends back is on error.context (the raw Response) and has to be read separately.
+async function extractFunctionErrorMessage(error: unknown): Promise<string | null> {
+  const context = (error as { context?: Response })?.context
+  if (!context || typeof context.json !== 'function') return null
+  try {
+    const source = typeof context.clone === 'function' ? context.clone() : context
+    const body = await source.json()
+    return typeof body?.error === 'string' ? body.error : null
+  } catch {
+    return null
+  }
+}
+
 export default function PeoplePage() {
   const [people, setPeople] = useState<User[]>([])
   const [showInvite, setShowInvite] = useState(false)
@@ -47,7 +62,8 @@ export default function PeoplePage() {
     setInviting(false)
 
     if (error) {
-      setInviteError(error.message || 'Failed to send invite.')
+      const detailed = await extractFunctionErrorMessage(error)
+      setInviteError(detailed || error.message || 'Failed to send invite.')
       return
     }
     if (data?.error) {

@@ -74,13 +74,48 @@ Deno.serve(async (req) => {
     // Service-role client — the only place allowed to actually create + email the invite.
     const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
-    const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
+    const inviteOptions = {
+      data: { role, invited_by: caller.id },
+      redirectTo: typeof redirectTo === 'string' ? redirectTo : undefined,
+    }
+
+    let { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
       normalizedEmail,
-      {
-        data: { role, invited_by: caller.id },
-        redirectTo: typeof redirectTo === 'string' ? redirectTo : undefined,
-      }
+      inviteOptions
     )
+
+    // Supabase refuses to re-invite an email that already has an auth user,
+    // even if that person never finished setting a password. Figure out which
+    // case this is instead of just failing.
+    if (inviteError && /already.*(registered|exists)/i.test(inviteError.message)) {
+      const { data: existingProfile } = await adminClient
+        .from('profiles')
+        .select('id')
+        .eq('email', normalizedEmail)
+        .maybeSingle()
+
+      if (!existingProfile) {
+        return json({ error: inviteError.message }, 400)
+      }
+
+      const { data: existingUser } = await adminClient.auth.admin.getUserById(existingProfile.id)
+
+      if (existingUser?.user?.email_confirmed_at) {
+        return json(
+          { error: 'This person has already joined 1CloudHub Tracker. They can sign in directly.' },
+          409
+        )
+      }
+
+      // Still pending (never finished setting a password) — clear the stale
+      // invite and send a fresh one. Deleting the auth user cascades to their
+      // profiles row, so this is safe.
+      await adminClient.auth.admin.deleteUser(existingProfile.id)
+      ;({ data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
+        normalizedEmail,
+        inviteOptions
+      ))
+    }
 
     if (inviteError) {
       return json({ error: inviteError.message }, 400)
