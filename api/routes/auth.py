@@ -115,7 +115,7 @@ async def entra_callback(code: Optional[str] = None, error: Optional[str] = None
             profile = created.data[0]
 
         token = create_access_token(profile["id"], profile["email"], profile["role"])
-        return RedirectResponse(f"{FRONTEND_URL}/auth/callback#token={token}")
+        return RedirectResponse(f"{FRONTEND_URL}/auth/callback?token={token}")
     except Exception as e:
         return RedirectResponse(f"{FRONTEND_URL}/login?error=profile_error&detail={e}")
 

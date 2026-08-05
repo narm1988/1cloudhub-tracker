@@ -10,11 +10,17 @@ export default function AuthCallbackPage() {
     if (handled.current) return
     handled.current = true
 
-    const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : ''
-    const token = new URLSearchParams(hash).get('token')
+    // Try query param first (?token=...), then hash (#token=...)
+    const params = new URLSearchParams(window.location.search)
+    let token = params.get('token')
 
     if (!token) {
-      setDebug(`No token found. Hash: "${window.location.hash}", Full URL: "${window.location.href}"`)
+      const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : ''
+      token = new URLSearchParams(hash).get('token')
+    }
+
+    if (!token) {
+      setDebug(`No token found. URL: "${window.location.href}"`)
       setTimeout(() => {
         window.location.href = '/login?error=missing_token'
       }, 5000)
