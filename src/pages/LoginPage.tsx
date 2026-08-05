@@ -169,7 +169,7 @@ export default function LoginPage() {
           </div>
 
           <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
-            <h1 className="font-display text-heading font-semibold text-ink mb-1">
+            <h1 className="font-display text-heading-lg font-semibold text-ink mb-1">
               Sign in
             </h1>
             <p className="text-gray-500 text-body mb-7">

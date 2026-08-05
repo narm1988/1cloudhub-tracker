@@ -42,23 +42,24 @@ export default {
         body: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
         mono: ["'JetBrains Mono'", "'SF Mono'", 'Monaco', 'monospace'],
       },
-      // Type scale adopted from Pipeline Pulse guidelines — rem-based with
-      // semantic roles: display for heroes, heading for page titles, subhead
-      // for section headers, body for content, caption/label for metadata.
+      // Type scale aligned with Pipeline Pulse design tokens.
       fontSize: {
-        // UI Small — captions, metadata, timestamps
+        // 0.75rem (12px) — captions, metadata, timestamps, table-header uppercase
         caption: ['0.75rem', { lineHeight: '1.4' }],
-        // UI Default — controls, labels, badges, form labels
+        // 0.875rem (14px) — controls, labels, body text, table data
         label: ['0.875rem', { lineHeight: '1.5' }],
-        // Body — default content, descriptions, table data
         body: ['0.875rem', { lineHeight: '1.5' }],
-        // UI Large — navigation items, section headers, card titles
+        // 1rem (16px) — slightly larger body, descriptions
+        'body-lg': ['1rem', { lineHeight: '1.5' }],
+        // 1.125rem (18px) — section headers, card titles, nav items
         subhead: ['1.125rem', { lineHeight: '1.4' }],
-        // Heading — page titles, modal titles (H3-level)
-        heading: ['1.875rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
-        // Display — hero text, dashboard headers (H1-level)
+        // 1.5rem (24px) — page titles (Projects, Epics, People, etc.)
+        heading: ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.015em' }],
+        // 1.875rem (30px) — large headings, login page title
+        'heading-lg': ['1.875rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        // 2.25rem (36px) — hero/display text
         display: ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
-        // Metric — key numbers on dashboards
+        // 2.5rem (40px) — metric numbers
         metric: ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       keyframes: {
