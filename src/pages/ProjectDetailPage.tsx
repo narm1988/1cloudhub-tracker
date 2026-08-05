@@ -142,7 +142,7 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
                   </div>
                   <div className="text-body text-ink font-medium leading-snug mb-2">{story.title}</div>
                   <div className="flex items-center justify-between">
-                    {story.assignee ? <Avatar name={story.assignee.full_name} size="sm" /> : <span className="text-micro text-gray-400">—</span>}
+                    {story.assignee ? <Avatar name={story.assignee.full_name} size="sm" /> : <span className="text-caption text-gray-400">—</span>}
                     {story.due_date && (
                       <span className="text-caption text-gray-400">{new Date(story.due_date).toLocaleDateString()}</span>
                     )}
@@ -277,7 +277,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
             <div className="flex items-center justify-between mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-body-lg font-semibold text-ink">{sprint.name}</h3>
+                  <h3 className="font-display text-body font-semibold text-ink">{sprint.name}</h3>
                   <span className={`text-caption font-semibold px-2 py-0.5 rounded ${
                     sprint.status === 'active' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
                   }`}>
@@ -328,7 +328,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
 
       {/* Backlog */}
       <Card>
-        <h3 className="font-display text-body-lg font-semibold text-ink mb-3">
+        <h3 className="font-display text-body font-semibold text-ink mb-3">
           Backlog (<span className="font-mono tabular-nums">{backlogTotal}</span>)
         </h3>
         {backlogStories.length === 0 ? (
@@ -380,7 +380,7 @@ function BacklogStoryRow({
         {story.title}
       </span>
       {story.story_points && (
-        <span className="text-micro font-mono tabular-nums text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+        <span className="text-caption font-mono tabular-nums text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
           {story.story_points} pts
         </span>
       )}

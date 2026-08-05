@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, Cloud } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../lib/supabase'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 
@@ -25,7 +24,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signIn, user } = useAuth()
+  const { signIn, signInWithMicrosoft, user } = useAuth()
   const navigate = useNavigate()
 
   // Redirect if already logged in
@@ -48,13 +47,9 @@ export default function LoginPage() {
     }
   }
 
-  async function handleMicrosoftSignIn() {
+  function handleMicrosoftSignIn() {
     setError('')
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'azure',
-      options: { redirectTo: window.location.origin },
-    })
-    if (error) setError(error.message)
+    signInWithMicrosoft()
   }
 
   return (
@@ -167,13 +162,13 @@ export default function LoginPage() {
             <h1 className="font-display text-heading font-semibold text-ink mb-1">
               Sign in
             </h1>
-            <p className="text-gray-500 text-body-lg mb-7">
+            <p className="text-gray-500 text-body mb-7">
               Use the workspace email your admin invited you with.
             </p>
           </div>
 
           {error && (
-            <div className="bg-danger-soft text-danger text-body-lg px-4 py-3 rounded-lg mb-4 animate-fade-in-up">
+            <div className="bg-danger-soft text-danger text-body px-4 py-3 rounded-lg mb-4 animate-fade-in-up">
               {error}
             </div>
           )}
@@ -208,7 +203,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••"
-                  className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 focus:shadow-[0_0_0_4px_rgba(91,95,239,0.12)] transition-shadow"
+                  className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 focus:shadow-[0_0_0_4px_rgba(91,95,239,0.12)] transition-shadow"
                   required
                 />
                 <button

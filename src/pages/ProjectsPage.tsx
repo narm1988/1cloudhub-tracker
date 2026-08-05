@@ -179,7 +179,7 @@ function CreateProjectModal({
     <Modal title="Create project" onClose={onClose}>
       <div className="space-y-4">
         {error && (
-          <div className="bg-danger-soft text-danger text-body-lg px-4 py-2.5 rounded-lg">{error}</div>
+          <div className="bg-danger-soft text-danger text-body px-4 py-2.5 rounded-lg">{error}</div>
         )}
 
         <Input
@@ -194,7 +194,7 @@ function CreateProjectModal({
             Key <span className="text-gray-400 font-normal">(used as prefix for issues)</span>
           </label>
           <input
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg font-mono uppercase outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body font-mono uppercase outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
             value={key}
             onChange={(e) => setKey(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5))}
             placeholder="CM"
@@ -206,7 +206,7 @@ function CreateProjectModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Description</label>
           <textarea
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 min-h-[70px] resize-y"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 min-h-[70px] resize-y"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What is this project about?"

@@ -1,13 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import type { User as SupabaseUser, Session } from '@supabase/supabase-js'
-import { supabase } from '../lib/supabase'
 import type { User } from '../types'
+import { api, ApiError, clearToken, getToken, setToken } from '../lib/api'
 
 interface AuthContextType {
   user: User | null
-  session: Session | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signInWithMicrosoft: () => void
   signOut: () => Promise<void>
 }
 
@@ -15,86 +14,58 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // If Supabase isn't configured, skip auth and show login
-    const url = import.meta.env.VITE_SUPABASE_URL
-    if (!url) {
+    restoreSession()
+  }, [])
+
+  async function restoreSession() {
+    const token = getToken()
+    if (!token) {
       setLoading(false)
       return
     }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      if (session?.user) {
-        fetchUserProfile(session.user)
-      } else {
-        setLoading(false)
-      }
-    }).catch(() => {
+    try {
+      const profile = await api.me()
+      setUser(profile)
+    } catch {
+      // Token missing/expired/invalid — drop it and fall back to signed-out.
+      clearToken()
+      setUser(null)
+    } finally {
       setLoading(false)
-    })
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session)
-        if (session?.user) {
-          await fetchUserProfile(session.user)
-        } else {
-          setUser(null)
-          setLoading(false)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  async function fetchUserProfile(supabaseUser: SupabaseUser) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', supabaseUser.id)
-      .single()
-
-    if (data && !error) {
-      setUser({
-        id: data.id,
-        email: data.email,
-        full_name: data.full_name,
-        avatar_url: data.avatar_url,
-        role: data.role,
-      })
-    } else {
-      // If profile doesn't exist yet, use basic info
-      setUser({
-        id: supabaseUser.id,
-        email: supabaseUser.email || '',
-        full_name: supabaseUser.email?.split('@')[0] || 'User',
-        role: 'member',
-      })
     }
-    setLoading(false)
   }
 
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { error: error.message }
-    return { error: null }
+    try {
+      const { access_token, user } = await api.login(email, password)
+      setToken(access_token)
+      setUser(user)
+      return { error: null }
+    } catch (err) {
+      return { error: err instanceof ApiError ? err.message : 'Failed to sign in' }
+    }
+  }
+
+  function signInWithMicrosoft() {
+    // Full-page redirect into the backend's own Entra OAuth flow — it
+    // eventually redirects back to /auth/callback with our JWT.
+    window.location.href = api.entraLoginUrl()
   }
 
   async function signOut() {
-    await supabase.auth.signOut()
+    clearToken()
     setUser(null)
-    setSession(null)
+    api.logout().catch(() => {
+      // Stateless token — nothing to reconcile if this fails, the client
+      // side is already signed out.
+    })
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signInWithMicrosoft, signOut }}>
       {children}
     </AuthContext.Provider>
   )

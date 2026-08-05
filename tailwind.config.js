@@ -37,21 +37,29 @@ export default {
         },
       },
       fontFamily: {
-        display: ["'Inter'", 'sans-serif'],
-        body: ["'Inter'", 'sans-serif'],
-        mono: ["'JetBrains Mono'", 'monospace'],
+        sans: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
+        display: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
+        body: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
+        mono: ["'JetBrains Mono'", "'SF Mono'", 'Monaco', 'monospace'],
       },
-      // Standardized type scale — replaces 16 arbitrary text-[Npx] one-offs
-      // that had accumulated with no semantic meaning behind the differences.
+      // Type scale adopted from Pipeline Pulse guidelines — rem-based with
+      // semantic roles: display for heroes, heading for page titles, subhead
+      // for section headers, body for content, caption/label for metadata.
       fontSize: {
-        micro: ['10px', { lineHeight: '1.4' }],
-        caption: ['11px', { lineHeight: '1.45' }],
-        label: ['12px', { lineHeight: '1.45' }],
-        body: ['13px', { lineHeight: '1.5' }],
-        'body-lg': ['14px', { lineHeight: '1.5' }],
-        subhead: ['15px', { lineHeight: '1.4' }],
-        heading: ['22px', { lineHeight: '1.25' }],
-        display: ['32px', { lineHeight: '1.15' }],
+        // UI Small — captions, metadata, timestamps
+        caption: ['0.75rem', { lineHeight: '1.4' }],
+        // UI Default — controls, labels, badges, form labels
+        label: ['0.875rem', { lineHeight: '1.5' }],
+        // Body — default content, descriptions, table data
+        body: ['0.875rem', { lineHeight: '1.5' }],
+        // UI Large — navigation items, section headers, card titles
+        subhead: ['1.125rem', { lineHeight: '1.4' }],
+        // Heading — page titles, modal titles (H3-level)
+        heading: ['1.875rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        // Display — hero text, dashboard headers (H1-level)
+        display: ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        // Metric — key numbers on dashboards
+        metric: ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       keyframes: {
         fadeInUp: {

@@ -47,3 +47,23 @@ async def update_person(user_id: str, body: ProfileUpdate, current_user: dict = 
 
     result = supabase.table("profiles").update(updates).eq("id", user_id).execute()
     return result.data[0] if result.data else {}
+
+
+@router.delete("/{user_id}")
+async def remove_person(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Admin-only: remove a team member. Replaces the old remove-person
+    Supabase Edge Function, which deleted the auth.users row via GoTrue's
+    admin API — that no longer applies, so this just deletes the profile."""
+    if current_user["id"] == user_id:
+        raise HTTPException(status_code=400, detail="You can't remove yourself")
+
+    supabase = get_supabase_admin()
+    profile = supabase.table("profiles").select("role").eq("id", current_user["id"]).single().execute()
+    if not profile.data or profile.data.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can remove people")
+
+    result = supabase.table("profiles").delete().eq("id", user_id).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"message": "Person removed"}

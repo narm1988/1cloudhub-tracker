@@ -438,7 +438,7 @@ export default function StoryDetailPage() {
                         onClick={() => navigate(`/issues/${issue.id}`)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-brand/30 hover:shadow-sm cursor-pointer transition-all"
                       >
-                        <span className="text-body-lg">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
+                        <span className="text-body">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
                         <span className="font-mono text-caption text-gray-400 shrink-0">{issue.display_id}</span>
                         <span className="text-body text-ink font-medium flex-1 truncate">{issue.title}</span>
                         <span className="text-caption">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
@@ -761,7 +761,7 @@ function LinkIssueModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Relationship</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand"
             value={linkType}
             onChange={(e) => setLinkType(e.target.value as LinkType)}
           >
@@ -774,7 +774,7 @@ function LinkIssueModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Target story</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand"
             value={targetId}
             onChange={(e) => setTargetId(e.target.value)}
           >

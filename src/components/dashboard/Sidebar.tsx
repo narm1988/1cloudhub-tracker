@@ -110,7 +110,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         {!collapsed && (
           <div>
             <div className="font-display font-bold text-subhead leading-none">1CloudHub</div>
-            <div className="text-micro tracking-[0.12em] mt-0.5" style={{ color: theme.subText }}>TRACKER</div>
+            <div className="text-caption tracking-[0.12em] mt-0.5" style={{ color: theme.subText }}>TRACKER</div>
           </div>
         )}
       </div>
@@ -142,7 +142,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
                   {item.label}
                   {item.admin && (
                     <span
-                      className="ml-auto text-micro px-1.5 py-0.5 rounded"
+                      className="ml-auto text-caption px-1.5 py-0.5 rounded"
                       style={{ backgroundColor: theme.hoverBg, color: theme.textInactive }}
                     >
                       ADMIN

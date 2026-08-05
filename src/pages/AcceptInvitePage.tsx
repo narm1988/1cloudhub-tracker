@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Lock, Eye, EyeOff, Cloud, AlertCircle } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Lock, User, Eye, EyeOff, Cloud, AlertCircle } from 'lucide-react'
+import { api, ApiError, setToken } from '../lib/api'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 
-type Status = 'checking' | 'ready' | 'invalid'
-
 export default function AcceptInvitePage() {
-  const [status, setStatus] = useState<Status>('checking')
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token')
+  const [fullName, setFullName] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -16,39 +16,14 @@ export default function AcceptInvitePage() {
   const [submitting, setSubmitting] = useState(false)
   const navigate = useNavigate()
 
-  // The invite link's token is exchanged for a session automatically by the
-  // Supabase client on load — we just need to wait for it to show up.
-  useEffect(() => {
-    let resolved = false
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && !resolved) {
-        resolved = true
-        setStatus('ready')
-      }
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && !resolved) {
-        resolved = true
-        setStatus('ready')
-      }
-    })
-
-    const timeout = setTimeout(() => {
-      if (!resolved) setStatus('invalid')
-    }, 4000)
-
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
-    }
-  }, [])
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
 
+    if (!fullName.trim()) {
+      setError('Please enter your name.')
+      return
+    }
     if (password.length < 8) {
       setError('Password must be at least 8 characters.')
       return
@@ -59,15 +34,16 @@ export default function AcceptInvitePage() {
     }
 
     setSubmitting(true)
-    const { error: updateError } = await supabase.auth.updateUser({ password })
-    setSubmitting(false)
-
-    if (updateError) {
-      setError(updateError.message)
-      return
+    try {
+      const { access_token } = await api.acceptInvite(token!, password, fullName.trim())
+      setToken(access_token)
+      // Full reload so AuthProvider picks up the freshly stored token —
+      // same reasoning as AuthCallbackPage.
+      window.location.href = '/'
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to set up your account.')
+      setSubmitting(false)
     }
-
-    navigate('/', { replace: true })
   }
 
   return (
@@ -79,18 +55,12 @@ export default function AcceptInvitePage() {
           </div>
           <div>
             <div className="font-display text-base font-bold text-ink leading-none">1CloudHub</div>
-            <div className="text-micro tracking-[0.14em] text-gray-400 mt-0.5">TRACKER</div>
+            <div className="text-caption tracking-[0.14em] text-gray-400 mt-0.5">TRACKER</div>
           </div>
         </div>
 
         <Card padding="lg">
-          {status === 'checking' && (
-            <div className="text-center py-6">
-              <p className="text-body-lg text-gray-500">Verifying your invite...</p>
-            </div>
-          )}
-
-          {status === 'invalid' && (
+          {!token ? (
             <div className="text-center py-4">
               <AlertCircle size={28} className="mx-auto mb-3 text-danger" />
               <h1 className="font-display text-heading font-semibold text-ink mb-1.5">
@@ -103,20 +73,35 @@ export default function AcceptInvitePage() {
                 Back to sign in
               </Button>
             </div>
-          )}
-
-          {status === 'ready' && (
+          ) : (
             <form onSubmit={handleSubmit}>
-              <h1 className="font-display text-heading font-semibold text-ink mb-1">Set your password</h1>
-              <p className="text-gray-500 text-body-lg mb-6">
-                You've been invited to 1CloudHub Tracker. Choose a password to finish setting up your account.
+              <h1 className="font-display text-heading font-semibold text-ink mb-1">Set up your account</h1>
+              <p className="text-gray-500 text-body mb-6">
+                You've been invited to 1CloudHub Tracker. Add your name and choose a password to finish setting up.
               </p>
 
               {error && (
-                <div className="bg-danger-soft text-danger text-body-lg px-4 py-2.5 rounded-lg mb-4">{error}</div>
+                <div className="bg-danger-soft text-danger text-body px-4 py-2.5 rounded-lg mb-4">{error}</div>
               )}
 
               <div className="space-y-4">
+                <div>
+                  <label className="text-body font-semibold text-ink mb-1.5 block">Full name</label>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <User size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Jane Doe"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-body font-semibold text-ink mb-1.5 block">Password</label>
                   <div className="relative">
@@ -128,7 +113,7 @@ export default function AcceptInvitePage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••"
-                      className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
+                      className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
                       required
                     />
                     <button
@@ -153,7 +138,7 @@ export default function AcceptInvitePage() {
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       placeholder="••••••••••"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
                       required
                     />
                   </div>
@@ -161,7 +146,7 @@ export default function AcceptInvitePage() {
               </div>
 
               <Button type="submit" className="w-full mt-6" size="lg" disabled={submitting}>
-                {submitting ? 'Setting password...' : 'Continue'}
+                {submitting ? 'Setting up...' : 'Continue'}
               </Button>
             </form>
           )}

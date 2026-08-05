@@ -127,7 +127,7 @@ export default function EpicsPage() {
               </div>
               <span className="font-mono text-caption text-gray-400 shrink-0 w-16">{epic.id.slice(0, 8)}</span>
               <div className="flex-1 min-w-0">
-                <div className="text-body-lg font-semibold text-ink truncate">{epic.title}</div>
+                <div className="text-body font-semibold text-ink truncate">{epic.title}</div>
                 {epic.description && (
                   <div className="text-label text-gray-500 truncate">{epic.description}</div>
                 )}
@@ -185,7 +185,7 @@ function CreateEpicModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Project</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
           >
@@ -206,7 +206,7 @@ function CreateEpicModal({
             Description
           </label>
           <textarea
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[80px] resize-y"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[80px] resize-y"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What does this epic cover?"

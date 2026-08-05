@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -11,8 +16,12 @@
   }
   body {
     margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
     background: #F5F6F8;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 

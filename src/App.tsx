@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import LoginPage from './pages/LoginPage'
 import AcceptInvitePage from './pages/AcceptInvitePage'
+import AuthCallbackPage from './pages/AuthCallbackPage'
 import DashboardLayout from './layouts/DashboardLayout'
 import ProjectsPage from './pages/ProjectsPage'
 import ProjectDetailPage from './pages/ProjectDetailPage'
@@ -26,6 +27,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/accept-invite" element={<AcceptInvitePage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route
         path="/"
         element={

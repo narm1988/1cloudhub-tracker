@@ -6,7 +6,7 @@ import type { User } from '../../types'
 import Button from '../ui/Button'
 import Avatar from '../ui/Avatar'
 
-export const SECTION_HEADER = 'font-display text-body-lg font-semibold text-ink'
+export const SECTION_HEADER = 'font-display text-body font-semibold text-ink'
 
 export function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (

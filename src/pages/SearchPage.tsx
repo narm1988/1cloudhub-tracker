@@ -136,7 +136,7 @@ export default function SearchPage() {
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/20"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand focus:ring-1 focus:ring-brand/20"
             placeholder="Search by title, ID, or description..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -146,7 +146,7 @@ export default function SearchPage() {
         </div>
         <button
           onClick={() => setShowFilters((s) => !s)}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-body-lg font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-body font-medium transition-colors ${
             showFilters ? 'bg-brand-soft border-brand text-brand' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
           }`}
         >
@@ -161,7 +161,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Status</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -172,7 +172,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Priority</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
@@ -183,7 +183,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Assignee</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
             >
@@ -201,7 +201,7 @@ export default function SearchPage() {
       )}
 
       {/* Results */}
-      {loading && <p className="text-gray-400 text-body-lg">Searching...</p>}
+      {loading && <p className="text-gray-400 text-body">Searching...</p>}
 
       {searched && !loading && total === 0 && (
         <EmptyState

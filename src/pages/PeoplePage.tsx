@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Shield, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import type { User } from '../types'
 import Button from '../components/ui/Button'
@@ -13,21 +14,6 @@ import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 const ALLOWED_DOMAIN = '1cloudhub.com'
 const PAGE_SIZE = 20
-
-// supabase.functions.invoke() only gives a generic "non-2xx status code"
-// message on failure — the actual { error: "..." } JSON body the function
-// sends back is on error.context (the raw Response) and has to be read separately.
-async function extractFunctionErrorMessage(error: unknown): Promise<string | null> {
-  const context = (error as { context?: Response })?.context
-  if (!context || typeof context.json !== 'function') return null
-  try {
-    const source = typeof context.clone === 'function' ? context.clone() : context
-    const body = await source.json()
-    return typeof body?.error === 'string' ? body.error : null
-  } catch {
-    return null
-  }
-}
 
 export default function PeoplePage() {
   const [people, setPeople] = useState<User[]>([])
@@ -72,45 +58,29 @@ export default function PeoplePage() {
     }
 
     setInviting(true)
-    const { data, error } = await supabase.functions.invoke('invite-user', {
-      body: { email: normalized, role, redirectTo: `${window.location.origin}/accept-invite` },
-    })
-    setInviting(false)
-
-    if (error) {
-      const detailed = await extractFunctionErrorMessage(error)
-      setInviteError(detailed || error.message || 'Failed to send invite.')
-      return
+    try {
+      await api.invite(normalized, role)
+      setShowInvite(false)
+      fetchPeople()
+    } catch (err) {
+      setInviteError(err instanceof ApiError ? err.message : 'Failed to send invite.')
+    } finally {
+      setInviting(false)
     }
-    if (data?.error) {
-      setInviteError(data.error)
-      return
-    }
-
-    setShowInvite(false)
-    fetchPeople()
   }
 
   async function removePerson(person: User) {
     if (!window.confirm(`Remove ${person.full_name} from the team? This cannot be undone.`)) return
 
     setRemovingId(person.id)
-    const { data, error } = await supabase.functions.invoke('remove-person', {
-      body: { userId: person.id },
-    })
-    setRemovingId(null)
-
-    if (error) {
-      const detailed = await extractFunctionErrorMessage(error)
-      alert(detailed || error.message || 'Failed to remove person.')
-      return
+    try {
+      await api.removePerson(person.id)
+      setPeople((prev) => prev.filter((p) => p.id !== person.id))
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Failed to remove person.')
+    } finally {
+      setRemovingId(null)
     }
-    if (data?.error) {
-      alert(data.error)
-      return
-    }
-
-    setPeople((prev) => prev.filter((p) => p.id !== person.id))
   }
 
   if (loading && people.length === 0) {
@@ -217,7 +187,7 @@ function InviteModal({
     <Modal title="Invite a teammate" onClose={onClose}>
       <div className="space-y-4">
         {error && (
-          <div className="bg-danger-soft text-danger text-body-lg px-4 py-2.5 rounded-lg">{error}</div>
+          <div className="bg-danger-soft text-danger text-body px-4 py-2.5 rounded-lg">{error}</div>
         )}
 
         <div>
@@ -234,7 +204,7 @@ function InviteModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Role</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >

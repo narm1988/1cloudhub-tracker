@@ -19,15 +19,15 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-label text-gray-500 block">Name</label>
-              <p className="text-body-lg text-ink">{user?.full_name}</p>
+              <p className="text-body text-ink">{user?.full_name}</p>
             </div>
             <div>
               <label className="text-label text-gray-500 block">Email</label>
-              <p className="text-body-lg text-ink font-mono">{user?.email}</p>
+              <p className="text-body text-ink font-mono">{user?.email}</p>
             </div>
             <div>
               <label className="text-label text-gray-500 block">Role</label>
-              <p className="text-body-lg text-ink capitalize">{user?.role}</p>
+              <p className="text-body text-ink capitalize">{user?.role}</p>
             </div>
           </div>
         </Card>
