@@ -68,6 +68,7 @@ export interface Issue {
   start_date?: string
   due_date?: string
   story_points?: number
+  sprint_id?: string | null
   created_at: string
   updated_at: string
 }

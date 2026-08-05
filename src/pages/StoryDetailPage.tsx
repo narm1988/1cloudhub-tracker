@@ -68,7 +68,7 @@ export default function StoryDetailPage() {
   const epicIdParam = searchParams.get('epicId')
 
   const [story, setStory] = useState<Story | null>(null)
-  const [epic, setEpic] = useState<{ id: string; title: string } | null>(null)
+  const [epic, setEpic] = useState<{ id: string; title: string; project_id: string | null } | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
   const [comments, setComments] = useState<Comment[]>([])
   const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -125,7 +125,7 @@ export default function StoryDetailPage() {
   }
 
   async function fetchEpic(epicId: string) {
-    const { data } = await supabase.from('epics').select('id, title').eq('id', epicId).single()
+    const { data } = await supabase.from('epics').select('id, title, project_id').eq('id', epicId).single()
     if (data) setEpic(data)
   }
 
@@ -189,6 +189,7 @@ export default function StoryDetailPage() {
 
       const { data, error } = await supabase.from('stories').insert({
         epic_id: epicIdParam,
+        project_id: epic?.project_id ?? null,
         title: current.title,
         description: current.description || null,
         status: current.status,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, BookOpen } from 'lucide-react'
+import { ArrowLeft, Plus, BookOpen, ArrowDownToLine } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { STATUS_OPTIONS, STATUS_META, PRIORITY_META } from '../lib/constants'
 import type { Status, Priority } from '../lib/constants'
@@ -16,6 +16,7 @@ export default function EpicDetailPage() {
   const [epic, setEpic] = useState<Epic | null>(null)
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
+  const [movingToBacklog, setMovingToBacklog] = useState(false)
 
   useEffect(() => {
     if (epicId) {
@@ -41,6 +42,22 @@ export default function EpicDetailPage() {
       .eq('epic_id', epicId)
       .order('created_at', { ascending: false })
     if (data) setStories(data)
+  }
+
+  async function moveEpicToBacklog() {
+    if (stories.length === 0) return
+    if (!window.confirm(
+      `Move "${epic?.title}" to backlog? This unschedules all ${stories.length} of its stories and their tasks/bugs/sub-tasks from any sprint.`
+    )) return
+
+    setMovingToBacklog(true)
+    const storyIds = stories.map((s) => s.id)
+
+    await supabase.from('stories').update({ sprint_id: null }).eq('epic_id', epicId)
+    await supabase.from('issues').update({ sprint_id: null }).in('story_id', storyIds)
+
+    setMovingToBacklog(false)
+    await fetchStories()
   }
 
   if (loading) {
@@ -77,9 +94,19 @@ export default function EpicDetailPage() {
             <span>{doneCount}/{stories.length} done</span>
           </div>
         </div>
-        <Button onClick={() => navigate(`/stories/new?epicId=${epicId}`)}>
-          <Plus size={14} /> New story
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={moveEpicToBacklog}
+            disabled={movingToBacklog || stories.length === 0}
+            title="Unschedule this epic's stories and their issues from any sprint"
+          >
+            <ArrowDownToLine size={14} /> {movingToBacklog ? 'Moving...' : 'Move to backlog'}
+          </Button>
+          <Button onClick={() => navigate(`/stories/new?epicId=${epicId}`)}>
+            <Plus size={14} /> New story
+          </Button>
+        </div>
       </div>
 
       {/* Kanban board */}
