@@ -756,7 +756,7 @@ function LinkIssueModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Relationship</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
             value={linkType}
             onChange={(e) => setLinkType(e.target.value as LinkType)}
           >
@@ -769,7 +769,7 @@ function LinkIssueModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Target story</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
             value={targetId}
             onChange={(e) => setTargetId(e.target.value)}
           >

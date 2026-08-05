@@ -82,8 +82,8 @@ export default function EpicsPage() {
       {epics.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <Flag size={40} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium text-gray-500">No epics yet</p>
-          <p className="text-sm mt-1">
+          <p className="text-subhead font-medium text-gray-500">No epics yet</p>
+          <p className="text-body mt-1">
             {projects.length === 0
               ? 'A project needs to exist before you can create an epic.'
               : 'Create your first epic to get started.'}
@@ -164,7 +164,7 @@ function CreateEpicModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Project</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
           >
@@ -185,7 +185,7 @@ function CreateEpicModal({
             Description
           </label>
           <textarea
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[80px] resize-y"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[80px] resize-y"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What does this epic cover?"

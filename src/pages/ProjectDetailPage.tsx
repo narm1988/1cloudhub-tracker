@@ -47,7 +47,7 @@ export default function ProjectDetailPage() {
         <span className="font-mono text-label text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
           {project.key}
         </span>
-        <h1 className="font-display text-xl font-semibold text-ink">{project.name}</h1>
+        <h1 className="font-display text-heading font-semibold text-ink">{project.name}</h1>
       </div>
 
       {/* Tabs */}
@@ -379,7 +379,7 @@ function ProjectTimeline({ projectId }: { projectId: string }) {
     return (
       <div className="text-center py-10 text-gray-400">
         <CalendarDays size={32} className="mx-auto mb-3 text-gray-300" />
-        <p className="text-sm">No stories with dates assigned yet.</p>
+        <p className="text-body-lg">No stories with dates assigned yet.</p>
         <p className="text-label mt-1">Add start/due dates to stories to see them on the timeline.</p>
       </div>
     )

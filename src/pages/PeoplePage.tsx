@@ -193,7 +193,7 @@ function InviteModal({
     <Modal title="Invite a teammate" onClose={onClose}>
       <div className="space-y-4">
         {error && (
-          <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg">{error}</div>
+          <div className="bg-danger-soft text-danger text-body-lg px-4 py-2.5 rounded-lg">{error}</div>
         )}
 
         <div>
@@ -210,7 +210,7 @@ function InviteModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Role</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >

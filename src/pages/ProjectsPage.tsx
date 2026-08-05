@@ -74,8 +74,8 @@ export default function ProjectsPage() {
       {projects.length === 0 ? (
         <div className="text-center py-20 text-gray-400 animate-fade-in">
           <FolderKanban size={40} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium text-gray-500">No projects yet</p>
-          <p className="text-sm mt-1">
+          <p className="text-subhead font-medium text-gray-500">No projects yet</p>
+          <p className="text-body mt-1">
             {isAdmin ? 'Create a project to organize your epics and stories.' : 'Ask an admin to create a project to get started.'}
           </p>
         </div>
@@ -176,7 +176,7 @@ function CreateProjectModal({
     <Modal title="Create project" onClose={onClose}>
       <div className="space-y-4">
         {error && (
-          <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg">{error}</div>
+          <div className="bg-danger-soft text-danger text-body-lg px-4 py-2.5 rounded-lg">{error}</div>
         )}
 
         <Input
@@ -191,7 +191,7 @@ function CreateProjectModal({
             Key <span className="text-gray-400 font-normal">(used as prefix for issues)</span>
           </label>
           <input
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-mono uppercase outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg font-mono uppercase outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
             value={key}
             onChange={(e) => setKey(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5))}
             placeholder="CM"
@@ -203,7 +203,7 @@ function CreateProjectModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Description</label>
           <textarea
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 min-h-[70px] resize-y"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 min-h-[70px] resize-y"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What is this project about?"

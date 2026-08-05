@@ -86,14 +86,14 @@ export default function AcceptInvitePage() {
         <Card padding="lg">
           {status === 'checking' && (
             <div className="text-center py-6">
-              <p className="text-sm text-gray-500">Verifying your invite...</p>
+              <p className="text-body-lg text-gray-500">Verifying your invite...</p>
             </div>
           )}
 
           {status === 'invalid' && (
             <div className="text-center py-4">
               <AlertCircle size={28} className="mx-auto mb-3 text-danger" />
-              <h1 className="font-display text-lg font-semibold text-ink mb-1.5">
+              <h1 className="font-display text-heading font-semibold text-ink mb-1.5">
                 Invite link invalid or expired
               </h1>
               <p className="text-body text-gray-500 mb-5">
@@ -107,13 +107,13 @@ export default function AcceptInvitePage() {
 
           {status === 'ready' && (
             <form onSubmit={handleSubmit}>
-              <h1 className="font-display text-xl font-semibold text-ink mb-1">Set your password</h1>
-              <p className="text-gray-500 text-sm mb-6">
+              <h1 className="font-display text-heading font-semibold text-ink mb-1">Set your password</h1>
+              <p className="text-gray-500 text-body-lg mb-6">
                 You've been invited to 1CloudHub Tracker. Choose a password to finish setting up your account.
               </p>
 
               {error && (
-                <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg mb-4">{error}</div>
+                <div className="bg-danger-soft text-danger text-body-lg px-4 py-2.5 rounded-lg mb-4">{error}</div>
               )}
 
               <div className="space-y-4">
@@ -128,7 +128,7 @@ export default function AcceptInvitePage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••"
-                      className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-sm font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
+                      className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
                       required
                     />
                     <button
@@ -153,7 +153,7 @@ export default function AcceptInvitePage() {
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       placeholder="••••••••••"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
                       required
                     />
                   </div>

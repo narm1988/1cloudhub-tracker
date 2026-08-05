@@ -37,9 +37,9 @@ export default {
         },
       },
       fontFamily: {
-        display: ["'Space Grotesk'", 'sans-serif'],
+        display: ["'Inter'", 'sans-serif'],
         body: ["'Inter'", 'sans-serif'],
-        mono: ["'IBM Plex Mono'", 'monospace'],
+        mono: ["'JetBrains Mono'", 'monospace'],
       },
       // Standardized type scale — replaces 16 arbitrary text-[Npx] one-offs
       // that had accumulated with no semantic meaning behind the differences.

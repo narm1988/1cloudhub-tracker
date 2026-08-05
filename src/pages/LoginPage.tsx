@@ -164,16 +164,16 @@ export default function LoginPage() {
           </div>
 
           <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
-            <h1 className="font-display text-2xl font-semibold text-ink mb-1">
+            <h1 className="font-display text-heading font-semibold text-ink mb-1">
               Sign in
             </h1>
-            <p className="text-gray-500 text-sm mb-7">
+            <p className="text-gray-500 text-body-lg mb-7">
               Use the workspace email your admin invited you with.
             </p>
           </div>
 
           {error && (
-            <div className="bg-danger-soft text-danger text-sm px-4 py-3 rounded-lg mb-4 animate-fade-in-up">
+            <div className="bg-danger-soft text-danger text-body-lg px-4 py-3 rounded-lg mb-4 animate-fade-in-up">
               {error}
             </div>
           )}
@@ -208,7 +208,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••"
-                  className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-sm font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 focus:shadow-[0_0_0_4px_rgba(91,95,239,0.12)] transition-shadow"
+                  className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 focus:shadow-[0_0_0_4px_rgba(91,95,239,0.12)] transition-shadow"
                   required
                 />
                 <button
@@ -239,10 +239,11 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={handleMicrosoftSignIn}
-            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-ink hover:bg-gray-50 transition-colors animate-fade-in-up"
+            className="w-full animate-fade-in-up"
             style={{ animationDelay: '0.24s' }}
           >
             <svg width="16" height="16" viewBox="0 0 21 21">
@@ -252,7 +253,7 @@ export default function LoginPage() {
               <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
             </svg>
             Sign in with Microsoft
-          </button>
+          </Button>
 
           {/* Perforation divider */}
           <div className="my-5 h-px bg-[repeating-linear-gradient(90deg,#E6E7EB_0,#E6E7EB_3px,transparent_3px,transparent_7px)] animate-fade-in-up" style={{ animationDelay: '0.25s' }} />

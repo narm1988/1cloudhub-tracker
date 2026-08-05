@@ -8,6 +8,7 @@ import type { User } from '../types'
 import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
 import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
 
 interface SearchResult {
   id: string
@@ -111,7 +112,7 @@ export default function SearchPage() {
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/20"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/20"
             placeholder="Search by title, ID, or description..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -120,18 +121,13 @@ export default function SearchPage() {
         </div>
         <button
           onClick={() => setShowFilters((s) => !s)}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg border text-body-lg font-medium transition-colors ${
             showFilters ? 'bg-brand-soft border-brand text-brand' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
           }`}
         >
           <Filter size={14} /> Filters
         </button>
-        <button
-          onClick={() => handleSearch()}
-          className="px-5 py-2.5 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand-deep transition-colors"
-        >
-          Search
-        </button>
+        <Button onClick={() => handleSearch()}>Search</Button>
       </div>
 
       {/* Filters */}
@@ -140,7 +136,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Status</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -151,7 +147,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Priority</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
@@ -162,7 +158,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Assignee</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none"
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
             >
@@ -180,12 +176,12 @@ export default function SearchPage() {
       )}
 
       {/* Results */}
-      {loading && <p className="text-gray-400 text-sm">Searching...</p>}
+      {loading && <p className="text-gray-400 text-body-lg">Searching...</p>}
 
       {searched && !loading && results.length === 0 && (
         <div className="text-center py-12 text-gray-400">
           <Search size={32} className="mx-auto mb-3 text-gray-300" />
-          <p className="text-sm">No results found. Try a different search or filter.</p>
+          <p className="text-body-lg">No results found. Try a different search or filter.</p>
         </div>
       )}
 

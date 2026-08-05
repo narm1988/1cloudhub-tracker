@@ -147,7 +147,7 @@ export default function TopBar() {
               <div className="fixed top-0 right-0 bottom-0 w-[360px] bg-white shadow-2xl z-50 flex flex-col animate-drawer-slide-in">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                  <h2 className="font-display text-base font-semibold text-ink">Notifications</h2>
+                  <h2 className="font-display text-heading font-semibold text-ink">Notifications</h2>
                   <button
                     onClick={() => setShowNotifs(false)}
                     className="text-gray-400 hover:text-gray-600 transition-colors"

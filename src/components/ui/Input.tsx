@@ -23,11 +23,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             ref={ref}
-            className={`w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors ${icon ? 'pl-9' : ''} ${error ? 'border-danger' : ''} ${className}`}
+            className={`w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors ${icon ? 'pl-9' : ''} ${error ? 'border-danger' : ''} ${className}`}
             {...props}
           />
         </div>
-        {error && <p className="text-danger text-xs mt-1">{error}</p>}
+        {error && <p className="text-danger text-label mt-1">{error}</p>}
       </div>
     )
   }

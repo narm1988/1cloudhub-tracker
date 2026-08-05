@@ -286,7 +286,7 @@ export function CommentInput({ onSubmit }: { onSubmit: (content: string) => void
   return (
     <div className="flex gap-3">
       <textarea
-        className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 resize-none min-h-[60px]"
+        className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-body outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 resize-none min-h-[60px]"
         placeholder="Add a comment..."
         value={content}
         onChange={(e) => setContent(e.target.value)}
