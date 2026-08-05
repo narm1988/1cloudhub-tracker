@@ -108,7 +108,7 @@ export default function LoginPage() {
             <div className="font-display text-lg font-bold tracking-tight leading-none">
               1CloudHub
             </div>
-            <div className="text-[10.5px] tracking-[0.14em] text-gray-500 mt-0.5">
+            <div className="text-caption tracking-[0.14em] text-gray-500 mt-0.5">
               TRACKER
             </div>
           </div>
@@ -116,10 +116,10 @@ export default function LoginPage() {
 
         {/* Tagline */}
         <div className="max-w-sm relative z-10 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-          <h2 className="font-display text-[32px] font-semibold leading-tight mb-3.5">
+          <h2 className="font-display text-display font-semibold leading-tight mb-3.5">
             Where 1CloudHub tracks the work.
           </h2>
-          <p className="text-gray-400 text-[15px] leading-relaxed">
+          <p className="text-gray-400 text-subhead leading-relaxed">
             Epics and user stories for our internal delivery — created, assigned
             and resolved in one place.
           </p>
@@ -141,7 +141,7 @@ export default function LoginPage() {
                 className={`relative overflow-hidden w-72 h-14 bg-ink-faint rounded-lg ${t.rot} flex items-center px-4 shadow-lg border-l-4 ${t.accent}`}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                <span className="font-mono text-[11px] text-gray-500 tracking-wide">
+                <span className="font-mono text-caption text-gray-500 tracking-wide">
                   {t.id}
                 </span>
                 <div className="flex-1 h-px mx-2.5 bg-[repeating-linear-gradient(90deg,#3A3F55_0,#3A3F55_2px,transparent_2px,transparent_6px)]" />
@@ -194,8 +194,8 @@ export default function LoginPage() {
 
             <div className="animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="text-[13px] font-semibold text-ink">Password</label>
-                <a href="#" className="text-[13px] text-brand hover:text-brand-deep transition-colors">
+                <label className="text-body font-semibold text-ink">Password</label>
+                <a href="#" className="text-body text-brand hover:text-brand-deep transition-colors">
                   Forgot?
                 </a>
               </div>
@@ -235,7 +235,7 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-3 my-4 animate-fade-in-up" style={{ animationDelay: '0.22s' }}>
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-[11.5px] text-gray-400 font-medium">or</span>
+            <span className="text-caption text-gray-400 font-medium">or</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
@@ -257,7 +257,7 @@ export default function LoginPage() {
           {/* Perforation divider */}
           <div className="my-5 h-px bg-[repeating-linear-gradient(90deg,#E6E7EB_0,#E6E7EB_3px,transparent_3px,transparent_7px)] animate-fade-in-up" style={{ animationDelay: '0.25s' }} />
 
-          <p className="text-[13px] text-gray-500 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <p className="text-body text-gray-500 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             No account? Ask your workspace admin to send you an invite.
           </p>
         </form>

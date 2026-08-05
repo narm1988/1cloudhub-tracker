@@ -83,12 +83,12 @@ export default function LabelsField({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[12px] text-gray-500 flex items-center gap-1">
+        <span className="text-label text-gray-500 flex items-center gap-1">
           <Tags size={12} /> Labels
         </span>
         <button
           onClick={() => setShowAdd((s) => !s)}
-          className="text-[11px] text-brand hover:text-brand-deep font-medium"
+          className="text-caption text-brand hover:text-brand-deep font-medium"
         >
           + Add
         </button>
@@ -98,7 +98,7 @@ export default function LabelsField({
         {labels.map((label) => (
           <span
             key={label.id}
-            className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full text-white group"
+            className="flex items-center gap-1 text-caption font-medium px-2 py-0.5 rounded-full text-white group"
             style={{ backgroundColor: label.color }}
           >
             {label.name}
@@ -111,7 +111,7 @@ export default function LabelsField({
           </span>
         ))}
         {labels.length === 0 && !showAdd && (
-          <span className="text-[12px] text-gray-400">None</span>
+          <span className="text-label text-gray-400">None</span>
         )}
       </div>
 
@@ -119,13 +119,13 @@ export default function LabelsField({
         <div className="border border-gray-200 rounded-lg p-2.5 mt-2 space-y-2.5">
           {unattachedLabels.length > 0 && (
             <div>
-              <label className="block text-[10.5px] font-semibold text-gray-500 mb-1.5">Existing labels</label>
+              <label className="block text-caption font-semibold text-gray-500 mb-1.5">Existing labels</label>
               <div className="flex flex-wrap gap-1.5">
                 {unattachedLabels.map((label) => (
                   <button
                     key={label.id}
                     onClick={() => attachExistingLabel(label.id)}
-                    className="text-[10.5px] font-medium px-2 py-0.5 rounded-full text-white hover:opacity-80 transition-opacity"
+                    className="text-caption font-medium px-2 py-0.5 rounded-full text-white hover:opacity-80 transition-opacity"
                     style={{ backgroundColor: label.color }}
                   >
                     + {label.name}
@@ -136,10 +136,10 @@ export default function LabelsField({
           )}
 
           <div>
-            <label className="block text-[10.5px] font-semibold text-gray-500 mb-1.5">Create new label</label>
+            <label className="block text-caption font-semibold text-gray-500 mb-1.5">Create new label</label>
             <div className="flex items-center gap-1.5">
               <input
-                className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-gray-200 text-[11.5px] outline-none focus:border-brand"
+                className="flex-1 min-w-0 px-2 py-1.5 rounded-lg border border-gray-200 text-caption outline-none focus:border-brand"
                 placeholder="Label name..."
                 value={newLabelName}
                 onChange={(e) => setNewLabelName(e.target.value)}
@@ -159,7 +159,7 @@ export default function LabelsField({
             <button
               onClick={createAndAttachLabel}
               disabled={!newLabelName.trim()}
-              className="w-full mt-1.5 text-[11px] font-semibold px-3 py-1.5 bg-brand text-white rounded-lg disabled:opacity-50"
+              className="w-full mt-1.5 text-caption font-semibold px-3 py-1.5 bg-brand text-white rounded-lg disabled:opacity-50"
             >
               Create
             </button>

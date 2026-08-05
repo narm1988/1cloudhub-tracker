@@ -7,6 +7,7 @@ import type { Project } from '../types'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
+import Card from '../components/ui/Card'
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -40,16 +41,16 @@ export default function ProjectsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[0, 1, 2].map((i) => (
-            <div
+            <Card
               key={i}
-              className="bg-white border border-gray-200 rounded-xl p-5 animate-pulse"
+              className="animate-pulse"
               style={{ animationDelay: `${i * 80}ms` }}
             >
               <div className="w-9 h-9 rounded-lg bg-gray-200 mb-4" />
               <div className="h-3.5 w-2/3 rounded bg-gray-200 mb-2" />
               <div className="h-3 w-full rounded bg-gray-100 mb-1.5" />
               <div className="h-3 w-4/5 rounded bg-gray-100" />
-            </div>
+            </Card>
           ))}
         </div>
       </div>
@@ -60,8 +61,8 @@ export default function ProjectsPage() {
     <div>
       <div className="flex items-baseline justify-between mb-5 animate-fade-in-up">
         <div>
-          <h1 className="font-display text-[22px] font-semibold text-ink">Projects</h1>
-          <p className="text-[13px] text-gray-500 mt-1"><span className="font-mono tabular-nums">{projects.length}</span> projects in your workspace</p>
+          <h1 className="font-display text-heading font-semibold text-ink">Projects</h1>
+          <p className="text-body text-gray-500 mt-1"><span className="font-mono tabular-nums">{projects.length}</span> projects in your workspace</p>
         </div>
         {isAdmin && (
           <Button onClick={() => setShowCreate(true)}>
@@ -81,10 +82,10 @@ export default function ProjectsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {projects.map((project, i) => (
-            <div
+            <Card
               key={project.id}
               onClick={() => navigate(`/projects/${project.id}`)}
-              className="group bg-white border border-gray-200 rounded-xl p-5 cursor-pointer hover:border-brand/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 animate-fade-in-up"
+              className="group cursor-pointer hover:border-brand/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 animate-fade-in-up"
               style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
             >
               <div className="flex items-center justify-between mb-3">
@@ -92,22 +93,22 @@ export default function ProjectsPage() {
                   <div className="w-9 h-9 rounded-lg bg-brand-soft flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
                     <FolderKanban size={18} className="text-brand" />
                   </div>
-                  <span className="font-mono text-[12px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                  <span className="font-mono text-label text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                     {project.key}
                   </span>
                 </div>
                 <ChevronRight size={14} className="text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5" />
               </div>
-              <h3 className="text-[15px] font-semibold text-ink mb-1">{project.name}</h3>
+              <h3 className="text-subhead font-semibold text-ink mb-1">{project.name}</h3>
               {project.description && (
-                <p className="text-[12.5px] text-gray-500 leading-relaxed line-clamp-2">
+                <p className="text-label text-gray-500 leading-relaxed line-clamp-2">
                   {project.description}
                 </p>
               )}
-              <div className="mt-3 text-[11px] text-gray-400">
+              <div className="mt-3 text-caption text-gray-400">
                 Created {new Date(project.created_at).toLocaleDateString()}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -186,7 +187,7 @@ function CreateProjectModal({
         />
 
         <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">
+          <label className="block text-body font-semibold text-ink mb-1.5">
             Key <span className="text-gray-400 font-normal">(used as prefix for issues)</span>
           </label>
           <input
@@ -196,11 +197,11 @@ function CreateProjectModal({
             placeholder="CM"
             maxLength={5}
           />
-          <p className="text-[11px] text-gray-400 mt-1">2-5 characters. Issues will be like {key || 'XX'}-101</p>
+          <p className="text-caption text-gray-400 mt-1">2-5 characters. Issues will be like {key || 'XX'}-101</p>
         </div>
 
         <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Description</label>
+          <label className="block text-body font-semibold text-ink mb-1.5">Description</label>
           <textarea
             className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 min-h-[70px] resize-y"
             value={description}

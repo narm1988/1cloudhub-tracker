@@ -3,6 +3,7 @@ import { useParams, useNavigate, Outlet } from 'react-router-dom'
 import { ArrowLeft, Flag, List, CalendarDays, Tags } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Project } from '../types'
+import Card from '../components/ui/Card'
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -37,13 +38,13 @@ export default function ProjectDetailPage() {
     <div>
       <button
         onClick={() => navigate('/projects')}
-        className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 mb-3"
+        className="flex items-center gap-1.5 text-gray-500 text-body hover:text-gray-700 mb-3"
       >
         <ArrowLeft size={14} /> All projects
       </button>
 
       <div className="flex items-center gap-3 mb-5">
-        <span className="font-mono text-[12px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+        <span className="font-mono text-label text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
           {project.key}
         </span>
         <h1 className="font-display text-xl font-semibold text-ink">{project.name}</h1>
@@ -58,7 +59,7 @@ export default function ProjectDetailPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-body font-medium border-b-2 transition-colors ${
                 isActive
                   ? 'border-brand text-brand'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -113,8 +114,8 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
         return (
           <div key={status} className="w-[220px] shrink-0">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-[12.5px] font-semibold text-gray-500 uppercase tracking-wide">{status}</span>
-              <span className="text-[11.5px] font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{items.length}</span>
+              <span className="text-label font-semibold text-gray-500 uppercase tracking-wide">{status}</span>
+              <span className="text-caption font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{items.length}</span>
             </div>
             <div className="space-y-2.5">
               {items.map((story) => (
@@ -125,20 +126,20 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
                   style={{ borderLeftWidth: 3, borderLeftColor: STATUS_META[story.status as Status]?.color || '#6B7280' }}
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-[11px] text-gray-400">{story.display_id}</span>
-                    <span className="text-[11px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+                    <span className="font-mono text-caption text-gray-400">{story.display_id}</span>
+                    <span className="text-caption">{PRIORITY_META[story.priority as Priority]?.icon}</span>
                   </div>
-                  <div className="text-[13px] text-ink font-medium leading-snug mb-2">{story.title}</div>
+                  <div className="text-body text-ink font-medium leading-snug mb-2">{story.title}</div>
                   <div className="flex items-center justify-between">
-                    {story.assignee ? <Avatar name={story.assignee.full_name} size="sm" /> : <span className="text-[10px] text-gray-400">—</span>}
+                    {story.assignee ? <Avatar name={story.assignee.full_name} size="sm" /> : <span className="text-micro text-gray-400">—</span>}
                     {story.due_date && (
-                      <span className="text-[10.5px] text-gray-400">{new Date(story.due_date).toLocaleDateString()}</span>
+                      <span className="text-caption text-gray-400">{new Date(story.due_date).toLocaleDateString()}</span>
                     )}
                   </div>
                 </div>
               ))}
               {items.length === 0 && (
-                <div className="border border-dashed border-gray-200 rounded-lg py-4 text-center text-[12px] text-gray-400">Empty</div>
+                <div className="border border-dashed border-gray-200 rounded-lg py-4 text-center text-label text-gray-400">Empty</div>
               )}
             </div>
           </div>
@@ -220,19 +221,19 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
         const sprintStories = stories.filter((s) => s.sprint_id === sprint.id)
         const totalPoints = sprintStories.reduce((sum, s) => sum + (s.story_points || 0), 0)
         return (
-          <div key={sprint.id} className="bg-white border border-gray-200 rounded-xl p-5">
+          <Card key={sprint.id}>
             <div className="flex items-center justify-between mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-[14px] font-semibold text-ink">{sprint.name}</h3>
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
+                  <h3 className="font-display text-body-lg font-semibold text-ink">{sprint.name}</h3>
+                  <span className={`text-caption font-semibold px-2 py-0.5 rounded ${
                     sprint.status === 'active' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
                   }`}>
                     {sprint.status}
                   </span>
                 </div>
-                {sprint.goal && <p className="text-[12px] text-gray-500 mt-0.5">{sprint.goal}</p>}
-                <div className="flex gap-3 mt-1 text-[11px] text-gray-400">
+                {sprint.goal && <p className="text-label text-gray-500 mt-0.5">{sprint.goal}</p>}
+                <div className="flex gap-3 mt-1 text-caption text-gray-400">
                   {sprint.start_date && <span>Start: {sprint.start_date}</span>}
                   {sprint.end_date && <span>End: {sprint.end_date}</span>}
                   <span><span className="font-mono tabular-nums">{sprintStories.length}</span> stories · <span className="font-mono tabular-nums">{totalPoints}</span> pts</span>
@@ -249,7 +250,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
             </div>
 
             {sprintStories.length === 0 ? (
-              <p className="text-[12px] text-gray-400 text-center py-3 border border-dashed border-gray-200 rounded-lg">
+              <p className="text-label text-gray-400 text-center py-3 border border-dashed border-gray-200 rounded-lg">
                 Drag stories here or assign from backlog
               </p>
             ) : (
@@ -264,7 +265,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
                 ))}
               </div>
             )}
-          </div>
+          </Card>
         )
       })}
 
@@ -274,12 +275,12 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
       </Button>
 
       {/* Backlog */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5">
-        <h3 className="font-display text-[14px] font-semibold text-ink mb-3">
+      <Card>
+        <h3 className="font-display text-body-lg font-semibold text-ink mb-3">
           Backlog (<span className="font-mono tabular-nums">{backlogStories.length}</span>)
         </h3>
         {backlogStories.length === 0 ? (
-          <p className="text-[12px] text-gray-400 text-center py-4">All stories are assigned to sprints.</p>
+          <p className="text-label text-gray-400 text-center py-4">All stories are assigned to sprints.</p>
         ) : (
           <div className="space-y-1.5">
             {backlogStories.map((story) => (
@@ -293,7 +294,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
             ))}
           </div>
         )}
-      </div>
+      </Card>
 
       {showCreateSprint && (
         <CreateSprintModal onClose={() => setShowCreateSprint(false)} onCreate={createSprint} />
@@ -318,26 +319,26 @@ function BacklogStoryRow({
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-200 group transition-colors">
-      <span className="font-mono text-[11px] text-gray-400 shrink-0 w-16">{story.display_id}</span>
+      <span className="font-mono text-caption text-gray-400 shrink-0 w-16">{story.display_id}</span>
       <span
-        className="text-[13px] text-ink font-medium flex-1 truncate cursor-pointer hover:text-brand"
+        className="text-body text-ink font-medium flex-1 truncate cursor-pointer hover:text-brand"
         onClick={onClick}
       >
         {story.title}
       </span>
       {story.story_points && (
-        <span className="text-[10px] font-mono tabular-nums text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+        <span className="text-micro font-mono tabular-nums text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
           {story.story_points} pts
         </span>
       )}
-      <span className="text-[11px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+      <span className="text-caption">{PRIORITY_META[story.priority as Priority]?.icon}</span>
       {story.assignee && <Avatar name={story.assignee.full_name} size="sm" />}
       <StatusBadge status={story.status as Status} />
 
       {/* Sprint action */}
       {sprints && onMoveToSprint && (
         <select
-          className="text-[11px] border border-gray-200 rounded px-1.5 py-0.5 outline-none opacity-0 group-hover:opacity-100 transition-opacity"
+          className="text-caption border border-gray-200 rounded px-1.5 py-0.5 outline-none opacity-0 group-hover:opacity-100 transition-opacity"
           defaultValue=""
           onChange={(e) => { if (e.target.value) onMoveToSprint(e.target.value) }}
         >
@@ -348,7 +349,7 @@ function BacklogStoryRow({
       {onRemoveFromSprint && (
         <button
           onClick={onRemoveFromSprint}
-          className="text-[11px] text-gray-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
+          className="text-caption text-gray-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
         >
           ✕
         </button>
@@ -379,7 +380,7 @@ function ProjectTimeline({ projectId }: { projectId: string }) {
       <div className="text-center py-10 text-gray-400">
         <CalendarDays size={32} className="mx-auto mb-3 text-gray-300" />
         <p className="text-sm">No stories with dates assigned yet.</p>
-        <p className="text-[12px] mt-1">Add start/due dates to stories to see them on the timeline.</p>
+        <p className="text-label mt-1">Add start/due dates to stories to see them on the timeline.</p>
       </div>
     )
   }
@@ -389,9 +390,9 @@ function ProjectTimeline({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       {stories.map((story) => (
         <div key={story.id} className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
-          <span className="font-mono text-[11px] text-gray-400 shrink-0">{story.display_id}</span>
-          <span className="text-[13px] text-ink font-medium flex-1 truncate">{story.title}</span>
-          <span className="text-[11px] text-gray-500 shrink-0">
+          <span className="font-mono text-caption text-gray-400 shrink-0">{story.display_id}</span>
+          <span className="text-body text-ink font-medium flex-1 truncate">{story.title}</span>
+          <span className="text-caption text-gray-500 shrink-0">
             {story.start_date && new Date(story.start_date).toLocaleDateString()}
             {story.start_date && story.due_date && ' → '}
             {story.due_date && new Date(story.due_date).toLocaleDateString()}

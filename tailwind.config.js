@@ -41,6 +41,18 @@ export default {
         body: ["'Inter'", 'sans-serif'],
         mono: ["'IBM Plex Mono'", 'monospace'],
       },
+      // Standardized type scale — replaces 16 arbitrary text-[Npx] one-offs
+      // that had accumulated with no semantic meaning behind the differences.
+      fontSize: {
+        micro: ['10px', { lineHeight: '1.4' }],
+        caption: ['11px', { lineHeight: '1.45' }],
+        label: ['12px', { lineHeight: '1.45' }],
+        body: ['13px', { lineHeight: '1.5' }],
+        'body-lg': ['14px', { lineHeight: '1.5' }],
+        subhead: ['15px', { lineHeight: '1.4' }],
+        heading: ['22px', { lineHeight: '1.25' }],
+        display: ['32px', { lineHeight: '1.15' }],
+      },
       keyframes: {
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(8px)' },

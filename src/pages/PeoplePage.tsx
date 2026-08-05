@@ -7,6 +7,7 @@ import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
+import Card from '../components/ui/Card'
 
 const ALLOWED_DOMAIN = '1cloudhub.com'
 
@@ -105,14 +106,14 @@ export default function PeoplePage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="font-display text-[22px] font-semibold text-ink">People</h1>
-        <p className="text-[13px] text-gray-500 mt-1">
+        <h1 className="font-display text-heading font-semibold text-ink">People</h1>
+        <p className="text-body text-gray-500 mt-1">
           Admins can invite teammates and tag them to projects.
         </p>
       </div>
 
       {/* People table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <Card padding="none" className="overflow-hidden">
         {people.length === 0 ? (
           <div className="text-center py-10 text-gray-400">
             No team members yet. Invite someone to get started.
@@ -127,11 +128,11 @@ export default function PeoplePage() {
             >
               <Avatar name={person.full_name} size="lg" />
               <div className="flex-1 min-w-0">
-                <div className="text-[13.5px] font-semibold text-ink">{person.full_name}</div>
-                <div className="text-[12px] text-gray-400 font-mono truncate">{person.email}</div>
+                <div className="text-body font-semibold text-ink">{person.full_name}</div>
+                <div className="text-label text-gray-400 font-mono truncate">{person.email}</div>
               </div>
               <span
-                className={`flex items-center gap-1 text-[11.5px] font-semibold px-2.5 py-1 rounded-md ${
+                className={`flex items-center gap-1 text-caption font-semibold px-2.5 py-1 rounded-md ${
                   person.role === 'admin'
                     ? 'bg-brand-soft text-brand'
                     : 'bg-gray-100 text-gray-500'
@@ -154,7 +155,7 @@ export default function PeoplePage() {
             </div>
           ))
         )}
-      </div>
+      </Card>
 
       {user?.role === 'admin' && (
         <Button onClick={() => setShowInvite(true)} className="mt-4">
@@ -203,11 +204,11 @@ function InviteModal({
             onChange={(e) => setEmail(e.target.value)}
             placeholder={`name@${ALLOWED_DOMAIN}`}
           />
-          <p className="text-[11px] text-gray-400 mt-1">Must be a @{ALLOWED_DOMAIN} address.</p>
+          <p className="text-caption text-gray-400 mt-1">Must be a @{ALLOWED_DOMAIN} address.</p>
         </div>
 
         <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Role</label>
+          <label className="block text-body font-semibold text-ink mb-1.5">Role</label>
           <select
             className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
             value={role}

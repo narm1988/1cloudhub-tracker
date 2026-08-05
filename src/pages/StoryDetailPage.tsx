@@ -18,6 +18,7 @@ import {
 } from '../components/detail/DetailFields'
 import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
+import Card from '../components/ui/Card'
 import { notifyAssignment } from '../lib/notifyAssignment'
 
 interface StoryDraft {
@@ -375,7 +376,7 @@ export default function StoryDetailPage() {
       {/* Back */}
       <button
         onClick={handleBack}
-        className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 mb-4"
+        className="flex items-center gap-1.5 text-gray-500 text-body hover:text-gray-700 mb-4"
       >
         <ArrowLeft size={14} /> Back
       </button>
@@ -384,15 +385,15 @@ export default function StoryDetailPage() {
         {/* ---- Main column ---- */}
         <div className="min-w-0">
           {/* Header card */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
+          <Card padding="lg" className="mb-4">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <span className="text-[13px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">
+              <span className="text-body px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">
                 {ISSUE_TYPE_META.Story.icon} Story
               </span>
               {isNew ? (
-                <span className="text-[12px] text-brand font-semibold">New — not yet saved</span>
+                <span className="text-label text-brand font-semibold">New — not yet saved</span>
               ) : (
-                <span className="font-mono text-[12px] text-gray-400">{story!.display_id}</span>
+                <span className="font-mono text-label text-gray-400">{story!.display_id}</span>
               )}
               <StatusField
                 status={current.status}
@@ -405,28 +406,28 @@ export default function StoryDetailPage() {
               onSave={(title) => updateDraft({ title })}
               placeholder={isNew ? 'Click to add a title' : undefined}
             />
-          </div>
+          </Card>
 
           {/* Description */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+          <Card className="mb-4">
             <h2 className={`${SECTION_HEADER} mb-2`}>Description</h2>
             <InlineDescription
               value={current.description}
               onSave={(description) => updateDraft({ description })}
             />
-          </div>
+          </Card>
 
           {!isNew && (
             <>
               {/* Child Issues (Tasks/Bugs) */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+              <Card className="mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className={SECTION_HEADER}>Child Issues (<span className="font-mono tabular-nums">{issues.length}</span>)</h2>
                   <IssueTypePicker onCreate={createIssue} />
                 </div>
 
                 {issues.length === 0 ? (
-                  <p className="text-[13px] text-gray-400 text-center py-4">
+                  <p className="text-body text-gray-400 text-center py-4">
                     No tasks or bugs yet. Add one to break down this story.
                   </p>
                 ) : (
@@ -437,22 +438,22 @@ export default function StoryDetailPage() {
                         onClick={() => navigate(`/issues/${issue.id}`)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-brand/30 hover:shadow-sm cursor-pointer transition-all"
                       >
-                        <span className="text-[14px]">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
-                        <span className="font-mono text-[11px] text-gray-400 shrink-0">{issue.display_id}</span>
-                        <span className="text-[13px] text-ink font-medium flex-1 truncate">{issue.title}</span>
-                        <span className="text-[11px]">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
+                        <span className="text-body-lg">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
+                        <span className="font-mono text-caption text-gray-400 shrink-0">{issue.display_id}</span>
+                        <span className="text-body text-ink font-medium flex-1 truncate">{issue.title}</span>
+                        <span className="text-caption">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
                         {issue.assignee && <Avatar name={issue.assignee.full_name} size="sm" />}
-                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
+                        <span className={`text-caption font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
                           {issue.status}
                         </span>
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
+              </Card>
 
               {/* Linked Issues */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+              <Card className="mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
                     <Link2 size={15} /> Linked Issues (<span className="font-mono tabular-nums">{links.length}</span>)
@@ -463,7 +464,7 @@ export default function StoryDetailPage() {
                 </div>
 
                 {links.length === 0 ? (
-                  <p className="text-[13px] text-gray-400 text-center py-3">No linked issues.</p>
+                  <p className="text-body text-gray-400 text-center py-3">No linked issues.</p>
                 ) : (
                   <div className="space-y-2">
                     {links.map((link) => {
@@ -472,11 +473,11 @@ export default function StoryDetailPage() {
                       const linkedStory = allStories.find((s) => s.id === linkedId)
                       return (
                         <div key={link.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
-                          <span className="text-[12px] text-gray-500 italic shrink-0">{link.link_type}</span>
-                          <span className="font-mono text-[11px] text-gray-400">
+                          <span className="text-label text-gray-500 italic shrink-0">{link.link_type}</span>
+                          <span className="font-mono text-caption text-gray-400">
                             {linkedStory?.display_id || linkedId.slice(0, 8)}
                           </span>
-                          <span className="text-[13px] text-ink flex-1 truncate">
+                          <span className="text-body text-ink flex-1 truncate">
                             {linkedStory?.title || 'Unknown'}
                           </span>
                           <button
@@ -490,10 +491,10 @@ export default function StoryDetailPage() {
                     })}
                   </div>
                 )}
-              </div>
+              </Card>
 
               {/* Attachments */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+              <Card className="mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
                     <Paperclip size={15} /> Attachments (<span className="font-mono tabular-nums">{attachments.length}</span>)
@@ -502,7 +503,7 @@ export default function StoryDetailPage() {
                 </div>
 
                 {attachments.length === 0 ? (
-                  <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
+                  <p className="text-body text-gray-400 text-center py-3">No files attached.</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {attachments.map((att) => {
@@ -525,11 +526,11 @@ export default function StoryDetailPage() {
                               href={att.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[13px] text-brand hover:underline truncate block"
+                              className="text-body text-brand hover:underline truncate block"
                             >
                               {att.file_name}
                             </a>
-                            <span className="text-[11px] text-gray-400">
+                            <span className="text-caption text-gray-400">
                               {(att.file_size / 1024).toFixed(1)} KB
                             </span>
                           </div>
@@ -544,10 +545,10 @@ export default function StoryDetailPage() {
                     })}
                   </div>
                 )}
-              </div>
+              </Card>
 
               {/* Comments */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+              <Card className="mb-4">
                 <h2 className={`${SECTION_HEADER} flex items-center gap-2 mb-4`}>
                   <MessageSquare size={15} /> Comments (<span className="font-mono tabular-nums">{comments.length}</span>)
                 </h2>
@@ -558,10 +559,10 @@ export default function StoryDetailPage() {
                       <Avatar name={comment.author?.full_name || 'User'} size="md" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-semibold text-ink">
+                          <span className="text-body font-semibold text-ink">
                             {comment.author?.full_name}
                           </span>
-                          <span className="text-[11px] text-gray-400">
+                          <span className="text-caption text-gray-400">
                             {new Date(comment.created_at).toLocaleString()}
                           </span>
                           {comment.author_id === user?.id && (
@@ -573,19 +574,19 @@ export default function StoryDetailPage() {
                             </button>
                           )}
                         </div>
-                        <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
+                        <p className="text-body text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
                           {comment.content}
                         </p>
                       </div>
                     </div>
                   ))}
                   {comments.length === 0 && (
-                    <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
+                    <p className="text-body text-gray-400 text-center py-2">No comments yet.</p>
                   )}
                 </div>
 
                 <CommentInput onSubmit={addComment} />
-              </div>
+              </Card>
 
               {/* Audit Log */}
               <AuditLogSection parentId={storyId!} parentType="story" />
@@ -594,7 +595,7 @@ export default function StoryDetailPage() {
         </div>
 
         {/* ---- Sidebar ---- */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 lg:sticky lg:top-4">
+        <Card className="lg:sticky lg:top-4">
           <h3 className={`${SECTION_HEADER} mb-1`}>Details</h3>
 
           <div className="divide-y divide-gray-100">
@@ -617,17 +618,17 @@ export default function StoryDetailPage() {
               {epic ? (
                 <button
                   onClick={() => navigate(`/epics/${epic.id}`)}
-                  className="text-[13px] text-brand hover:underline font-medium truncate max-w-[170px] text-right"
+                  className="text-body text-brand hover:underline font-medium truncate max-w-[170px] text-right"
                 >
                   {epic.title}
                 </button>
               ) : (
-                <span className="text-[13px] text-gray-400">None</span>
+                <span className="text-body text-gray-400">None</span>
               )}
             </DetailRow>
 
             <DetailRow label="Reporter">
-              <span className="text-[13px] text-ink font-medium">
+              <span className="text-body text-ink font-medium">
                 {isNew ? (user?.full_name || 'You') : (story!.reporter?.full_name || 'Unknown')}
               </span>
             </DetailRow>
@@ -646,7 +647,7 @@ export default function StoryDetailPage() {
                 value={current.story_points ?? ''}
                 onChange={(e) => updateDraft({ story_points: e.target.value ? parseInt(e.target.value) : null })}
                 placeholder="None"
-                className="text-[13px] font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
+                className="text-body font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
               />
             </DetailRow>
 
@@ -655,7 +656,7 @@ export default function StoryDetailPage() {
                 type="date"
                 value={current.start_date || ''}
                 onChange={(e) => updateDraft({ start_date: e.target.value || null })}
-                className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
 
@@ -664,24 +665,24 @@ export default function StoryDetailPage() {
                 type="date"
                 value={current.due_date || ''}
                 onChange={(e) => updateDraft({ due_date: e.target.value || null })}
-                className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
           </div>
 
           {!isNew && story && (
-            <div className="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-400 space-y-0.5">
+            <div className="mt-3 pt-3 border-t border-gray-100 text-caption text-gray-400 space-y-0.5">
               <div>Created {new Date(story.created_at).toLocaleDateString()}</div>
               <div>Updated {new Date(story.updated_at).toLocaleDateString()}</div>
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Save / Cancel bar */}
       {showBar && (
         <div className="sticky bottom-0 z-30 -mx-6 -mb-6 mt-4 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-6 py-3.5 flex items-center justify-between animate-fade-in-up">
-          <span className="text-[13px] text-gray-600">
+          <span className="text-body text-gray-600">
             {isNew ? 'This story has not been created yet.' : 'You have unsaved changes.'}
           </span>
           <div className="flex items-center gap-2">
@@ -725,9 +726,9 @@ function IssueTypePicker({ onCreate }: { onCreate: (type: IssueType) => void }) 
               <button
                 key={t}
                 onClick={() => { onCreate(t); setOpen(false) }}
-                className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[12.5px] text-ink hover:bg-gray-50"
+                className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-label text-ink hover:bg-gray-50"
               >
-                <span className="text-[13px] leading-none">{ISSUE_TYPE_META[t].icon}</span> {t}
+                <span className="text-body leading-none">{ISSUE_TYPE_META[t].icon}</span> {t}
               </button>
             ))}
           </div>
@@ -753,7 +754,7 @@ function LinkIssueModal({
     <Modal title="Link an issue" onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Relationship</label>
+          <label className="block text-body font-semibold text-ink mb-1.5">Relationship</label>
           <select
             className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
             value={linkType}
@@ -766,7 +767,7 @@ function LinkIssueModal({
         </div>
 
         <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Target story</label>
+          <label className="block text-body font-semibold text-ink mb-1.5">Target story</label>
           <select
             className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
             value={targetId}

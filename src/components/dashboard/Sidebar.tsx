@@ -108,8 +108,8 @@ export default function Sidebar() {
           </div>
         </div>
         <div>
-          <div className="font-display font-bold text-[15px] leading-none">1CloudHub</div>
-          <div className="text-[9px] tracking-[0.12em] mt-0.5" style={{ color: theme.subText }}>TRACKER</div>
+          <div className="font-display font-bold text-subhead leading-none">1CloudHub</div>
+          <div className="text-micro tracking-[0.12em] mt-0.5" style={{ color: theme.subText }}>TRACKER</div>
         </div>
       </div>
 
@@ -123,7 +123,7 @@ export default function Sidebar() {
             <button
               key={item.key}
               onClick={() => navigate(item.path)}
-              className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[13.5px] font-medium transition-colors ${
+              className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-body font-medium transition-colors ${
                 isActive
                   ? 'bg-[var(--nav-active-bg)]'
                   : 'text-[var(--nav-text-inactive)] hover:text-[var(--nav-text-hover)] hover:bg-[var(--nav-hover-bg)]'
@@ -134,7 +134,7 @@ export default function Sidebar() {
               {item.label}
               {item.admin && (
                 <span
-                  className="ml-auto text-[9.5px] px-1.5 py-0.5 rounded"
+                  className="ml-auto text-micro px-1.5 py-0.5 rounded"
                   style={{ backgroundColor: theme.hoverBg, color: theme.textInactive }}
                 >
                   ADMIN
@@ -150,7 +150,7 @@ export default function Sidebar() {
         <div className="my-3 border-t" style={{ borderColor: theme.borderColor }} />
         <button
           onClick={handleSignOut}
-          className="group w-full flex items-center gap-2.5 text-[var(--nav-text-inactive)] hover:text-danger hover:bg-danger/10 text-[13.5px] font-medium rounded-lg px-2.5 py-2 transition-colors"
+          className="group w-full flex items-center gap-2.5 text-[var(--nav-text-inactive)] hover:text-danger hover:bg-danger/10 text-body font-medium rounded-lg px-2.5 py-2 transition-colors"
         >
           <LogOut size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" /> Sign out
         </button>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Lock, Eye, EyeOff, Cloud, AlertCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import Button from '../components/ui/Button'
+import Card from '../components/ui/Card'
 
 type Status = 'checking' | 'ready' | 'invalid'
 
@@ -78,11 +79,11 @@ export default function AcceptInvitePage() {
           </div>
           <div>
             <div className="font-display text-base font-bold text-ink leading-none">1CloudHub</div>
-            <div className="text-[9.5px] tracking-[0.14em] text-gray-400 mt-0.5">TRACKER</div>
+            <div className="text-micro tracking-[0.14em] text-gray-400 mt-0.5">TRACKER</div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-7">
+        <Card padding="lg">
           {status === 'checking' && (
             <div className="text-center py-6">
               <p className="text-sm text-gray-500">Verifying your invite...</p>
@@ -95,7 +96,7 @@ export default function AcceptInvitePage() {
               <h1 className="font-display text-lg font-semibold text-ink mb-1.5">
                 Invite link invalid or expired
               </h1>
-              <p className="text-[13px] text-gray-500 mb-5">
+              <p className="text-body text-gray-500 mb-5">
                 Ask an admin to send you a new invite, or sign in if you already have a password.
               </p>
               <Button onClick={() => navigate('/login')} className="w-full">
@@ -117,7 +118,7 @@ export default function AcceptInvitePage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[13px] font-semibold text-ink mb-1.5 block">Password</label>
+                  <label className="text-body font-semibold text-ink mb-1.5 block">Password</label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Lock size={16} />
@@ -142,7 +143,7 @@ export default function AcceptInvitePage() {
                 </div>
 
                 <div>
-                  <label className="text-[13px] font-semibold text-ink mb-1.5 block">Confirm password</label>
+                  <label className="text-body font-semibold text-ink mb-1.5 block">Confirm password</label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Lock size={16} />
@@ -164,7 +165,7 @@ export default function AcceptInvitePage() {
               </Button>
             </form>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   )

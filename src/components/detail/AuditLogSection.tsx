@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { History, ChevronDown } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Avatar from '../ui/Avatar'
+import Card from '../ui/Card'
 import { SECTION_HEADER } from './DetailFields'
 
 interface ActivityLogEntry {
@@ -64,7 +65,7 @@ export default function AuditLogSection({
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
+    <Card className="mb-4">
       <button onClick={toggle} className="w-full flex items-center justify-between">
         <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
           <History size={15} /> Audit Log{loaded ? <> (<span className="font-mono tabular-nums">{logs.length}</span>)</> : ''}
@@ -75,22 +76,22 @@ export default function AuditLogSection({
       {open && (
         <div className="mt-4 space-y-3">
           {!loaded ? (
-            <p className="text-[13px] text-gray-400 text-center py-2">Loading...</p>
+            <p className="text-body text-gray-400 text-center py-2">Loading...</p>
           ) : logs.length === 0 ? (
-            <p className="text-[13px] text-gray-400 text-center py-2">No activity yet.</p>
+            <p className="text-body text-gray-400 text-center py-2">No activity yet.</p>
           ) : (
             logs.map((log) => (
               <div key={log.id} className="flex items-start gap-2.5">
                 <Avatar name={log.user?.full_name || 'User'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <span className="text-[12.5px] text-gray-700">{describeActivity(log)}</span>
-                  <span className="text-[11px] text-gray-400 ml-2">{new Date(log.created_at).toLocaleString()}</span>
+                  <span className="text-label text-gray-700">{describeActivity(log)}</span>
+                  <span className="text-caption text-gray-400 ml-2">{new Date(log.created_at).toLocaleString()}</span>
                 </div>
               </div>
             ))
           )}
         </div>
       )}
-    </div>
+    </Card>
   )
 }

@@ -7,6 +7,7 @@ import type { Status, Priority } from '../lib/constants'
 import type { User } from '../types'
 import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
+import Card from '../components/ui/Card'
 
 interface SearchResult {
   id: string
@@ -103,7 +104,7 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h1 className="font-display text-[22px] font-semibold text-ink mb-5">Search & Filter</h1>
+      <h1 className="font-display text-heading font-semibold text-ink mb-5">Search & Filter</h1>
 
       {/* Search bar */}
       <div className="flex gap-3 mb-4">
@@ -135,9 +136,9 @@ export default function SearchPage() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="flex gap-3 mb-5 p-4 bg-white border border-gray-200 rounded-xl">
+        <Card padding="sm" className="flex gap-3 mb-5">
           <div>
-            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Status</label>
+            <label className="block text-caption font-semibold text-gray-500 mb-1">Status</label>
             <select
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none"
               value={statusFilter}
@@ -148,7 +149,7 @@ export default function SearchPage() {
             </select>
           </div>
           <div>
-            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Priority</label>
+            <label className="block text-caption font-semibold text-gray-500 mb-1">Priority</label>
             <select
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none"
               value={priorityFilter}
@@ -159,7 +160,7 @@ export default function SearchPage() {
             </select>
           </div>
           <div>
-            <label className="block text-[11px] font-semibold text-gray-500 mb-1">Assignee</label>
+            <label className="block text-caption font-semibold text-gray-500 mb-1">Assignee</label>
             <select
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none"
               value={assigneeFilter}
@@ -171,11 +172,11 @@ export default function SearchPage() {
           </div>
           <button
             onClick={() => { setStatusFilter(''); setPriorityFilter(''); setAssigneeFilter('') }}
-            className="self-end text-[12px] text-gray-400 hover:text-gray-600 pb-1.5"
+            className="self-end text-label text-gray-400 hover:text-gray-600 pb-1.5"
           >
             Clear all
           </button>
-        </div>
+        </Card>
       )}
 
       {/* Results */}
@@ -189,7 +190,7 @@ export default function SearchPage() {
       )}
 
       {results.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <Card padding="none" className="overflow-hidden">
           {results.map((item, i) => (
             <div
               key={`${item.kind}-${item.id}`}
@@ -198,20 +199,20 @@ export default function SearchPage() {
                 i < results.length - 1 ? 'border-b border-gray-100' : ''
               }`}
             >
-              <span className="text-[13px]">{ISSUE_TYPE_META[item.type as keyof typeof ISSUE_TYPE_META]?.icon || '📗'}</span>
-              <span className="font-mono text-[11px] text-gray-400 shrink-0 w-16">{item.display_id}</span>
-              <span className="text-[13px] text-ink font-medium flex-1 truncate">{item.title}</span>
-              <span className="text-[11px]">{PRIORITY_META[item.priority as Priority]?.icon}</span>
+              <span className="text-body">{ISSUE_TYPE_META[item.type as keyof typeof ISSUE_TYPE_META]?.icon || '📗'}</span>
+              <span className="font-mono text-caption text-gray-400 shrink-0 w-16">{item.display_id}</span>
+              <span className="text-body text-ink font-medium flex-1 truncate">{item.title}</span>
+              <span className="text-caption">{PRIORITY_META[item.priority as Priority]?.icon}</span>
               {item.assignee && <Avatar name={item.assignee.full_name} size="sm" />}
               <StatusBadge status={item.status as Status} />
               {item.due_date && (
-                <span className="text-[10.5px] text-gray-400 shrink-0">
+                <span className="text-caption text-gray-400 shrink-0">
                   Due {new Date(item.due_date).toLocaleDateString()}
                 </span>
               )}
             </div>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   )

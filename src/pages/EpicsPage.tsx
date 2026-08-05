@@ -8,6 +8,7 @@ import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
+import Card from '../components/ui/Card'
 
 export default function EpicsPage() {
   const [epics, setEpics] = useState<Epic[]>([])
@@ -67,8 +68,8 @@ export default function EpicsPage() {
       {/* Header */}
       <div className="flex items-baseline justify-between mb-5">
         <div>
-          <h1 className="font-display text-[22px] font-semibold text-ink">Epics</h1>
-          <p className="text-[13px] text-gray-500 mt-1">
+          <h1 className="font-display text-heading font-semibold text-ink">Epics</h1>
+          <p className="text-body text-gray-500 mt-1">
             <span className="font-mono tabular-nums">{epics.length}</span> epics in your workspace
           </p>
         </div>
@@ -91,25 +92,25 @@ export default function EpicsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {epics.map((epic) => (
-            <div
+            <Card
               key={epic.id}
               onClick={() => navigate(`/epics/${epic.id}`)}
-              className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-brand/40 hover:shadow-sm transition-all"
+              className="cursor-pointer hover:border-brand/40 hover:shadow-sm transition-all"
             >
               <div className="flex items-center gap-1.5 mb-2.5">
                 <div className="bg-violet-50 rounded p-0.5 flex">
                   <Flag size={12} className="text-violet-500" />
                 </div>
-                <span className="font-mono text-[11.5px] text-gray-400">{epic.id.slice(0, 8)}</span>
+                <span className="font-mono text-caption text-gray-400">{epic.id.slice(0, 8)}</span>
                 <ChevronRight size={13} className="text-gray-400 ml-auto" />
               </div>
-              <div className="text-[14.5px] font-semibold text-ink mb-1">{epic.title}</div>
+              <div className="text-body-lg font-semibold text-ink mb-1">{epic.title}</div>
               {epic.project && (
-                <span className="inline-block text-[10.5px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mb-1.5">
+                <span className="inline-block text-caption font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mb-1.5">
                   {epic.project.key}
                 </span>
               )}
-              <div className="text-[12.5px] text-gray-500 leading-relaxed mb-4 line-clamp-2">
+              <div className="text-label text-gray-500 leading-relaxed mb-4 line-clamp-2">
                 {epic.description}
               </div>
 
@@ -119,15 +120,15 @@ export default function EpicsPage() {
               <div className="flex items-center justify-between mt-2.5">
                 <div className="flex items-center gap-1.5">
                   <Avatar name={epic.owner?.full_name || 'Unknown'} size="sm" />
-                  <span className="text-[11.5px] text-gray-500">
+                  <span className="text-caption text-gray-500">
                     {epic.owner?.full_name || 'Unassigned'}
                   </span>
                 </div>
-                <span className="text-[11.5px] text-gray-400">
+                <span className="text-caption text-gray-400">
                   {epic.status}
                 </span>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -161,7 +162,7 @@ function CreateEpicModal({
     <Modal title="New epic" onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">Project</label>
+          <label className="block text-body font-semibold text-ink mb-1.5">Project</label>
           <select
             className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
             value={projectId}
@@ -180,7 +181,7 @@ function CreateEpicModal({
           placeholder="e.g. Client Onboarding Automation"
         />
         <div>
-          <label className="block text-[13px] font-semibold text-ink mb-1.5">
+          <label className="block text-body font-semibold text-ink mb-1.5">
             Description
           </label>
           <textarea
