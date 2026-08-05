@@ -14,6 +14,7 @@ import {
 } from '../components/detail/DetailFields'
 import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
+import { notifyAssignment } from '../lib/notifyAssignment'
 
 interface IssueDraft {
   title: string
@@ -167,9 +168,25 @@ export default function IssueDetailPage() {
       }).select().single()
 
       setSaving(false)
-      if (!error && data) navigate(`/issues/${data.id}`, { replace: true })
+      if (!error && data) {
+        if (data.assignee_id) {
+          notifyAssignment({
+            assigneeId: data.assignee_id,
+            itemType: data.type,
+            displayId: data.display_id,
+            title: data.title,
+            breadcrumb: parentStory ? `${parentStory.display_id} · ${parentStory.title}` : undefined,
+            priority: data.priority,
+            dueDate: data.due_date,
+            itemPath: `/issues/${data.id}`,
+          })
+        }
+        navigate(`/issues/${data.id}`, { replace: true })
+      }
       return
     }
+
+    const assigneeChanged = normalize(current.assignee_id) !== normalize(issue?.assignee_id)
 
     await supabase.from('issues').update({
       title: current.title,
@@ -182,6 +199,20 @@ export default function IssueDetailPage() {
       start_date: current.start_date,
       due_date: current.due_date,
     }).eq('id', issueId)
+
+    if (assigneeChanged && current.assignee_id) {
+      notifyAssignment({
+        assigneeId: current.assignee_id,
+        itemType: current.type,
+        displayId: issue!.display_id,
+        title: current.title,
+        breadcrumb: parentStory ? `${parentStory.display_id} · ${parentStory.title}` : undefined,
+        priority: current.priority,
+        dueDate: current.due_date,
+        itemPath: `/issues/${issueId}`,
+      })
+    }
+
     await fetchIssue()
     setSaving(false)
   }

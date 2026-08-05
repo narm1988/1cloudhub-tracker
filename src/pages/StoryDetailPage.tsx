@@ -18,6 +18,7 @@ import {
 } from '../components/detail/DetailFields'
 import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
+import { notifyAssignment } from '../lib/notifyAssignment'
 
 interface StoryDraft {
   title: string
@@ -203,9 +204,25 @@ export default function StoryDetailPage() {
       }).select().single()
 
       setSaving(false)
-      if (!error && data) navigate(`/stories/${data.id}`, { replace: true })
+      if (!error && data) {
+        if (data.assignee_id) {
+          notifyAssignment({
+            assigneeId: data.assignee_id,
+            itemType: 'Story',
+            displayId: data.display_id,
+            title: data.title,
+            breadcrumb: epic?.title,
+            priority: data.priority,
+            dueDate: data.due_date,
+            itemPath: `/stories/${data.id}`,
+          })
+        }
+        navigate(`/stories/${data.id}`, { replace: true })
+      }
       return
     }
+
+    const assigneeChanged = normalize(current.assignee_id) !== normalize(story?.assignee_id)
 
     await supabase.from('stories').update({
       title: current.title,
@@ -217,6 +234,20 @@ export default function StoryDetailPage() {
       start_date: current.start_date,
       due_date: current.due_date,
     }).eq('id', storyId)
+
+    if (assigneeChanged && current.assignee_id) {
+      notifyAssignment({
+        assigneeId: current.assignee_id,
+        itemType: 'Story',
+        displayId: story!.display_id,
+        title: current.title,
+        breadcrumb: epic?.title,
+        priority: current.priority,
+        dueDate: current.due_date,
+        itemPath: `/stories/${storyId}`,
+      })
+    }
+
     await fetchStory()
     setSaving(false)
   }

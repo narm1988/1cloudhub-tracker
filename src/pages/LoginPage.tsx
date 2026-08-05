@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, Cloud } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
 
@@ -45,6 +46,15 @@ export default function LoginPage() {
     } else {
       navigate('/', { replace: true })
     }
+  }
+
+  async function handleMicrosoftSignIn() {
+    setError('')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'azure',
+      options: { redirectTo: window.location.origin },
+    })
+    if (error) setError(error.message)
   }
 
   return (
@@ -222,6 +232,27 @@ export default function LoginPage() {
             </Button>
             <span className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent" />
           </div>
+
+          <div className="flex items-center gap-3 my-4 animate-fade-in-up" style={{ animationDelay: '0.22s' }}>
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-[11.5px] text-gray-400 font-medium">or</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleMicrosoftSignIn}
+            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-ink hover:bg-gray-50 transition-colors animate-fade-in-up"
+            style={{ animationDelay: '0.24s' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 21 21">
+              <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+              <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+              <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+              <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+            </svg>
+            Sign in with Microsoft
+          </button>
 
           {/* Perforation divider */}
           <div className="my-5 h-px bg-[repeating-linear-gradient(90deg,#E6E7EB_0,#E6E7EB_3px,transparent_3px,transparent_7px)] animate-fade-in-up" style={{ animationDelay: '0.25s' }} />
