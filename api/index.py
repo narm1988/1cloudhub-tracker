@@ -62,3 +62,44 @@ def debug_supabase():
         info["db_error"] = str(e)
 
     return info
+
+
+@app.get("/api/debug/jwt")
+def debug_jwt():
+    """Verifies JWT key pair is correctly configured by minting and verifying a test token."""
+    from api.config import JWT_PRIVATE_KEY, JWT_PUBLIC_KEY, JWT_KID, JWT_ISSUER, JWT_AUDIENCE
+    from api.lib.jwt import create_access_token, verify_access_token
+
+    info = {
+        "JWT_PRIVATE_KEY_length": len(JWT_PRIVATE_KEY),
+        "JWT_PRIVATE_KEY_starts": JWT_PRIVATE_KEY[:30] + "..." if JWT_PRIVATE_KEY else "(empty)",
+        "JWT_PUBLIC_KEY_length": len(JWT_PUBLIC_KEY),
+        "JWT_PUBLIC_KEY_starts": JWT_PUBLIC_KEY[:30] + "..." if JWT_PUBLIC_KEY else "(empty)",
+        "JWT_KID": JWT_KID or "(empty)",
+        "JWT_ISSUER": JWT_ISSUER,
+        "JWT_AUDIENCE": JWT_AUDIENCE,
+    }
+
+    if not JWT_PRIVATE_KEY or not JWT_PUBLIC_KEY:
+        info["test"] = "SKIPPED — keys not set"
+        return info
+
+    try:
+        token = create_access_token("test-user-id", "test@example.com", "member")
+        info["token_created"] = True
+        info["token_preview"] = token[:50] + "..."
+    except Exception as e:
+        info["token_created"] = False
+        info["create_error"] = str(e)
+        return info
+
+    try:
+        claims = verify_access_token(token)
+        info["token_verified"] = True
+        info["claims_sub"] = claims.get("sub")
+        info["claims_email"] = claims.get("email")
+    except Exception as e:
+        info["token_verified"] = False
+        info["verify_error"] = str(e)
+
+    return info
