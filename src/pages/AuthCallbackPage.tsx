@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Cloud } from 'lucide-react'
 import { setToken } from '../lib/api'
 
 export default function AuthCallbackPage() {
   const handled = useRef(false)
+  const [debug, setDebug] = useState('')
 
   useEffect(() => {
     if (handled.current) return
@@ -13,23 +14,31 @@ export default function AuthCallbackPage() {
     const token = new URLSearchParams(hash).get('token')
 
     if (!token) {
-      window.location.href = '/login?error=missing_token'
+      setDebug(`No token found. Hash: "${window.location.hash}", Full URL: "${window.location.href}"`)
+      setTimeout(() => {
+        window.location.href = '/login?error=missing_token'
+      }, 5000)
       return
     }
 
+    setDebug(`Token received (${token.length} chars). Saving and redirecting...`)
     setToken(token)
-    // Full reload (not a router navigate) so AuthProvider remounts and
-    // restoreSession() picks up the token that was just stored — it only
-    // runs once on mount, so a soft navigation here would leave `user` null.
-    window.location.href = '/'
+    setTimeout(() => {
+      window.location.href = '/'
+    }, 1000)
   }, [])
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-paper font-body">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-paper font-body gap-4">
       <div className="flex items-center gap-2.5 text-gray-400">
         <Cloud size={18} className="animate-pulse" />
         <span className="text-body">Signing you in...</span>
       </div>
+      {debug && (
+        <pre className="text-caption text-gray-500 bg-white border border-gray-200 rounded-lg p-4 max-w-lg break-all">
+          {debug}
+        </pre>
+      )}
     </div>
   )
 }
