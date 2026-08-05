@@ -15,6 +15,25 @@ SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "sb_publishable_6vgvsv2BFacuw
 # ==============================================
 JWT_PRIVATE_KEY = os.getenv("JWT_PRIVATE_KEY", "")  # PEM, RS256 private key
 JWT_PUBLIC_KEY = os.getenv("JWT_PUBLIC_KEY", "")  # PEM, RS256 public key
+
+# Vercel stores multiline env vars with literal "\n" — convert to real newlines
+if JWT_PRIVATE_KEY:
+    JWT_PRIVATE_KEY = JWT_PRIVATE_KEY.replace("\\n", "\n")
+if JWT_PUBLIC_KEY:
+    JWT_PUBLIC_KEY = JWT_PUBLIC_KEY.replace("\\n", "\n")
+
+# Fall back to reading PEM files from disk if env vars are empty (local dev)
+if not JWT_PRIVATE_KEY:
+    _pk_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "private.pem")
+    if os.path.isfile(_pk_path):
+        with open(_pk_path) as f:
+            JWT_PRIVATE_KEY = f.read()
+
+if not JWT_PUBLIC_KEY:
+    _pub_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "public.pem")
+    if os.path.isfile(_pub_path):
+        with open(_pub_path) as f:
+            JWT_PUBLIC_KEY = f.read()
 JWT_KID = os.getenv("JWT_KID", "")  # must match the key id shown in the Dashboard
 JWT_ISSUER = os.getenv("JWT_ISSUER", f"{SUPABASE_URL}/auth/v1")
 JWT_AUDIENCE = os.getenv("JWT_AUDIENCE", "authenticated")
