@@ -51,6 +51,21 @@ export default function LoginPage() {
     <div className="flex min-h-screen w-full font-body bg-paper animate-fade-in">
       {/* Left brand panel */}
       <div className="hidden lg:flex flex-col justify-between w-[44%] bg-ink text-white p-12 relative overflow-hidden">
+        {/* Aurora mesh — soft drifting color blobs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute w-80 h-80 -top-16 -left-10 rounded-full bg-brand blur-3xl opacity-40 mix-blend-screen animate-aurora-a" />
+          <div className="absolute w-72 h-72 bottom-0 -right-16 rounded-full bg-success blur-3xl opacity-30 mix-blend-screen animate-aurora-b" />
+          <div className="absolute w-64 h-64 top-1/3 left-1/3 rounded-full bg-warning blur-3xl opacity-25 mix-blend-screen animate-aurora-c" />
+        </div>
+
+        {/* Glass light sweep */}
+        <div
+          className="absolute -top-1/4 w-[40%] h-[150%] -skew-x-[18deg] pointer-events-none animate-light-sweep"
+          style={{
+            background: 'linear-gradient(100deg, transparent, rgba(255,255,255,0.10) 45%, rgba(91,95,239,0.16) 55%, transparent)',
+          }}
+        />
+
         {/* Starfield */}
         <div className="absolute inset-0 pointer-events-none">
           {STARS.map((s, i) => (
@@ -113,8 +128,9 @@ export default function LoginPage() {
               style={{ animationDelay: `${i * 0.5}s`, animationDuration: t.duration }}
             >
               <div
-                className={`w-72 h-14 bg-ink-faint rounded-lg ${t.rot} flex items-center px-4 shadow-lg border-l-4 ${t.accent}`}
+                className={`relative overflow-hidden w-72 h-14 bg-ink-faint rounded-lg ${t.rot} flex items-center px-4 shadow-lg border-l-4 ${t.accent}`}
               >
+                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
                 <span className="font-mono text-[11px] text-gray-500 tracking-wide">
                   {t.id}
                 </span>

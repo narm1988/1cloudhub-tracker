@@ -70,6 +70,27 @@ export default {
           '0%, 100%': { opacity: '0.15', transform: 'scale(0.85)' },
           '50%': { opacity: '0.9', transform: 'scale(1)' },
         },
+        auroraA: {
+          '0%, 100%': { transform: 'translate(0,0) scale(1)' },
+          '33%': { transform: 'translate(40px,30px) scale(1.15)' },
+          '66%': { transform: 'translate(15px,55px) scale(0.9)' },
+        },
+        auroraB: {
+          '0%, 100%': { transform: 'translate(0,0) scale(1)' },
+          '50%': { transform: 'translate(-35px,-40px) scale(1.2)' },
+        },
+        auroraC: {
+          '0%, 100%': { transform: 'translate(0,0) scale(0.9)' },
+          '40%': { transform: 'translate(-25px,20px) scale(1.1)' },
+          '75%': { transform: 'translate(20px,-15px) scale(1)' },
+        },
+        lightSweep: {
+          '0%': { left: '-40%', opacity: '0' },
+          '12%': { opacity: '1' },
+          '45%': { left: '110%', opacity: '1' },
+          '58%': { opacity: '0' },
+          '100%': { left: '110%', opacity: '0' },
+        },
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.4s ease-out both',
@@ -79,6 +100,10 @@ export default {
         'orbit-spin-slow': 'orbitSpinReverse 26s linear infinite',
         float: 'float 6s ease-in-out infinite',
         twinkle: 'twinkle 3.2s ease-in-out infinite',
+        'aurora-a': 'auroraA 18s ease-in-out infinite',
+        'aurora-b': 'auroraB 22s ease-in-out infinite',
+        'aurora-c': 'auroraC 26s ease-in-out infinite',
+        'light-sweep': 'lightSweep 6s ease-in-out infinite',
       },
     },
   },
