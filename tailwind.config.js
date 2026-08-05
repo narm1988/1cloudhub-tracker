@@ -91,6 +91,15 @@ export default {
           '58%': { opacity: '0' },
           '100%': { left: '110%', opacity: '0' },
         },
+        emberRise: {
+          '0%': { transform: 'translateY(0)', opacity: '0' },
+          '15%': { opacity: '0.9' },
+          '100%': { transform: 'translateY(-40px)', opacity: '0' },
+        },
+        dustDrift: {
+          '0%, 100%': { transform: 'translate(0,0)', opacity: '0.35' },
+          '50%': { transform: 'translate(6px,-10px)', opacity: '0.7' },
+        },
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.4s ease-out both',
@@ -104,6 +113,8 @@ export default {
         'aurora-b': 'auroraB 22s ease-in-out infinite',
         'aurora-c': 'auroraC 26s ease-in-out infinite',
         'light-sweep': 'lightSweep 6s ease-in-out infinite',
+        'ember-rise': 'emberRise 5s ease-in-out infinite',
+        'dust-drift': 'dustDrift 9s ease-in-out infinite',
       },
     },
   },
