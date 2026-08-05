@@ -194,7 +194,7 @@ function CreateProjectModal({
             Key <span className="text-gray-400 font-normal">(used as prefix for issues)</span>
           </label>
           <input
-            className="w-full h-9 px-3 rounded-md border border-gray-200 text-sm font-mono uppercase shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            className="w-full h-10 px-3 rounded-md border border-gray-200 text-sm font-mono uppercase shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
             value={key}
             onChange={(e) => setKey(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5))}
             placeholder="CM"

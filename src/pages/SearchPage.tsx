@@ -136,7 +136,7 @@ export default function SearchPage() {
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
-            className="w-full pl-10 pr-4 h-9 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/20"
+            className="w-full pl-10 pr-4 h-10 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/20"
             placeholder="Search by title, ID, or description..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -161,7 +161,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">Status</label>
             <select
-              className="h-9 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+              className="h-8 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -172,7 +172,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">Priority</label>
             <select
-              className="h-9 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+              className="h-8 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
@@ -183,7 +183,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">Assignee</label>
             <select
-              className="h-9 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+              className="h-8 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
             >
