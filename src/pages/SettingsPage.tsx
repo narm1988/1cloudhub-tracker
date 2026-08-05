@@ -11,7 +11,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-5">Settings</h1>
+      <h1 className="text-xl font-semibold tracking-tight mb-5">Settings</h1>
 
       <div className="space-y-5">
         <Card padding="lg">

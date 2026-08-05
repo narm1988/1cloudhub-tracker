@@ -58,7 +58,7 @@ export default function ProjectDetailPage() {
         <span className="font-mono text-sm text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
           {project.key}
         </span>
-        <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{project.name}</h1>
       </div>
 
       {/* Tabs */}

@@ -129,7 +129,7 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-5">Search & Filter</h1>
+      <h1 className="text-xl font-semibold tracking-tight mb-5">Search & Filter</h1>
 
       {/* Search bar */}
       <div className="flex gap-3 mb-4">

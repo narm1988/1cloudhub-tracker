@@ -84,7 +84,7 @@ export default function EpicDetailPage() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <span className="font-mono text-sm text-gray-400">{epic.id.slice(0, 8)}</span>
-          <h1 className="text-2xl font-semibold tracking-tight mt-0.5">{epic.title}</h1>
+          <h1 className="text-xl font-semibold tracking-tight mt-0.5">{epic.title}</h1>
           {epic.description && (
             <p className="text-sm text-gray-500 mt-1.5 max-w-xl">{epic.description}</p>
           )}

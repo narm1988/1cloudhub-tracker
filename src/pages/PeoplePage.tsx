@@ -98,7 +98,7 @@ export default function PeoplePage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="text-2xl font-semibold tracking-tight">People</h1>
+        <h1 className="text-xl font-semibold tracking-tight">People</h1>
         <p className="text-sm text-gray-500 mt-1">
           Admins can invite teammates and tag them to projects.
         </p>

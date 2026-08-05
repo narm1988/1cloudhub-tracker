@@ -91,7 +91,7 @@ export default function EpicsPage() {
       {/* Header */}
       <div className="flex items-baseline justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Epics</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Epics</h1>
           <p className="text-sm text-gray-500 mt-1">
             <span className="font-mono tabular-nums">{total}</span> epics in your workspace
           </p>
