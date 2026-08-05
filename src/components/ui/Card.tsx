@@ -4,14 +4,14 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const PADDING = {
   none: '',
-  sm: 'p-3.5',
+  sm: 'p-4',
   md: 'p-5',
   lg: 'p-6',
 }
 
 export default function Card({ padding = 'md', className = '', children, ...props }: CardProps) {
   return (
-    <div className={`bg-white border border-gray-200 rounded-xl ${PADDING[padding]} ${className}`} {...props}>
+    <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${PADDING[padding]} ${className}`} {...props}>
       {children}
     </div>
   )

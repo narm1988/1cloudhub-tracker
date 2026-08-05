@@ -185,7 +185,7 @@ function CreateEpicModal({
         <div>
           <label className="block text-sm font-semibold text-gray-900 mb-1.5">Project</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            className="w-full h-9 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
           >
@@ -206,7 +206,7 @@ function CreateEpicModal({
             Description
           </label>
           <textarea
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[80px] resize-y"
+            className="w-full px-3 py-2 rounded-md border border-gray-200 text-sm text-gray-900 shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[80px] resize-y"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What does this epic cover?"

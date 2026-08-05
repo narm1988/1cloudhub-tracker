@@ -15,16 +15,16 @@ export default function Modal({ title, onClose, children, width = 'max-w-md' }: 
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white rounded-xl ${width} w-full p-6 shadow-xl animate-pop-in`}
+        className={`bg-white rounded-lg ${width} w-full p-6 shadow-lg animate-pop-in`}
       >
-        <div className="flex justify-between items-center mb-5">
+        <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="rounded-sm text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="Close modal"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
         {children}

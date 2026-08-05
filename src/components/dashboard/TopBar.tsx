@@ -134,7 +134,7 @@ export default function TopBar({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit() }}
-          className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 text-sm outline-none bg-paper focus:border-brand focus:ring-1 focus:ring-brand/20"
+          className="w-full pl-8 pr-3 h-8 rounded-md border border-gray-200 text-sm shadow-sm outline-none bg-paper focus:border-brand focus:ring-1 focus:ring-brand/20"
         />
       </div>
 

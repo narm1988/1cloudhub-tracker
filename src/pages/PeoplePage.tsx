@@ -204,7 +204,7 @@ function InviteModal({
         <div>
           <label className="block text-sm font-semibold text-gray-900 mb-1.5">Role</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
+            className="w-full h-9 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
