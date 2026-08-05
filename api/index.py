@@ -34,7 +34,13 @@ app.include_router(attachments.router, prefix="/api/attachments", tags=["Attachm
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "service": "1CloudHub Tracker"}
+    from api.config import FRONTEND_URL, ENTRA_REDIRECT_URI
+    return {
+        "status": "ok",
+        "service": "1CloudHub Tracker",
+        "FRONTEND_URL": FRONTEND_URL,
+        "ENTRA_REDIRECT_URI": ENTRA_REDIRECT_URI,
+    }
 
 
 @app.get("/api/debug/supabase")
