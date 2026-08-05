@@ -69,7 +69,7 @@ export default function EpicsPage() {
         <div>
           <h1 className="font-display text-[22px] font-semibold text-ink">Epics</h1>
           <p className="text-[13px] text-gray-500 mt-1">
-            {epics.length} epics in your workspace
+            <span className="font-mono tabular-nums">{epics.length}</span> epics in your workspace
           </p>
         </div>
         <Button onClick={() => setShowCreateModal(true)} disabled={projects.length === 0} title={projects.length === 0 ? 'Create a project first' : undefined}>

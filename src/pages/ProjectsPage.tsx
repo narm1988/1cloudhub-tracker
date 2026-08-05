@@ -61,7 +61,7 @@ export default function ProjectsPage() {
       <div className="flex items-baseline justify-between mb-5 animate-fade-in-up">
         <div>
           <h1 className="font-display text-[22px] font-semibold text-ink">Projects</h1>
-          <p className="text-[13px] text-gray-500 mt-1">{projects.length} projects in your workspace</p>
+          <p className="text-[13px] text-gray-500 mt-1"><span className="font-mono tabular-nums">{projects.length}</span> projects in your workspace</p>
         </div>
         {isAdmin && (
           <Button onClick={() => setShowCreate(true)}>

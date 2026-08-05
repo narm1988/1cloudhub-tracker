@@ -114,7 +114,7 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
           <div key={status} className="w-[220px] shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-[12.5px] font-semibold text-gray-500 uppercase tracking-wide">{status}</span>
-              <span className="text-[11.5px] text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{items.length}</span>
+              <span className="text-[11.5px] font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{items.length}</span>
             </div>
             <div className="space-y-2.5">
               {items.map((story) => (
@@ -235,7 +235,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
                 <div className="flex gap-3 mt-1 text-[11px] text-gray-400">
                   {sprint.start_date && <span>Start: {sprint.start_date}</span>}
                   {sprint.end_date && <span>End: {sprint.end_date}</span>}
-                  <span>{sprintStories.length} stories · {totalPoints} pts</span>
+                  <span><span className="font-mono tabular-nums">{sprintStories.length}</span> stories · <span className="font-mono tabular-nums">{totalPoints}</span> pts</span>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -276,7 +276,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
       {/* Backlog */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
         <h3 className="font-display text-[14px] font-semibold text-ink mb-3">
-          Backlog ({backlogStories.length})
+          Backlog (<span className="font-mono tabular-nums">{backlogStories.length}</span>)
         </h3>
         {backlogStories.length === 0 ? (
           <p className="text-[12px] text-gray-400 text-center py-4">All stories are assigned to sprints.</p>
@@ -326,7 +326,7 @@ function BacklogStoryRow({
         {story.title}
       </span>
       {story.story_points && (
-        <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+        <span className="text-[10px] font-mono tabular-nums text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
           {story.story_points} pts
         </span>
       )}

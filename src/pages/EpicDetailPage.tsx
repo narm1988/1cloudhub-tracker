@@ -90,8 +90,8 @@ export default function EpicDetailPage() {
           )}
           <div className="flex items-center gap-4 mt-2 text-[13px] text-gray-500">
             <span>Owner: <strong className="text-ink">{epic.owner?.full_name || 'Unassigned'}</strong></span>
-            <span>{stories.length} stories</span>
-            <span>{doneCount}/{stories.length} done</span>
+            <span><span className="font-mono tabular-nums">{stories.length}</span> stories</span>
+            <span><span className="font-mono tabular-nums">{doneCount}/{stories.length}</span> done</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export default function EpicDetailPage() {
                 <span className="text-[12.5px] font-semibold text-gray-500 uppercase tracking-wide">
                   {status}
                 </span>
-                <span className="text-[11.5px] text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
+                <span className="text-[11.5px] font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
                   {items.length}
                 </span>
               </div>

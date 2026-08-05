@@ -67,7 +67,7 @@ export default function AuditLogSection({
     <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
       <button onClick={toggle} className="w-full flex items-center justify-between">
         <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
-          <History size={15} /> Audit Log{loaded ? ` (${logs.length})` : ''}
+          <History size={15} /> Audit Log{loaded ? <> (<span className="font-mono tabular-nums">{logs.length}</span>)</> : ''}
         </h2>
         <ChevronDown size={16} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>

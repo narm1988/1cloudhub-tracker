@@ -421,7 +421,7 @@ export default function StoryDetailPage() {
               {/* Child Issues (Tasks/Bugs) */}
               <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className={SECTION_HEADER}>Child Issues ({issues.length})</h2>
+                  <h2 className={SECTION_HEADER}>Child Issues (<span className="font-mono tabular-nums">{issues.length}</span>)</h2>
                   <IssueTypePicker onCreate={createIssue} />
                 </div>
 
@@ -455,7 +455,7 @@ export default function StoryDetailPage() {
               <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
-                    <Link2 size={15} /> Linked Issues ({links.length})
+                    <Link2 size={15} /> Linked Issues (<span className="font-mono tabular-nums">{links.length}</span>)
                   </h2>
                   <Button size="sm" variant="secondary" onClick={() => setShowLinkModal(true)}>
                     <Plus size={13} /> Link issue
@@ -496,7 +496,7 @@ export default function StoryDetailPage() {
               <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className={`${SECTION_HEADER} flex items-center gap-2`}>
-                    <Paperclip size={15} /> Attachments ({attachments.length})
+                    <Paperclip size={15} /> Attachments (<span className="font-mono tabular-nums">{attachments.length}</span>)
                   </h2>
                   <FileUploadButton onUpload={uploadFile} />
                 </div>
@@ -549,7 +549,7 @@ export default function StoryDetailPage() {
               {/* Comments */}
               <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
                 <h2 className={`${SECTION_HEADER} flex items-center gap-2 mb-4`}>
-                  <MessageSquare size={15} /> Comments ({comments.length})
+                  <MessageSquare size={15} /> Comments (<span className="font-mono tabular-nums">{comments.length}</span>)
                 </h2>
 
                 <div className="space-y-3 mb-4">
@@ -646,7 +646,7 @@ export default function StoryDetailPage() {
                 value={current.story_points ?? ''}
                 onChange={(e) => updateDraft({ story_points: e.target.value ? parseInt(e.target.value) : null })}
                 placeholder="None"
-                className="text-[13px] text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
+                className="text-[13px] font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
               />
             </DetailRow>
 
