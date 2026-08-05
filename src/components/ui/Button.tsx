@@ -15,14 +15,14 @@ export default function Button({
 
   const variants = {
     primary: 'bg-brand text-white hover:bg-brand-deep',
-    secondary: 'bg-paper text-ink border border-gray-200 hover:bg-gray-100',
+    secondary: 'bg-paper text-gray-900 border border-gray-200 hover:bg-gray-100',
     ghost: 'bg-transparent text-gray-600 hover:bg-gray-100',
   }
 
   const sizes = {
-    sm: 'text-label px-3 py-1.5',
-    md: 'text-body px-4 py-2.5',
-    lg: 'text-body px-5 py-3',
+    sm: 'text-sm px-3 py-1.5',
+    md: 'text-sm px-4 py-2.5',
+    lg: 'text-sm px-5 py-3',
   }
 
   return (

@@ -98,8 +98,8 @@ export default function PeoplePage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="font-display text-heading font-semibold text-ink">People</h1>
-        <p className="text-body text-gray-500 mt-1">
+        <h1 className="text-2xl font-semibold tracking-tight">People</h1>
+        <p className="text-sm text-gray-500 mt-1">
           Admins can invite teammates and tag them to projects.
         </p>
       </div>
@@ -120,11 +120,11 @@ export default function PeoplePage() {
             >
               <Avatar name={person.full_name} size="lg" />
               <div className="flex-1 min-w-0">
-                <div className="text-body font-semibold text-ink">{person.full_name}</div>
-                <div className="text-label text-gray-400 font-mono truncate">{person.email}</div>
+                <div className="text-sm font-semibold text-gray-900">{person.full_name}</div>
+                <div className="text-sm text-gray-400 font-mono truncate">{person.email}</div>
               </div>
               <span
-                className={`flex items-center gap-1 text-caption font-semibold px-2.5 py-1 rounded-md ${
+                className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md ${
                   person.role === 'admin'
                     ? 'bg-brand-soft text-brand'
                     : 'bg-gray-100 text-gray-500'
@@ -187,7 +187,7 @@ function InviteModal({
     <Modal title="Invite a teammate" onClose={onClose}>
       <div className="space-y-4">
         {error && (
-          <div className="bg-danger-soft text-danger text-body px-4 py-2.5 rounded-lg">{error}</div>
+          <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg">{error}</div>
         )}
 
         <div>
@@ -198,13 +198,13 @@ function InviteModal({
             onChange={(e) => setEmail(e.target.value)}
             placeholder={`name@${ALLOWED_DOMAIN}`}
           />
-          <p className="text-caption text-gray-400 mt-1">Must be a @{ALLOWED_DOMAIN} address.</p>
+          <p className="text-xs text-gray-400 mt-1">Must be a @{ALLOWED_DOMAIN} address.</p>
         </div>
 
         <div>
-          <label className="block text-body font-semibold text-ink mb-1.5">Role</label>
+          <label className="block text-sm font-semibold text-gray-900 mb-1.5">Role</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none focus:border-brand"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >

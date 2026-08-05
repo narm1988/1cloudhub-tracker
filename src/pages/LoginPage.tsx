@@ -63,7 +63,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full font-body bg-paper animate-fade-in">
+    <div className="flex min-h-screen w-full bg-paper animate-fade-in">
       {/* Left brand panel */}
       <div className="hidden lg:flex flex-col justify-between w-[44%] bg-ink text-white p-12 relative overflow-hidden">
         {/* Aurora mesh — soft drifting color blobs */}
@@ -110,10 +110,10 @@ export default function LoginPage() {
             </div>
           </div>
           <div>
-            <div className="font-display text-subhead font-bold tracking-tight leading-none">
+            <div className="font-bold text-lg tracking-tight leading-none">
               1CloudHub
             </div>
-            <div className="text-caption tracking-[0.14em] text-gray-500 mt-0.5">
+            <div className="text-xs tracking-[0.14em] text-gray-500 mt-0.5">
               TRACKER
             </div>
           </div>
@@ -121,10 +121,10 @@ export default function LoginPage() {
 
         {/* Tagline */}
         <div className="max-w-sm relative z-10 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-          <h2 className="font-display text-display font-semibold leading-tight mb-3.5">
+          <h2 className="text-4xl font-semibold leading-tight tracking-tight mb-3.5">
             Where 1CloudHub tracks the work.
           </h2>
-          <p className="text-gray-400 text-subhead leading-relaxed">
+          <p className="text-gray-400 text-lg leading-relaxed">
             Epics and user stories for our internal delivery — created, assigned
             and resolved in one place.
           </p>
@@ -146,7 +146,7 @@ export default function LoginPage() {
                 className={`relative overflow-hidden w-72 h-14 bg-ink-faint rounded-lg ${t.rot} flex items-center px-4 shadow-lg border-l-4 ${t.accent}`}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                <span className="font-mono text-caption text-gray-500 tracking-wide">
+                <span className="font-mono text-xs text-gray-500 tracking-wide">
                   {t.id}
                 </span>
                 <div className="flex-1 h-px mx-2.5 bg-[repeating-linear-gradient(90deg,#3A3F55_0,#3A3F55_2px,transparent_2px,transparent_6px)]" />
@@ -165,20 +165,20 @@ export default function LoginPage() {
             <div className="w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
               <Cloud size={14} className="text-white" />
             </div>
-            <span className="font-display text-body-lg font-bold text-ink">1CloudHub Tracker</span>
+            <span className="text-base font-bold text-gray-900">1CloudHub Tracker</span>
           </div>
 
           <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
-            <h1 className="font-display text-heading-lg font-semibold text-ink mb-1">
+            <h1 className="text-3xl font-semibold tracking-tight text-gray-900 mb-1">
               Sign in
             </h1>
-            <p className="text-gray-500 text-body mb-7">
+            <p className="text-gray-500 text-sm mb-7">
               Use the workspace email your admin invited you with.
             </p>
           </div>
 
           {error && (
-            <div className="bg-danger-soft text-danger text-body px-4 py-3 rounded-lg mb-4 animate-fade-in-up">
+            <div className="bg-danger-soft text-danger text-sm px-4 py-3 rounded-lg mb-4 animate-fade-in-up">
               {error}
             </div>
           )}
@@ -199,8 +199,8 @@ export default function LoginPage() {
 
             <div className="animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="text-body font-semibold text-ink">Password</label>
-                <a href="#" className="text-body text-brand hover:text-brand-deep transition-colors">
+                <label className="text-sm font-semibold text-gray-900">Password</label>
+                <a href="#" className="text-sm text-brand hover:text-brand-deep transition-colors">
                   Forgot?
                 </a>
               </div>
@@ -213,7 +213,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••"
-                  className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 focus:shadow-[0_0_0_4px_rgba(91,95,239,0.12)] transition-shadow"
+                  className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 focus:shadow-[0_0_0_4px_rgba(91,95,239,0.12)] transition-shadow"
                   required
                 />
                 <button
@@ -240,7 +240,7 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-3 my-4 animate-fade-in-up" style={{ animationDelay: '0.22s' }}>
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-caption text-gray-400 font-medium">or</span>
+            <span className="text-xs text-gray-400 font-medium">or</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
@@ -263,7 +263,7 @@ export default function LoginPage() {
           {/* Perforation divider */}
           <div className="my-5 h-px bg-[repeating-linear-gradient(90deg,#E6E7EB_0,#E6E7EB_3px,transparent_3px,transparent_7px)] animate-fade-in-up" style={{ animationDelay: '0.25s' }} />
 
-          <p className="text-body text-gray-500 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <p className="text-sm text-gray-500 text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             No account? Ask your workspace admin to send you an invite.
           </p>
         </form>

@@ -316,7 +316,7 @@ export default function IssueDetailPage() {
       {/* Back */}
       <button
         onClick={handleBack}
-        className="flex items-center gap-1.5 text-gray-500 text-body hover:text-gray-700 mb-4"
+        className="flex items-center gap-1.5 text-gray-500 text-sm hover:text-gray-700 mb-4"
       >
         <ArrowLeft size={14} /> Back
       </button>
@@ -329,9 +329,9 @@ export default function IssueDetailPage() {
             <div className="flex items-center gap-2 mb-3 flex-wrap">
               <TypeField type={current.type} onChange={(type) => updateDraft({ type })} />
               {isNew ? (
-                <span className="text-label text-brand font-semibold">New — not yet saved</span>
+                <span className="text-sm text-brand font-semibold">New — not yet saved</span>
               ) : (
-                <span className="font-mono text-label text-gray-400">{issue!.display_id}</span>
+                <span className="font-mono text-sm text-gray-400">{issue!.display_id}</span>
               )}
               <StatusField
                 status={current.status}
@@ -367,7 +367,7 @@ export default function IssueDetailPage() {
                 </div>
 
                 {attachments.length === 0 ? (
-                  <p className="text-body text-gray-400 text-center py-3">No files attached.</p>
+                  <p className="text-sm text-gray-400 text-center py-3">No files attached.</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {attachments.map((att) => {
@@ -386,11 +386,11 @@ export default function IssueDetailPage() {
                               href={att.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-body text-brand hover:underline truncate block"
+                              className="text-sm text-brand hover:underline truncate block"
                             >
                               {att.file_name}
                             </a>
-                            <span className="text-caption text-gray-400">{(att.file_size / 1024).toFixed(1)} KB</span>
+                            <span className="text-xs text-gray-400">{(att.file_size / 1024).toFixed(1)} KB</span>
                           </div>
                           <button
                             onClick={() => deleteAttachment(att)}
@@ -417,20 +417,20 @@ export default function IssueDetailPage() {
                       <Avatar name={comment.author?.full_name || 'User'} size="md" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-body font-semibold text-ink">{comment.author?.full_name}</span>
-                          <span className="text-caption text-gray-400">{new Date(comment.created_at).toLocaleString()}</span>
+                          <span className="text-sm font-semibold text-gray-900">{comment.author?.full_name}</span>
+                          <span className="text-xs text-gray-400">{new Date(comment.created_at).toLocaleString()}</span>
                           {comment.author_id === user?.id && (
                             <button onClick={() => deleteComment(comment.id)} className="text-gray-300 hover:text-danger ml-auto">
                               <Trash2 size={12} />
                             </button>
                           )}
                         </div>
-                        <p className="text-body text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">{comment.content}</p>
+                        <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">{comment.content}</p>
                       </div>
                     </div>
                   ))}
                   {comments.length === 0 && (
-                    <p className="text-body text-gray-400 text-center py-2">No comments yet.</p>
+                    <p className="text-sm text-gray-400 text-center py-2">No comments yet.</p>
                   )}
                 </div>
 
@@ -467,17 +467,17 @@ export default function IssueDetailPage() {
               {parentStory ? (
                 <button
                   onClick={() => navigate(`/stories/${parentStory.id}`)}
-                  className="text-body text-brand hover:underline font-medium truncate max-w-[170px] text-right"
+                  className="text-sm text-brand hover:underline font-medium truncate max-w-[170px] text-right"
                 >
                   {parentStory.display_id}
                 </button>
               ) : (
-                <span className="text-body text-gray-400">None</span>
+                <span className="text-sm text-gray-400">None</span>
               )}
             </DetailRow>
 
             <DetailRow label="Reporter">
-              <span className="text-body text-ink font-medium">
+              <span className="text-sm text-gray-900 font-medium">
                 {isNew ? (user?.full_name || 'You') : (issue!.reporter?.full_name || 'Unknown')}
               </span>
             </DetailRow>
@@ -494,7 +494,7 @@ export default function IssueDetailPage() {
                 onChange={(e) => updateDraft({ story_points: e.target.value ? parseInt(e.target.value) : null })}
                 placeholder="None"
                 aria-label="Story points"
-                className="text-body font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
+                className="text-sm font-mono tabular-nums text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
               />
             </DetailRow>
 
@@ -504,7 +504,7 @@ export default function IssueDetailPage() {
                 value={current.start_date || ''}
                 onChange={(e) => updateDraft({ start_date: e.target.value || null })}
                 aria-label="Start date"
-                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
+                className="text-sm text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
 
@@ -514,13 +514,13 @@ export default function IssueDetailPage() {
                 value={current.due_date || ''}
                 onChange={(e) => updateDraft({ due_date: e.target.value || null })}
                 aria-label="Due date"
-                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
+                className="text-sm text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
           </div>
 
           {!isNew && issue && (
-            <div className="mt-3 pt-3 border-t border-gray-100 text-caption text-gray-400 space-y-0.5">
+            <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 space-y-0.5">
               <div>Created {new Date(issue.created_at).toLocaleDateString()}</div>
               <div>Updated {new Date(issue.updated_at).toLocaleDateString()}</div>
             </div>
@@ -531,7 +531,7 @@ export default function IssueDetailPage() {
       {/* Save / Cancel bar */}
       {showBar && (
         <div className="sticky bottom-0 z-30 -mx-6 -mb-6 mt-4 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-6 py-3.5 flex items-center justify-between animate-fade-in-up">
-          <span className="text-body text-gray-600">
+          <span className="text-sm text-gray-600">
             {isNew ? 'This item has not been created yet.' : 'You have unsaved changes.'}
           </span>
           <div className="flex items-center gap-2">
@@ -558,7 +558,7 @@ function TypeField({ type, onChange }: { type: IssueType; onChange: (t: IssueTyp
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-1 text-body px-2 py-0.5 rounded font-semibold transition-colors ${meta.tailwind}`}
+        className={`flex items-center gap-1 text-sm px-2 py-0.5 rounded font-semibold transition-colors ${meta.tailwind}`}
       >
         {meta.icon} {type} <ChevronDown size={12} />
       </button>
@@ -570,7 +570,7 @@ function TypeField({ type, onChange }: { type: IssueType; onChange: (t: IssueTyp
               <button
                 key={t}
                 onClick={() => { onChange(t); setOpen(false) }}
-                className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-label text-ink hover:bg-gray-50"
+                className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-50"
               >
                 {ISSUE_TYPE_META[t].icon} {t}
               </button>

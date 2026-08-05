@@ -18,9 +18,9 @@ export default function Avatar({ name, size = 'md', className = '' }: AvatarProp
   const bgColor = HUES[hueIndex]
 
   const sizeClasses = {
-    sm: 'w-5 h-5 text-caption',
-    md: 'w-7 h-7 text-caption',
-    lg: 'w-9 h-9 text-label',
+    sm: 'w-5 h-5 text-xs',
+    md: 'w-7 h-7 text-xs',
+    lg: 'w-9 h-9 text-sm',
   }
 
   return (

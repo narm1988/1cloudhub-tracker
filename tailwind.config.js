@@ -39,7 +39,6 @@ export default {
       fontFamily: {
         sans: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
         display: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
-        body: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
         mono: ["'JetBrains Mono'", "'SF Mono'", 'Monaco', 'monospace'],
       },
       // Type scale — matches Pipeline Pulse design tokens exactly.
@@ -54,16 +53,10 @@ export default {
         '3xl': ['1.875rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],  // 30px — PP --pp-font-size-3xl
         '4xl': ['2.25rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],   // 36px — PP --pp-font-size-4xl
 
-        // Semantic aliases (project-specific convenience classes)
-        caption: ['0.75rem', { lineHeight: '1.4' }],        // 12px — captions, metadata, timestamps
-        label: ['0.875rem', { lineHeight: '1.5' }],         // 14px — controls, labels, form text
-        body: ['0.875rem', { lineHeight: '1.5' }],          // 14px — default body text
-        'body-lg': ['1rem', { lineHeight: '1.5' }],         // 16px — descriptions, larger body
-        subhead: ['1.125rem', { lineHeight: '1.4' }],       // 18px — card titles, section headers
-        heading: ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.015em' }],    // 24px — page titles
-        'heading-lg': ['1.875rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }], // 30px — large headings
-        display: ['2.25rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],    // 36px — hero text
-        metric: ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }], // 40px — KPI numbers
+        // Semantic aliases kept for Sidebar compatibility
+        caption: ['0.75rem', { lineHeight: '1.4' }],        // 12px — sidebar captions
+        body: ['0.875rem', { lineHeight: '1.5' }],          // 14px — sidebar nav items
+        subhead: ['1.125rem', { lineHeight: '1.4' }],       // 18px — sidebar brand text
       },
       fontWeight: {
         normal: '400',

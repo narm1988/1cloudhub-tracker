@@ -47,15 +47,15 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-paper font-body p-6">
+    <div className="min-h-screen w-full flex items-center justify-center bg-paper p-6">
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2.5 justify-center mb-8">
           <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
             <Cloud size={16} className="text-white" />
           </div>
           <div>
-            <div className="font-display text-body-lg font-bold text-ink leading-none">1CloudHub</div>
-            <div className="text-caption tracking-[0.14em] text-gray-400 mt-0.5">TRACKER</div>
+            <div className="text-base font-bold text-gray-900 leading-none">1CloudHub</div>
+            <div className="text-xs tracking-[0.14em] text-gray-400 mt-0.5">TRACKER</div>
           </div>
         </div>
 
@@ -63,10 +63,10 @@ export default function AcceptInvitePage() {
           {!token ? (
             <div className="text-center py-4">
               <AlertCircle size={28} className="mx-auto mb-3 text-danger" />
-              <h1 className="font-display text-heading font-semibold text-ink mb-1.5">
+              <h1 className="text-2xl font-semibold tracking-tight mb-1.5">
                 Invite link invalid or expired
               </h1>
-              <p className="text-body text-gray-500 mb-5">
+              <p className="text-sm text-gray-500 mb-5">
                 Ask an admin to send you a new invite, or sign in if you already have a password.
               </p>
               <Button onClick={() => navigate('/login')} className="w-full">
@@ -75,18 +75,18 @@ export default function AcceptInvitePage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-              <h1 className="font-display text-heading font-semibold text-ink mb-1">Set up your account</h1>
-              <p className="text-gray-500 text-body mb-6">
+              <h1 className="text-2xl font-semibold tracking-tight mb-1">Set up your account</h1>
+              <p className="text-gray-500 text-sm mb-6">
                 You've been invited to 1CloudHub Tracker. Add your name and choose a password to finish setting up.
               </p>
 
               {error && (
-                <div className="bg-danger-soft text-danger text-body px-4 py-2.5 rounded-lg mb-4">{error}</div>
+                <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg mb-4">{error}</div>
               )}
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-body font-semibold text-ink mb-1.5 block">Full name</label>
+                  <label className="text-sm font-semibold text-gray-900 mb-1.5 block">Full name</label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <User size={16} />
@@ -96,14 +96,14 @@ export default function AcceptInvitePage() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Jane Doe"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-body font-semibold text-ink mb-1.5 block">Password</label>
+                  <label className="text-sm font-semibold text-gray-900 mb-1.5 block">Password</label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Lock size={16} />
@@ -128,7 +128,7 @@ export default function AcceptInvitePage() {
                 </div>
 
                 <div>
-                  <label className="text-body font-semibold text-ink mb-1.5 block">Confirm password</label>
+                  <label className="text-sm font-semibold text-gray-900 mb-1.5 block">Confirm password</label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <Lock size={16} />
@@ -138,7 +138,7 @@ export default function AcceptInvitePage() {
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       placeholder="••••••••••"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-body font-body text-ink outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors"
                       required
                     />
                   </div>
