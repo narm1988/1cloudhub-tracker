@@ -76,16 +76,16 @@ export default function AuditLogSection({
       {open && (
         <div className="mt-4 space-y-3">
           {!loaded ? (
-            <p className="text-sm text-gray-400 text-center py-2">Loading...</p>
+            <p className="text-[13px] text-gray-400 text-center py-2">Loading...</p>
           ) : logs.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-2">No activity yet.</p>
+            <p className="text-[13px] text-gray-400 text-center py-2">No activity yet.</p>
           ) : (
             logs.map((log) => (
               <div key={log.id} className="flex items-start gap-2.5">
                 <Avatar name={log.user?.full_name || 'User'} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm text-gray-700">{describeActivity(log)}</span>
-                  <span className="text-xs text-gray-400 ml-2">{new Date(log.created_at).toLocaleString()}</span>
+                  <span className="text-[13px] text-gray-700">{describeActivity(log)}</span>
+                  <span className="text-[12px] text-gray-400 ml-2">{new Date(log.created_at).toLocaleString()}</span>
                 </div>
               </div>
             ))

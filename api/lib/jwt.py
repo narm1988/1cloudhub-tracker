@@ -18,7 +18,7 @@ from api.config import (
     JWT_PUBLIC_KEY,
 )
 
-ALGORITHM = "RS256"
+ALGORITHM = "ES256"
 
 # PostgREST reserves the "role" claim to decide which Postgres role to
 # SET ROLE to for the request — it must always be "authenticated" (or

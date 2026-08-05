@@ -75,7 +75,7 @@ export default function EpicDetailPage() {
       {/* Back button */}
       <button
         onClick={() => navigate('/epics')}
-        className="flex items-center gap-1.5 text-gray-500 text-sm hover:text-gray-700 transition-colors mb-4"
+        className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 transition-colors mb-4"
       >
         <ArrowLeft size={14} /> All epics
       </button>
@@ -83,12 +83,12 @@ export default function EpicDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <span className="font-mono text-sm text-gray-400">{epic.id.slice(0, 8)}</span>
-          <h1 className="text-xl font-semibold tracking-tight mt-0.5">{epic.title}</h1>
+          <span className="font-mono text-[12px] text-gray-400">{epic.id.slice(0, 8)}</span>
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900 mt-0.5">{epic.title}</h1>
           {epic.description && (
-            <p className="text-sm text-gray-500 mt-1.5 max-w-xl">{epic.description}</p>
+            <p className="text-[13px] text-gray-500 mt-1.5 max-w-xl">{epic.description}</p>
           )}
-          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+          <div className="flex items-center gap-4 mt-2 text-[13px] text-gray-500">
             <span>Owner: <strong className="text-gray-900">{epic.owner?.full_name || 'Unassigned'}</strong></span>
             <span><span className="font-mono tabular-nums">{stories.length}</span> stories</span>
             <span><span className="font-mono tabular-nums">{doneCount}/{stories.length}</span> done</span>
@@ -116,10 +116,10 @@ export default function EpicDetailPage() {
           return (
             <div key={status} className="w-[240px] shrink-0">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                <span className="text-[12px] font-semibold text-gray-500 uppercase tracking-wide">
                   {status}
                 </span>
-                <span className="text-xs font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
+                <span className="text-[11px] font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
                   {items.length}
                 </span>
               </div>
@@ -133,7 +133,7 @@ export default function EpicDetailPage() {
                   />
                 ))}
                 {items.length === 0 && (
-                  <div className="border border-dashed border-gray-200 rounded-lg py-4 text-center text-sm text-gray-400">
+                  <div className="border border-dashed border-gray-200 rounded-lg py-4 text-center text-[13px] text-gray-400">
                     No stories
                   </div>
                 )}
@@ -161,15 +161,15 @@ function StoryCard({ story, onClick }: { story: Story; onClick: () => void }) {
           <div className="bg-emerald-50 rounded p-0.5 flex">
             <BookOpen size={11} className="text-emerald-600" />
           </div>
-          <span className="font-mono text-xs text-gray-400">{story.display_id}</span>
+          <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
         </div>
-        <span className="text-xs">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+        <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
       </div>
 
       {/* Perforation */}
       <div className="h-px my-2 bg-[repeating-linear-gradient(90deg,#F0F1F3_0,#F0F1F3_2px,transparent_2px,transparent_6px)]" />
 
-      <div className="text-sm text-gray-900 font-medium leading-snug mb-2.5">
+      <div className="text-[13px] text-gray-900 font-medium leading-snug mb-2.5">
         {story.title}
       </div>
 

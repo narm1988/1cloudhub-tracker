@@ -49,16 +49,16 @@ export default function ProjectDetailPage() {
     <div>
       <button
         onClick={() => navigate('/projects')}
-        className="flex items-center gap-1.5 text-gray-500 text-sm hover:text-gray-700 mb-3"
+        className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 mb-3"
       >
         <ArrowLeft size={14} /> All projects
       </button>
 
       <div className="flex items-center gap-3 mb-5">
-        <span className="font-mono text-sm text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+        <span className="font-mono text-[12px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
           {project.key}
         </span>
-        <h1 className="text-xl font-semibold tracking-tight">{project.name}</h1>
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900">{project.name}</h1>
       </div>
 
       {/* Tabs */}
@@ -70,7 +70,7 @@ export default function ProjectDetailPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
                 isActive
                   ? 'border-brand text-brand'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -125,8 +125,8 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
         return (
           <div key={status} className="w-[220px] shrink-0">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{status}</span>
-              <span className="text-xs font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{items.length}</span>
+              <span className="text-[12px] font-semibold text-gray-500 uppercase tracking-wide">{status}</span>
+              <span className="text-[11px] font-mono tabular-nums text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">{items.length}</span>
             </div>
             <div className="space-y-2.5">
               {items.map((story) => (
@@ -137,20 +137,20 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
                   style={{ borderLeftWidth: 3, borderLeftColor: STATUS_META[story.status as Status]?.color || '#6B7280' }}
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-xs text-gray-400">{story.display_id}</span>
-                    <span className="text-xs">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+                    <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
+                    <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
                   </div>
-                  <div className="text-sm text-gray-900 font-medium leading-snug mb-2">{story.title}</div>
+                  <div className="text-[13px] text-gray-900 font-medium leading-snug mb-2">{story.title}</div>
                   <div className="flex items-center justify-between">
-                    {story.assignee ? <Avatar name={story.assignee.full_name} size="sm" /> : <span className="text-xs text-gray-400">—</span>}
+                    {story.assignee ? <Avatar name={story.assignee.full_name} size="sm" /> : <span className="text-[12px] text-gray-400">—</span>}
                     {story.due_date && (
-                      <span className="text-xs text-gray-400">{new Date(story.due_date).toLocaleDateString()}</span>
+                      <span className="text-[12px] text-gray-400">{new Date(story.due_date).toLocaleDateString()}</span>
                     )}
                   </div>
                 </div>
               ))}
               {items.length === 0 && (
-                <div className="border border-dashed border-gray-200 rounded-lg py-4 text-center text-sm text-gray-400">Empty</div>
+                <div className="border border-dashed border-gray-200 rounded-lg py-4 text-center text-[13px] text-gray-400">Empty</div>
               )}
             </div>
           </div>
@@ -277,15 +277,15 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
             <div className="flex items-center justify-between mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-900">{sprint.name}</h3>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                  <h3 className="text-[13px] font-semibold text-gray-900">{sprint.name}</h3>
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${
                     sprint.status === 'active' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
                   }`}>
                     {sprint.status}
                   </span>
                 </div>
-                {sprint.goal && <p className="text-sm text-gray-500 mt-0.5">{sprint.goal}</p>}
-                <div className="flex gap-3 mt-1 text-xs text-gray-400">
+                {sprint.goal && <p className="text-[13px] text-gray-500 mt-0.5">{sprint.goal}</p>}
+                <div className="flex gap-3 mt-1 text-[12px] text-gray-400">
                   {sprint.start_date && <span>Start: {sprint.start_date}</span>}
                   {sprint.end_date && <span>End: {sprint.end_date}</span>}
                   <span><span className="font-mono tabular-nums">{sprintStoriesForSprint.length}</span> stories · <span className="font-mono tabular-nums">{totalPoints}</span> pts</span>
@@ -302,7 +302,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
             </div>
 
             {sprintStoriesForSprint.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-3 border border-dashed border-gray-200 rounded-lg">
+              <p className="text-[13px] text-gray-400 text-center py-3 border border-dashed border-gray-200 rounded-lg">
                 Drag stories here or assign from backlog
               </p>
             ) : (
@@ -328,11 +328,11 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
 
       {/* Backlog */}
       <Card>
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">
+        <h3 className="text-[13px] font-semibold text-gray-900 mb-3">
           Backlog (<span className="font-mono tabular-nums">{backlogTotal}</span>)
         </h3>
         {backlogStories.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">All stories are assigned to sprints.</p>
+          <p className="text-[13px] text-gray-400 text-center py-4">All stories are assigned to sprints.</p>
         ) : (
           <div className="space-y-1.5">
             {backlogStories.map((story) => (
@@ -372,19 +372,19 @@ function BacklogStoryRow({
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-200 group transition-colors">
-      <span className="font-mono text-xs text-gray-400 shrink-0 w-16">{story.display_id}</span>
+      <span className="font-mono text-[12px] text-gray-400 shrink-0 w-16">{story.display_id}</span>
       <span
-        className="text-sm text-gray-900 font-medium flex-1 truncate cursor-pointer hover:text-brand"
+        className="text-[13px] text-gray-900 font-medium flex-1 truncate cursor-pointer hover:text-brand"
         onClick={onClick}
       >
         {story.title}
       </span>
       {story.story_points && (
-        <span className="text-xs font-mono tabular-nums text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+        <span className="text-[12px] font-mono tabular-nums text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
           {story.story_points} pts
         </span>
       )}
-      <span className="text-xs">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+      <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
       {story.assignee && <Avatar name={story.assignee.full_name} size="sm" />}
       <StatusBadge status={story.status as Status} />
 
@@ -392,7 +392,7 @@ function BacklogStoryRow({
       {sprints && onMoveToSprint && (
         <select
           aria-label={`Move "${story.title}" to sprint`}
-          className="text-xs border border-gray-200 rounded px-1.5 py-0.5 outline-none opacity-0 group-hover:opacity-100 focus:opacity-100 focus:ring-1 focus:ring-brand/30 transition-opacity"
+          className="text-[12px] border border-gray-200 rounded px-1.5 py-0.5 outline-none opacity-0 group-hover:opacity-100 focus:opacity-100 focus:ring-1 focus:ring-brand/30 transition-opacity"
           defaultValue=""
           onChange={(e) => { if (e.target.value) onMoveToSprint(e.target.value) }}
         >
@@ -404,7 +404,7 @@ function BacklogStoryRow({
         <button
           onClick={onRemoveFromSprint}
           aria-label={`Remove "${story.title}" from sprint`}
-          className="text-xs text-gray-400 hover:text-danger opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-1 focus-visible:ring-brand/30 rounded transition-opacity"
+          className="text-[12px] text-gray-400 hover:text-danger opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-1 focus-visible:ring-brand/30 rounded transition-opacity"
         >
           ✕
         </button>
@@ -445,9 +445,9 @@ function ProjectTimeline({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       {stories.map((story) => (
         <div key={story.id} className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
-          <span className="font-mono text-xs text-gray-400 shrink-0">{story.display_id}</span>
-          <span className="text-sm text-gray-900 font-medium flex-1 truncate">{story.title}</span>
-          <span className="text-xs text-gray-500 shrink-0">
+          <span className="font-mono text-[12px] text-gray-400 shrink-0">{story.display_id}</span>
+          <span className="text-[13px] text-gray-900 font-medium flex-1 truncate">{story.title}</span>
+          <span className="text-[12px] text-gray-500 shrink-0">
             {story.start_date && new Date(story.start_date).toLocaleDateString()}
             {story.start_date && story.due_date && ' → '}
             {story.due_date && new Date(story.due_date).toLocaleDateString()}

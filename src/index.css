@@ -43,7 +43,7 @@
     margin: 0;
     font-family: var(--font-sans);
     background: #F5F6F8;
-    font-size: var(--pp-font-size-sm);
+    font-size: 13px;
     line-height: var(--pp-line-height-normal);
     color: #0f172a;
     font-feature-settings: "rlig" 1, "calt" 1;

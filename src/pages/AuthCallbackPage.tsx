@@ -38,10 +38,10 @@ export default function AuthCallbackPage() {
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-paper gap-4">
       <div className="flex items-center gap-2.5 text-gray-400">
         <Cloud size={18} className="animate-pulse" />
-        <span className="text-sm">Signing you in...</span>
+        <span className="text-[13px]">Signing you in...</span>
       </div>
       {debug && (
-        <pre className="text-xs text-gray-500 bg-white border border-gray-200 rounded-lg p-4 max-w-lg break-all">
+        <pre className="text-[12px] text-gray-500 bg-white border border-gray-200 rounded-lg p-4 max-w-lg break-all">
           {debug}
         </pre>
       )}

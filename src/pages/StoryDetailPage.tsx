@@ -376,7 +376,7 @@ export default function StoryDetailPage() {
       {/* Back */}
       <button
         onClick={handleBack}
-        className="flex items-center gap-1.5 text-gray-500 text-sm hover:text-gray-700 mb-4"
+        className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 mb-4"
       >
         <ArrowLeft size={14} /> Back
       </button>
@@ -387,13 +387,13 @@ export default function StoryDetailPage() {
           {/* Header card */}
           <Card padding="lg" className="mb-4">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <span className="text-sm px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">
+              <span className="text-[13px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">
                 {ISSUE_TYPE_META.Story.icon} Story
               </span>
               {isNew ? (
-                <span className="text-sm text-brand font-semibold">New — not yet saved</span>
+                <span className="text-[13px] text-brand font-semibold">New — not yet saved</span>
               ) : (
-                <span className="font-mono text-sm text-gray-400">{story!.display_id}</span>
+                <span className="font-mono text-[12px] text-gray-400">{story!.display_id}</span>
               )}
               <StatusField
                 status={current.status}
@@ -427,7 +427,7 @@ export default function StoryDetailPage() {
                 </div>
 
                 {issues.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-4">
+                  <p className="text-[13px] text-gray-400 text-center py-4">
                     No tasks or bugs yet. Add one to break down this story.
                   </p>
                 ) : (
@@ -438,12 +438,12 @@ export default function StoryDetailPage() {
                         onClick={() => navigate(`/issues/${issue.id}`)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-brand/30 hover:shadow-sm cursor-pointer transition-all"
                       >
-                        <span className="text-sm">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
-                        <span className="font-mono text-xs text-gray-400 shrink-0">{issue.display_id}</span>
-                        <span className="text-sm text-gray-900 font-medium flex-1 truncate">{issue.title}</span>
-                        <span className="text-xs">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
+                        <span className="text-[13px]">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
+                        <span className="font-mono text-[12px] text-gray-400 shrink-0">{issue.display_id}</span>
+                        <span className="text-[13px] text-gray-900 font-medium flex-1 truncate">{issue.title}</span>
+                        <span className="text-[12px]">{PRIORITY_META[issue.priority as Priority]?.icon}</span>
                         {issue.assignee && <Avatar name={issue.assignee.full_name} size="sm" />}
-                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
                           {issue.status}
                         </span>
                       </div>
@@ -464,7 +464,7 @@ export default function StoryDetailPage() {
                 </div>
 
                 {links.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-3">No linked issues.</p>
+                  <p className="text-[13px] text-gray-400 text-center py-3">No linked issues.</p>
                 ) : (
                   <div className="space-y-2">
                     {links.map((link) => {
@@ -473,11 +473,11 @@ export default function StoryDetailPage() {
                       const linkedStory = allStories.find((s) => s.id === linkedId)
                       return (
                         <div key={link.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50">
-                          <span className="text-sm text-gray-500 italic shrink-0">{link.link_type}</span>
-                          <span className="font-mono text-xs text-gray-400">
+                          <span className="text-[13px] text-gray-500 italic shrink-0">{link.link_type}</span>
+                          <span className="font-mono text-[12px] text-gray-400">
                             {linkedStory?.display_id || linkedId.slice(0, 8)}
                           </span>
-                          <span className="text-sm text-gray-900 flex-1 truncate">
+                          <span className="text-[13px] text-gray-900 flex-1 truncate">
                             {linkedStory?.title || 'Unknown'}
                           </span>
                           <button
@@ -503,7 +503,7 @@ export default function StoryDetailPage() {
                 </div>
 
                 {attachments.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-3">No files attached.</p>
+                  <p className="text-[13px] text-gray-400 text-center py-3">No files attached.</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {attachments.map((att) => {
@@ -526,11 +526,11 @@ export default function StoryDetailPage() {
                               href={att.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-brand hover:underline truncate block"
+                              className="text-[13px] text-brand hover:underline truncate block"
                             >
                               {att.file_name}
                             </a>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-[12px] text-gray-400">
                               {(att.file_size / 1024).toFixed(1)} KB
                             </span>
                           </div>
@@ -560,10 +560,10 @@ export default function StoryDetailPage() {
                       <Avatar name={comment.author?.full_name || 'User'} size="md" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-gray-900">
+                          <span className="text-[13px] font-semibold text-gray-900">
                             {comment.author?.full_name}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-[12px] text-gray-400">
                             {new Date(comment.created_at).toLocaleString()}
                           </span>
                           {comment.author_id === user?.id && (
@@ -576,14 +576,14 @@ export default function StoryDetailPage() {
                             </button>
                           )}
                         </div>
-                        <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
+                        <p className="text-[13px] text-gray-700 mt-1 whitespace-pre-wrap leading-relaxed">
                           {comment.content}
                         </p>
                       </div>
                     </div>
                   ))}
                   {comments.length === 0 && (
-                    <p className="text-sm text-gray-400 text-center py-2">No comments yet.</p>
+                    <p className="text-[13px] text-gray-400 text-center py-2">No comments yet.</p>
                   )}
                 </div>
 
@@ -620,17 +620,17 @@ export default function StoryDetailPage() {
               {epic ? (
                 <button
                   onClick={() => navigate(`/epics/${epic.id}`)}
-                  className="text-sm text-brand hover:underline font-medium truncate max-w-[170px] text-right"
+                  className="text-[13px] text-brand hover:underline font-medium truncate max-w-[170px] text-right"
                 >
                   {epic.title}
                 </button>
               ) : (
-                <span className="text-sm text-gray-400">None</span>
+                <span className="text-[13px] text-gray-400">None</span>
               )}
             </DetailRow>
 
             <DetailRow label="Reporter">
-              <span className="text-sm text-gray-900 font-medium">
+              <span className="text-[13px] text-gray-900 font-medium">
                 {isNew ? (user?.full_name || 'You') : (story!.reporter?.full_name || 'Unknown')}
               </span>
             </DetailRow>
@@ -650,7 +650,7 @@ export default function StoryDetailPage() {
                 onChange={(e) => updateDraft({ story_points: e.target.value ? parseInt(e.target.value) : null })}
                 placeholder="None"
                 aria-label="Story points"
-                className="text-sm font-mono tabular-nums text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
+                className="text-[13px] font-mono tabular-nums text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
               />
             </DetailRow>
 
@@ -660,7 +660,7 @@ export default function StoryDetailPage() {
                 value={current.start_date || ''}
                 onChange={(e) => updateDraft({ start_date: e.target.value || null })}
                 aria-label="Start date"
-                className="text-sm text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
+                className="text-[13px] text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
 
@@ -670,13 +670,13 @@ export default function StoryDetailPage() {
                 value={current.due_date || ''}
                 onChange={(e) => updateDraft({ due_date: e.target.value || null })}
                 aria-label="Due date"
-                className="text-sm text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
+                className="text-[13px] text-gray-900 font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
           </div>
 
           {!isNew && story && (
-            <div className="mt-3 pt-3 border-t border-gray-100 text-caption text-gray-400 space-y-0.5">
+            <div className="mt-3 pt-3 border-t border-gray-100 text-[12px] text-gray-400 space-y-0.5">
               <div>Created {new Date(story.created_at).toLocaleDateString()}</div>
               <div>Updated {new Date(story.updated_at).toLocaleDateString()}</div>
             </div>
@@ -687,7 +687,7 @@ export default function StoryDetailPage() {
       {/* Save / Cancel bar */}
       {showBar && (
         <div className="sticky bottom-0 z-30 -mx-6 -mb-6 mt-4 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-6 py-3.5 flex items-center justify-between animate-fade-in-up">
-          <span className="text-sm text-gray-600">
+          <span className="text-[13px] text-gray-600">
             {isNew ? 'This story has not been created yet.' : 'You have unsaved changes.'}
           </span>
           <div className="flex items-center gap-2">
@@ -731,9 +731,9 @@ function IssueTypePicker({ onCreate }: { onCreate: (type: IssueType) => void }) 
               <button
                 key={t}
                 onClick={() => { onCreate(t); setOpen(false) }}
-                className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-50"
+                className="w-full flex items-center gap-2 text-left px-3 py-1.5 text-[13px] text-gray-900 hover:bg-gray-50"
               >
-                <span className="text-sm leading-none">{ISSUE_TYPE_META[t].icon}</span> {t}
+                <span className="text-[13px] leading-none">{ISSUE_TYPE_META[t].icon}</span> {t}
               </button>
             ))}
           </div>
@@ -757,11 +757,11 @@ function LinkIssueModal({
 
   return (
     <Modal title="Link an issue" onClose={onClose}>
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-1.5">Relationship</label>
+          <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Relationship</label>
           <select
-            className="w-full h-10 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand"
+            className="w-full h-9 px-3 rounded-md border border-gray-200 bg-white text-[13px] text-gray-900 shadow-sm outline-none placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/10"
             value={linkType}
             onChange={(e) => setLinkType(e.target.value as LinkType)}
           >
@@ -772,9 +772,9 @@ function LinkIssueModal({
         </div>
 
         <div>
-          <label className="block text-body font-semibold text-ink mb-1.5">Target story</label>
+          <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Target story</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body outline-none focus:border-brand"
+            className="w-full h-9 px-3 rounded-md border border-gray-200 bg-white text-[13px] text-gray-900 shadow-sm outline-none placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/10"
             value={targetId}
             onChange={(e) => setTargetId(e.target.value)}
           >

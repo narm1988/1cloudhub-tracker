@@ -91,8 +91,8 @@ export default function EpicsPage() {
       {/* Header */}
       <div className="flex items-baseline justify-between mb-5">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Epics</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900">Epics</h1>
+          <p className="text-[13px] text-gray-500 mt-1">
             <span className="font-mono tabular-nums">{total}</span> epics in your workspace
           </p>
         </div>
@@ -125,25 +125,25 @@ export default function EpicsPage() {
               <div className="bg-violet-50 rounded p-1 flex shrink-0">
                 <Flag size={13} className="text-violet-500" />
               </div>
-              <span className="font-mono text-xs text-gray-400 shrink-0 w-16">{epic.id.slice(0, 8)}</span>
+              <span className="font-mono text-[12px] text-gray-400 shrink-0 w-16">{epic.id.slice(0, 8)}</span>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-gray-900 truncate">{epic.title}</div>
+                <div className="text-[13px] font-semibold text-gray-900 truncate">{epic.title}</div>
                 {epic.description && (
-                  <div className="text-sm text-gray-500 truncate">{epic.description}</div>
+                  <div className="text-[13px] text-gray-500 truncate">{epic.description}</div>
                 )}
               </div>
               {epic.project && (
-                <span className="text-xs font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+                <span className="text-[12px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
                   {epic.project.key}
                 </span>
               )}
               <div className="flex items-center gap-1.5 shrink-0">
                 <Avatar name={epic.owner?.full_name || 'Unknown'} size="sm" />
-                <span className="text-xs text-gray-500 hidden sm:inline">
+                <span className="text-[12px] text-gray-500 hidden sm:inline">
                   {epic.owner?.full_name || 'Unassigned'}
                 </span>
               </div>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 shrink-0">
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 shrink-0">
                 {epic.status}
               </span>
               <ChevronRight size={14} className="text-gray-400 shrink-0" />
@@ -181,11 +181,11 @@ function CreateEpicModal({
 
   return (
     <Modal title="New epic" onClose={onClose}>
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-1.5">Project</label>
+          <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Project</label>
           <select
-            className="w-full h-10 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            className="w-full h-9 px-3 rounded-md border border-gray-200 bg-white text-[13px] text-gray-900 shadow-sm outline-none placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/10"
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
           >
@@ -202,11 +202,11 @@ function CreateEpicModal({
           placeholder="e.g. Client Onboarding Automation"
         />
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+          <label className="block text-[13px] font-medium text-gray-700 mb-1.5">
             Description
           </label>
           <textarea
-            className="w-full px-3 py-2 rounded-md border border-gray-200 text-sm text-gray-900 shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-colors min-h-[80px] resize-y"
+            className="w-full px-3 py-2 rounded-md border border-gray-200 text-[13px] text-gray-900 shadow-sm outline-none placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/10 transition-colors min-h-[80px] resize-y"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What does this epic cover?"

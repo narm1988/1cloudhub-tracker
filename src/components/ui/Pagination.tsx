@@ -14,7 +14,7 @@ export default function Pagination({ page, pageSize, total, onPageChange }: Pagi
 
   return (
     <div className="flex items-center justify-between mt-4">
-      <span className="text-sm text-gray-500">
+      <span className="text-[13px] text-gray-500">
         Page <span className="font-mono tabular-nums">{page}</span> of{' '}
         <span className="font-mono tabular-nums">{totalPages}</span>
       </span>

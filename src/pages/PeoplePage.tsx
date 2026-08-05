@@ -98,8 +98,8 @@ export default function PeoplePage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="text-xl font-semibold tracking-tight">People</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900">People</h1>
+        <p className="text-[13px] text-gray-500 mt-1">
           Admins can invite teammates and tag them to projects.
         </p>
       </div>
@@ -107,7 +107,7 @@ export default function PeoplePage() {
       {/* People table */}
       <Card padding="none" className="overflow-hidden">
         {people.length === 0 ? (
-          <div className="text-center py-10 text-gray-400">
+          <div className="text-center py-10 text-gray-400 text-[13px]">
             No team members yet. Invite someone to get started.
           </div>
         ) : (
@@ -120,11 +120,11 @@ export default function PeoplePage() {
             >
               <Avatar name={person.full_name} size="lg" />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-gray-900">{person.full_name}</div>
-                <div className="text-sm text-gray-400 font-mono truncate">{person.email}</div>
+                <div className="text-[13px] font-semibold text-gray-900">{person.full_name}</div>
+                <div className="text-[13px] text-gray-400 font-mono truncate">{person.email}</div>
               </div>
               <span
-                className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md ${
+                className={`flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md ${
                   person.role === 'admin'
                     ? 'bg-brand-soft text-brand'
                     : 'bg-gray-100 text-gray-500'
@@ -185,9 +185,9 @@ function InviteModal({
 
   return (
     <Modal title="Invite a teammate" onClose={onClose}>
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         {error && (
-          <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg">{error}</div>
+          <div className="text-[13px] bg-red-50 text-red-600 border border-red-100 rounded-md px-3 py-2.5">{error}</div>
         )}
 
         <div>
@@ -198,13 +198,13 @@ function InviteModal({
             onChange={(e) => setEmail(e.target.value)}
             placeholder={`name@${ALLOWED_DOMAIN}`}
           />
-          <p className="text-xs text-gray-400 mt-1">Must be a @{ALLOWED_DOMAIN} address.</p>
+          <p className="text-[12px] text-gray-400 mt-1">Must be a @{ALLOWED_DOMAIN} address.</p>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-1.5">Role</label>
+          <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Role</label>
           <select
-            className="w-full h-10 px-3 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand"
+            className="w-full h-9 px-3 rounded-md border border-gray-200 bg-white text-[13px] text-gray-900 shadow-sm outline-none placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/10"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >

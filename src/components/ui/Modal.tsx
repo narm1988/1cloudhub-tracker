@@ -18,7 +18,7 @@ export default function Modal({ title, onClose, children, width = 'max-w-md' }: 
         className={`bg-white rounded-lg ${width} w-full p-6 shadow-lg animate-pop-in`}
       >
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-[15px] font-semibold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
             className="rounded-sm text-gray-400 hover:text-gray-600 transition-colors"

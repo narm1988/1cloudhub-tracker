@@ -64,8 +64,8 @@ export default function ProjectsPage() {
     <div>
       <div className="flex items-baseline justify-between mb-5 animate-fade-in-up">
         <div>
-          <h3 className="text-xl font-semibold tracking-tight">Projects</h3>
-          <p className="text-sm text-gray-500 mt-1"><span className="font-mono tabular-nums">{total}</span> projects in your workspace</p>
+          <h3 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900">Projects</h3>
+          <p className="text-[13px] text-gray-500 mt-1"><span className="font-mono tabular-nums">{total}</span> projects in your workspace</p>
         </div>
         {isAdmin && (
           <Button onClick={() => setShowCreate(true)}>
@@ -94,19 +94,19 @@ export default function ProjectsPage() {
                   <div className="w-9 h-9 rounded-lg bg-brand-soft flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
                     <FolderKanban size={18} className="text-brand" />
                   </div>
-                  <span className="font-mono text-sm text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                  <span className="font-mono text-[12px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                     {project.key}
                   </span>
                 </div>
                 <ChevronRight size={14} className="text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">{project.name}</h3>
+              <h3 className="text-[15px] font-medium text-gray-900 mb-1">{project.name}</h3>
               {project.description && (
-                <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+                <p className="text-[13px] text-gray-500 leading-relaxed line-clamp-2">
                   {project.description}
                 </p>
               )}
-              <div className="mt-3 text-xs text-gray-400">
+              <div className="mt-3 text-[12px] text-gray-400">
                 Created {new Date(project.created_at).toLocaleDateString()}
               </div>
             </Card>
@@ -177,9 +177,9 @@ function CreateProjectModal({
 
   return (
     <Modal title="Create project" onClose={onClose}>
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         {error && (
-          <div className="bg-danger-soft text-danger text-sm px-4 py-2.5 rounded-lg">{error}</div>
+          <div className="text-[13px] bg-red-50 text-red-600 border border-red-100 rounded-md px-3 py-2.5">{error}</div>
         )}
 
         <Input
@@ -190,23 +190,23 @@ function CreateProjectModal({
         />
 
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+          <label className="block text-[13px] font-medium text-gray-700 mb-1.5">
             Key <span className="text-gray-400 font-normal">(used as prefix for issues)</span>
           </label>
           <input
-            className="w-full h-10 px-3 rounded-md border border-gray-200 text-sm font-mono uppercase shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            className="w-full h-9 px-3 rounded-md border border-gray-200 bg-white text-[13px] font-mono uppercase shadow-sm outline-none placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/10"
             value={key}
             onChange={(e) => setKey(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5))}
             placeholder="CM"
             maxLength={5}
           />
-          <p className="text-xs text-gray-400 mt-1">2-5 characters. Issues will be like {key || 'XX'}-101</p>
+          <p className="text-[12px] text-gray-400 mt-1">2-5 characters. Issues will be like {key || 'XX'}-101</p>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-1.5">Description</label>
+          <label className="block text-[13px] font-medium text-gray-700 mb-1.5">Description</label>
           <textarea
-            className="w-full px-3 py-2 rounded-md border border-gray-200 text-sm shadow-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 min-h-[70px] resize-y"
+            className="w-full px-3 py-2 rounded-md border border-gray-200 text-[13px] text-gray-900 shadow-sm outline-none placeholder:text-gray-400 focus:border-brand focus:ring-2 focus:ring-brand/10 min-h-[70px] resize-y"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What is this project about?"

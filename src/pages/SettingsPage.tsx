@@ -11,30 +11,30 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold tracking-tight mb-5">Settings</h1>
+      <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900 mb-5">Settings</h1>
 
       <div className="space-y-5">
         <Card padding="lg">
           <h2 className={`${SECTION_HEADER} mb-4`}>Profile</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm text-gray-500 block">Name</label>
-              <p className="text-sm text-gray-900">{user?.full_name}</p>
+              <label className="text-[13px] text-gray-500 block">Name</label>
+              <p className="text-[13px] text-gray-900">{user?.full_name}</p>
             </div>
             <div>
-              <label className="text-sm text-gray-500 block">Email</label>
-              <p className="text-sm text-gray-900 font-mono">{user?.email}</p>
+              <label className="text-[13px] text-gray-500 block">Email</label>
+              <p className="text-[13px] text-gray-900 font-mono">{user?.email}</p>
             </div>
             <div>
-              <label className="text-sm text-gray-500 block">Role</label>
-              <p className="text-sm text-gray-900 capitalize">{user?.role}</p>
+              <label className="text-[13px] text-gray-500 block">Role</label>
+              <p className="text-[13px] text-gray-900 capitalize">{user?.role}</p>
             </div>
           </div>
         </Card>
 
         <Card padding="lg">
           <h2 className={`${SECTION_HEADER} mb-1`}>Appearance</h2>
-          <p className="text-sm text-gray-500 mb-4">Choose a colour theme for the sidebar.</p>
+          <p className="text-[13px] text-gray-500 mb-4">Choose a colour theme for the sidebar.</p>
           <div className="grid grid-cols-3 gap-3">
             {SIDEBAR_THEMES.map((t) => {
               const isActive = theme.id === t.id
@@ -52,7 +52,7 @@ export default function SettingsPage() {
                   >
                     {isActive && <Check size={16} className="text-white" />}
                   </span>
-                  <span className="text-sm text-gray-900 font-medium">{t.name}</span>
+                  <span className="text-[13px] text-gray-900 font-medium">{t.name}</span>
                 </button>
               )
             })}

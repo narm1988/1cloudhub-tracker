@@ -134,7 +134,7 @@ export default function TopBar({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit() }}
-          className="w-full pl-8 pr-3 h-8 rounded-md border border-gray-200 text-sm shadow-sm outline-none bg-paper focus:border-brand focus:ring-1 focus:ring-brand/20"
+          className="w-full pl-8 pr-3 h-8 rounded-md border border-gray-200 text-[13px] shadow-sm outline-none bg-paper focus:border-brand focus:ring-2 focus:ring-brand/10"
         />
       </div>
 
@@ -149,7 +149,7 @@ export default function TopBar({
           >
             <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-xs font-mono tabular-nums font-bold flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-[10px] font-mono tabular-nums font-bold flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -164,7 +164,7 @@ export default function TopBar({
               <div className="fixed top-0 right-0 bottom-0 w-[360px] bg-white shadow-2xl z-50 flex flex-col animate-drawer-slide-in">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                  <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
+                  <h2 className="text-[15px] font-semibold text-gray-900">Notifications</h2>
                   <button
                     onClick={() => setShowNotifs(false)}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -179,7 +179,7 @@ export default function TopBar({
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setNotifTab('all')}
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
                         notifTab === 'all' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                       }`}
                     >
@@ -187,7 +187,7 @@ export default function TopBar({
                     </button>
                     <button
                       onClick={() => setNotifTab('unread')}
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
                         notifTab === 'unread' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                       }`}
                     >
@@ -197,7 +197,7 @@ export default function TopBar({
                   <button
                     onClick={markAllRead}
                     disabled={unreadCount === 0}
-                    className="text-xs font-semibold text-brand hover:text-brand-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="text-[11px] font-semibold text-brand hover:text-brand-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Mark all read
                   </button>
@@ -212,21 +212,21 @@ export default function TopBar({
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <span
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0"
                               style={{ backgroundColor: icon.bg }}
                             >
                               {icon.emoji}
                             </span>
                             {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
                           </div>
-                          <span className="text-xs font-mono text-gray-400">{timeAgo(n.created_at)}</span>
+                          <span className="text-[12px] font-mono text-gray-400">{timeAgo(n.created_at)}</span>
                         </div>
-                        <p className="text-sm text-gray-900 leading-snug mb-2 pl-9">{n.message}</p>
+                        <p className="text-[13px] text-gray-900 leading-snug mb-2 pl-9">{n.message}</p>
                         <div className="flex items-center gap-3 pl-9">
                           {n.link && (
                             <button
                               onClick={() => viewNotification(n)}
-                              className="text-xs font-semibold text-brand hover:text-brand-deep transition-colors"
+                              className="text-[12px] font-semibold text-brand hover:text-brand-deep transition-colors"
                             >
                               View →
                             </button>
@@ -234,7 +234,7 @@ export default function TopBar({
                           {!n.read && (
                             <button
                               onClick={() => markRead(n)}
-                              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                              className="text-[12px] text-gray-400 hover:text-gray-600 transition-colors"
                             >
                               Mark read
                             </button>
@@ -244,7 +244,7 @@ export default function TopBar({
                     )
                   })}
                   {visibleNotifications.length === 0 && (
-                    <p className="text-sm text-gray-400 text-center py-10">
+                    <p className="text-[13px] text-gray-400 text-center py-10">
                       {notifTab === 'unread' ? 'No unread notifications.' : 'No notifications yet.'}
                     </p>
                   )}
@@ -255,11 +255,11 @@ export default function TopBar({
         </div>
 
         {/* User */}
-        <span className="text-sm text-gray-500">
+        <span className="text-[13px] text-gray-500">
           Welcome, <strong className="text-gray-900 font-semibold">{user?.full_name}</strong>
         </span>
         <span
-          className={`flex items-center gap-1 text-caption font-semibold px-2 py-0.5 rounded-md ${
+          className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${
             user?.role === 'admin' ? 'bg-brand-soft text-brand' : 'bg-gray-100 text-gray-500'
           }`}
         >
