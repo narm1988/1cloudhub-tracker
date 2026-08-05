@@ -86,20 +86,31 @@ async def entra_callback(code: Optional[str] = None, error: Optional[str] = None
 
     full_name = claims.get("name") or email.split("@")[0]
     groups = claims.get("groups", [])
-    role = "admin" if ENTRA_ADMIN_GROUP_ID and ENTRA_ADMIN_GROUP_ID in groups else "member"
+
+    # Only derive role from Entra group membership if a group ID is configured.
+    # Otherwise, preserve whatever role the profile already has in the DB.
+    entra_role = None
+    if ENTRA_ADMIN_GROUP_ID:
+        entra_role = "admin" if ENTRA_ADMIN_GROUP_ID in groups else "member"
 
     try:
         supabase = get_supabase_admin()
         existing = supabase.table("profiles").select("*").eq("email", email).maybe_single().execute()
 
         if existing.data:
-            updated = supabase.table("profiles").update({"role": role}).eq("id", existing.data["id"]).execute()
-            profile = updated.data[0]
+            update_fields = {}
+            if entra_role is not None:
+                update_fields["role"] = entra_role
+            if update_fields:
+                updated = supabase.table("profiles").update(update_fields).eq("id", existing.data["id"]).execute()
+                profile = updated.data[0]
+            else:
+                profile = existing.data
         else:
             created = supabase.table("profiles").insert({
                 "email": email,
                 "full_name": full_name,
-                "role": role,
+                "role": entra_role or "member",
             }).execute()
             profile = created.data[0]
 
