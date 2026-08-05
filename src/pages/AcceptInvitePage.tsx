@@ -54,7 +54,7 @@ export default function AcceptInvitePage() {
             <Cloud size={16} className="text-white" />
           </div>
           <div>
-            <div className="font-display text-base font-bold text-ink leading-none">1CloudHub</div>
+            <div className="font-display text-body-lg font-bold text-ink leading-none">1CloudHub</div>
             <div className="text-caption tracking-[0.14em] text-gray-400 mt-0.5">TRACKER</div>
           </div>
         </div>

@@ -110,7 +110,7 @@ export default function LoginPage() {
             </div>
           </div>
           <div>
-            <div className="font-display text-lg font-bold tracking-tight leading-none">
+            <div className="font-display text-subhead font-bold tracking-tight leading-none">
               1CloudHub
             </div>
             <div className="text-caption tracking-[0.14em] text-gray-500 mt-0.5">
@@ -165,7 +165,7 @@ export default function LoginPage() {
             <div className="w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
               <Cloud size={14} className="text-white" />
             </div>
-            <span className="font-display text-base font-bold text-ink">1CloudHub Tracker</span>
+            <span className="font-display text-body-lg font-bold text-ink">1CloudHub Tracker</span>
           </div>
 
           <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
