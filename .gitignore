@@ -14,6 +14,9 @@ build/
 .env.local
 .env.*.local
 
+# JWT keys
+*.pem
+
 # IDE
 .vscode/
 .idea/

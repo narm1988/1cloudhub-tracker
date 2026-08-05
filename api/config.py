@@ -3,9 +3,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://cuwqcmhhyhldauifhdrf.supabase.co")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
-SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "sb_publishable_6vgvsv2BFacuw3-oEvsKMw_-SZhhWbW")
 
 # ==============================================
 # JWT signing — must match the asymmetric key pair registered as this
@@ -30,7 +30,7 @@ ENTRA_REDIRECT_URI = os.getenv("ENTRA_REDIRECT_URI", "")  # {API_URL}/api/auth/e
 ENTRA_ADMIN_GROUP_ID = os.getenv("ENTRA_ADMIN_GROUP_ID", "")  # Object ID of the admin security group
 ENTRA_AUTHORITY = f"https://login.microsoftonline.com/{ENTRA_TENANT_ID}"
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "")
 
 # ==============================================
 # AWS SES — invite / password-reset email delivery
