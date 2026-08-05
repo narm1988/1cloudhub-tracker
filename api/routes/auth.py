@@ -69,42 +69,44 @@ async def entra_login():
 
 
 @router.get("/entra/callback")
-async def entra_callback(code: Optional[str] = None, error: Optional[str] = None):
+async def entra_callback(code: Optional[str] = None, error: Optional[str] = None, error_description: Optional[str] = None):
     if error or not code:
-        return RedirectResponse(f"{FRONTEND_URL}/login?error=entra_sign_in_failed")
+        detail = error_description or error or "no_code"
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=entra_sign_in_failed&detail={detail}")
 
     try:
         result = acquire_token(code)
-    except ValueError:
-        return RedirectResponse(f"{FRONTEND_URL}/login?error=entra_sign_in_failed")
+    except ValueError as e:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=token_exchange_failed&detail={e}")
 
     claims = result.get("id_token_claims", {})
     email = claims.get("preferred_username") or claims.get("email")
     if not email:
-        return RedirectResponse(f"{FRONTEND_URL}/login?error=entra_sign_in_failed")
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=no_email_claim")
 
     full_name = claims.get("name") or email.split("@")[0]
     groups = claims.get("groups", [])
     role = "admin" if ENTRA_ADMIN_GROUP_ID and ENTRA_ADMIN_GROUP_ID in groups else "member"
 
-    supabase = get_supabase_admin()
-    existing = supabase.table("profiles").select("*").eq("email", email).maybe_single().execute()
+    try:
+        supabase = get_supabase_admin()
+        existing = supabase.table("profiles").select("*").eq("email", email).maybe_single().execute()
 
-    if existing.data:
-        # Group membership is re-checked on every sign-in, so removing
-        # someone from the admin group demotes them on their next login.
-        updated = supabase.table("profiles").update({"role": role}).eq("id", existing.data["id"]).execute()
-        profile = updated.data[0]
-    else:
-        created = supabase.table("profiles").insert({
-            "email": email,
-            "full_name": full_name,
-            "role": role,
-        }).execute()
-        profile = created.data[0]
+        if existing.data:
+            updated = supabase.table("profiles").update({"role": role}).eq("id", existing.data["id"]).execute()
+            profile = updated.data[0]
+        else:
+            created = supabase.table("profiles").insert({
+                "email": email,
+                "full_name": full_name,
+                "role": role,
+            }).execute()
+            profile = created.data[0]
 
-    token = create_access_token(profile["id"], profile["email"], profile["role"])
-    return RedirectResponse(f"{FRONTEND_URL}/auth/callback#token={token}")
+        token = create_access_token(profile["id"], profile["email"], profile["role"])
+        return RedirectResponse(f"{FRONTEND_URL}/auth/callback#token={token}")
+    except Exception as e:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=profile_error&detail={e}")
 
 
 @router.post("/invite")

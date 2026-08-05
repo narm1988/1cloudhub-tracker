@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, Cloud } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Input from '../components/ui/Input'
@@ -26,6 +26,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { signIn, signInWithMicrosoft, user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  // Show error from SSO callback redirect
+  useEffect(() => {
+    const err = searchParams.get('error')
+    const detail = searchParams.get('detail')
+    if (err) {
+      setError(detail ? `${err}: ${detail}` : err)
+    }
+  }, [searchParams])
 
   // Redirect if already logged in
   if (user) {
