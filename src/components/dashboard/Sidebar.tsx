@@ -4,11 +4,11 @@ import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 
 const NAV_ITEMS = [
-  { key: 'projects', label: 'Projects', icon: FolderKanban, path: '/projects' },
-  { key: 'epics', label: 'Epics', icon: LayoutGrid, path: '/epics' },
-  { key: 'search', label: 'Search', icon: Search, path: '/search' },
-  { key: 'people', label: 'People', icon: Users, path: '/people', admin: true },
-  { key: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
+  { key: 'projects', label: 'Projects', icon: FolderKanban, path: '/projects', hoverClass: 'group-hover:-rotate-[8deg] group-hover:scale-110' },
+  { key: 'epics', label: 'Epics', icon: LayoutGrid, path: '/epics', hoverClass: 'group-hover:scale-[1.15]' },
+  { key: 'search', label: 'Search', icon: Search, path: '/search', hoverClass: 'group-hover:-rotate-[15deg] group-hover:scale-110' },
+  { key: 'people', label: 'People', icon: Users, path: '/people', admin: true, hoverClass: 'group-hover:-translate-y-0.5' },
+  { key: 'settings', label: 'Settings', icon: Settings, path: '/settings', hoverClass: 'group-hover:rotate-90' },
 ]
 
 const SIDEBAR_STARS = [
@@ -43,6 +43,12 @@ export default function Sidebar() {
       className="w-64 text-white flex flex-col p-5 shrink-0 transition-colors relative overflow-hidden"
       style={{ backgroundColor: theme.bg }}
     >
+      {/* Aurora mesh — soft drifting color blobs */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute w-56 h-56 -top-14 -left-16 rounded-full bg-brand blur-3xl opacity-30 mix-blend-screen animate-aurora-a" />
+        <div className="absolute w-48 h-48 bottom-24 -right-16 rounded-full bg-violet-500 blur-3xl opacity-25 mix-blend-screen animate-aurora-b" />
+      </div>
+
       {/* Starfield */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         {SIDEBAR_STARS.map((s, i) => (
@@ -88,13 +94,13 @@ export default function Sidebar() {
             <button
               key={item.key}
               onClick={() => navigate(item.path)}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[13.5px] font-medium transition-colors ${
+              className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[13.5px] font-medium transition-colors ${
                 isActive
                   ? 'bg-white/10 text-white'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Icon size={15} />
+              <Icon size={15} className={`transition-transform duration-300 ${item.hoverClass}`} />
               {item.label}
               {item.admin && (
                 <span className="ml-auto text-[9.5px] bg-white/10 px-1.5 py-0.5 rounded text-gray-400">
@@ -111,9 +117,9 @@ export default function Sidebar() {
         <div className="my-3 border-t border-white/10" />
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-2.5 text-gray-400 hover:text-danger hover:bg-danger/10 text-[13.5px] font-medium rounded-lg px-2.5 py-2 transition-colors"
+          className="group w-full flex items-center gap-2.5 text-gray-400 hover:text-danger hover:bg-danger/10 text-[13.5px] font-medium rounded-lg px-2.5 py-2 transition-colors"
         >
-          <LogOut size={15} /> Sign out
+          <LogOut size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" /> Sign out
         </button>
       </div>
     </aside>
