@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Bell, Shield } from 'lucide-react'
+import { Search, Bell, Shield, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Notification } from '../../types'
@@ -17,10 +17,23 @@ function timeAgo(dateStr: string) {
   return `${days}d ago`
 }
 
+// Notifications only carry a plain message string (no type column), so the
+// icon is inferred from the display_id prefix embedded in that message by
+// the DB trigger — e.g. "You were assigned to BUG-101: ...".
+function notificationIcon(message: string) {
+  if (message.startsWith('New comment')) return { emoji: '💬', bg: '#F0F1F3' }
+  if (/\bBUG-/.test(message)) return { emoji: '🐛', bg: '#FDECEC' }
+  if (/\bTSK-/.test(message)) return { emoji: '✅', bg: '#EAF1FE' }
+  if (/\bSUB-/.test(message)) return { emoji: '📎', bg: '#F0F1F3' }
+  if (/\b1CH-/.test(message)) return { emoji: '📗', bg: '#EEF0FE' }
+  return { emoji: '🔔', bg: '#F0F1F3' }
+}
+
 export default function TopBar() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [showNotifs, setShowNotifs] = useState(false)
+  const [notifTab, setNotifTab] = useState<'all' | 'unread'>('all')
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -41,7 +54,7 @@ export default function TopBar() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
         (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev].slice(0, 5))
+          setNotifications((prev) => [payload.new as Notification, ...prev].slice(0, 30))
           setUnreadCount((c) => c + 1)
         }
       )
@@ -58,7 +71,7 @@ export default function TopBar() {
       .select('*')
       .eq('user_id', user!.id)
       .order('created_at', { ascending: false })
-      .limit(5)
+      .limit(30)
     if (data) setNotifications(data)
   }
 
@@ -71,15 +84,28 @@ export default function TopBar() {
     setUnreadCount(count || 0)
   }
 
-  async function openNotification(n: Notification) {
-    if (!n.read) {
-      setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))
-      setUnreadCount((c) => Math.max(0, c - 1))
-      await supabase.from('notifications').update({ read: true }).eq('id', n.id)
-    }
+  async function markRead(n: Notification) {
+    if (n.read) return
+    setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))
+    setUnreadCount((c) => Math.max(0, c - 1))
+    await supabase.from('notifications').update({ read: true }).eq('id', n.id)
+  }
+
+  async function viewNotification(n: Notification) {
+    await markRead(n)
     setShowNotifs(false)
     if (n.link) navigate(n.link)
   }
+
+  async function markAllRead() {
+    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id)
+    if (unreadIds.length === 0) return
+    setNotifications((prev) => prev.map((x) => ({ ...x, read: true })))
+    setUnreadCount(0)
+    await supabase.from('notifications').update({ read: true }).in('id', unreadIds)
+  }
+
+  const visibleNotifications = notifTab === 'unread' ? notifications.filter((n) => !n.read) : notifications
 
   return (
     <header className="h-[60px] bg-white border-b border-gray-200 flex items-center px-6 gap-4 shrink-0 relative">
@@ -114,27 +140,96 @@ export default function TopBar() {
 
           {showNotifs && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowNotifs(false)} />
-              <div className="absolute top-8 right-0 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-100 text-sm font-semibold text-ink">
-                  Notifications
+              <div
+                className="fixed inset-0 bg-black/15 z-40 animate-fade-in"
+                onClick={() => setShowNotifs(false)}
+              />
+              <div className="fixed top-0 right-0 bottom-0 w-[360px] bg-white shadow-2xl z-50 flex flex-col animate-drawer-slide-in">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                  <h2 className="font-display text-base font-semibold text-ink">Notifications</h2>
+                  <button
+                    onClick={() => setShowNotifs(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Close notifications"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <div className="max-h-72 overflow-y-auto">
-                  {notifications.map((n) => (
+
+                {/* Tabs + bulk action */}
+                <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100">
+                  <div className="flex gap-1.5">
                     <button
-                      key={n.id}
-                      onClick={() => openNotification(n)}
-                      className={`w-full flex gap-2 px-4 py-3 border-b border-gray-50 text-left hover:bg-gray-50 transition-colors ${!n.read ? 'bg-brand-soft' : ''}`}
+                      onClick={() => setNotifTab('all')}
+                      className={`text-[11.5px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                        notifTab === 'all' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}
                     >
-                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${!n.read ? 'bg-brand' : 'bg-transparent'}`} />
-                      <div>
-                        <p className="text-[12.5px] text-ink leading-snug">{n.message}</p>
-                        <p className="text-[11px] text-gray-400 mt-0.5">{timeAgo(n.created_at)}</p>
-                      </div>
+                      All
                     </button>
-                  ))}
-                  {notifications.length === 0 && (
-                    <p className="text-[12.5px] text-gray-400 text-center py-6">No notifications yet.</p>
+                    <button
+                      onClick={() => setNotifTab('unread')}
+                      className={`text-[11.5px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                        notifTab === 'unread' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}
+                    >
+                      Unread (<span className="font-mono tabular-nums">{unreadCount}</span>)
+                    </button>
+                  </div>
+                  <button
+                    onClick={markAllRead}
+                    disabled={unreadCount === 0}
+                    className="text-[11.5px] font-semibold text-brand hover:text-brand-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Mark all read
+                  </button>
+                </div>
+
+                {/* List */}
+                <div className="flex-1 overflow-y-auto">
+                  {visibleNotifications.map((n) => {
+                    const icon = notificationIcon(n.message)
+                    return (
+                      <div key={n.id} className={`px-5 py-3.5 border-b border-gray-50 ${!n.read ? 'bg-brand-soft/40' : ''}`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0"
+                              style={{ backgroundColor: icon.bg }}
+                            >
+                              {icon.emoji}
+                            </span>
+                            {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
+                          </div>
+                          <span className="text-[10.5px] font-mono text-gray-400">{timeAgo(n.created_at)}</span>
+                        </div>
+                        <p className="text-[12.5px] text-ink leading-snug mb-2 pl-9">{n.message}</p>
+                        <div className="flex items-center gap-3 pl-9">
+                          {n.link && (
+                            <button
+                              onClick={() => viewNotification(n)}
+                              className="text-[11.5px] font-semibold text-brand hover:text-brand-deep transition-colors"
+                            >
+                              View →
+                            </button>
+                          )}
+                          {!n.read && (
+                            <button
+                              onClick={() => markRead(n)}
+                              className="text-[11.5px] text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              Mark read
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {visibleNotifications.length === 0 && (
+                    <p className="text-[12.5px] text-gray-400 text-center py-10">
+                      {notifTab === 'unread' ? 'No unread notifications.' : 'No notifications yet.'}
+                    </p>
                   )}
                 </div>
               </div>

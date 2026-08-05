@@ -100,6 +100,10 @@ export default {
           '0%, 100%': { transform: 'translate(0,0)', opacity: '0.35' },
           '50%': { transform: 'translate(6px,-10px)', opacity: '0.7' },
         },
+        drawerSlideIn: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.4s ease-out both',
@@ -115,6 +119,7 @@ export default {
         'light-sweep': 'lightSweep 6s ease-in-out infinite',
         'ember-rise': 'emberRise 5s ease-in-out infinite',
         'dust-drift': 'dustDrift 9s ease-in-out infinite',
+        'drawer-slide-in': 'drawerSlideIn 0.25s cubic-bezier(0.2,0.8,0.3,1) both',
       },
     },
   },
