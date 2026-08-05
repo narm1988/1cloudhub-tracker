@@ -42,25 +42,65 @@ export default {
         body: ["'Inter'", '-apple-system', 'BlinkMacSystemFont', "'Segoe UI'", 'sans-serif'],
         mono: ["'JetBrains Mono'", "'SF Mono'", 'Monaco', 'monospace'],
       },
-      // Type scale aligned with Pipeline Pulse design tokens.
+      // Type scale — matches Pipeline Pulse design tokens exactly.
       fontSize: {
-        // 0.75rem (12px) — captions, metadata, timestamps, table-header uppercase
-        caption: ['0.75rem', { lineHeight: '1.4' }],
-        // 0.875rem (14px) — controls, labels, body text, table data
-        label: ['0.875rem', { lineHeight: '1.5' }],
-        body: ['0.875rem', { lineHeight: '1.5' }],
-        // 1rem (16px) — slightly larger body, descriptions
-        'body-lg': ['1rem', { lineHeight: '1.5' }],
-        // 1.125rem (18px) — section headers, card titles, nav items
-        subhead: ['1.125rem', { lineHeight: '1.4' }],
-        // 1.5rem (24px) — page titles (Projects, Epics, People, etc.)
-        heading: ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.015em' }],
-        // 1.875rem (30px) — large headings, login page title
-        'heading-lg': ['1.875rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
-        // 2.25rem (36px) — hero/display text
-        display: ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
-        // 2.5rem (40px) — metric numbers
-        metric: ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }],
+        // Standard Tailwind names mapped to Pipeline Pulse token values
+        xs: ['0.75rem', { lineHeight: '1.5' }],       // 12px — PP --pp-font-size-xs
+        sm: ['0.875rem', { lineHeight: '1.5' }],      // 14px — PP --pp-font-size-sm
+        base: ['1rem', { lineHeight: '1.5' }],        // 16px — PP --pp-font-size-md
+        lg: ['1.125rem', { lineHeight: '1.5' }],      // 18px — PP --pp-font-size-lg
+        xl: ['1.25rem', { lineHeight: '1.25' }],      // 20px — PP --pp-font-size-xl
+        '2xl': ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.015em' }],   // 24px — PP --pp-font-size-2xl
+        '3xl': ['1.875rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],  // 30px — PP --pp-font-size-3xl
+        '4xl': ['2.25rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],   // 36px — PP --pp-font-size-4xl
+
+        // Semantic aliases (project-specific convenience classes)
+        caption: ['0.75rem', { lineHeight: '1.4' }],        // 12px — captions, metadata, timestamps
+        label: ['0.875rem', { lineHeight: '1.5' }],         // 14px — controls, labels, form text
+        body: ['0.875rem', { lineHeight: '1.5' }],          // 14px — default body text
+        'body-lg': ['1rem', { lineHeight: '1.5' }],         // 16px — descriptions, larger body
+        subhead: ['1.125rem', { lineHeight: '1.4' }],       // 18px — card titles, section headers
+        heading: ['1.5rem', { lineHeight: '1.25', letterSpacing: '-0.015em' }],    // 24px — page titles
+        'heading-lg': ['1.875rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }], // 30px — large headings
+        display: ['2.25rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],    // 36px — hero text
+        metric: ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }], // 40px — KPI numbers
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
+      },
+      lineHeight: {
+        tight: '1.25',
+        normal: '1.5',
+        relaxed: '1.75',
+      },
+      // Spacing — matches Pipeline Pulse spacing tokens (--pp-space-*)
+      spacing: {
+        0: '0rem',
+        1: '0.25rem',     // 4px
+        2: '0.5rem',      // 8px
+        3: '0.75rem',     // 12px
+        4: '1rem',        // 16px
+        5: '1.25rem',     // 20px
+        6: '1.5rem',      // 24px
+        8: '2rem',        // 32px
+        10: '2.5rem',     // 40px
+        12: '3rem',       // 48px
+        16: '4rem',       // 64px
+        20: '5rem',       // 80px
+      },
+      // Border radius — matches Pipeline Pulse radius tokens (--pp-radius-*)
+      borderRadius: {
+        none: '0',
+        sm: '0.125rem',   // 2px
+        DEFAULT: '0.375rem', // 6px
+        md: '0.375rem',   // 6px
+        lg: '0.5rem',     // 8px
+        xl: '0.75rem',    // 12px
+        '2xl': '1rem',    // 16px
+        full: '9999px',
       },
       keyframes: {
         fadeInUp: {

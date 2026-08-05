@@ -64,7 +64,7 @@ export default function ProjectsPage() {
     <div>
       <div className="flex items-baseline justify-between mb-5 animate-fade-in-up">
         <div>
-          <h1 className="font-display text-heading font-semibold text-ink">Projects</h1>
+          <h3 className="text-2xl font-semibold">Projects</h3>
           <p className="text-body text-gray-500 mt-1"><span className="font-mono tabular-nums">{total}</span> projects in your workspace</p>
         </div>
         {isAdmin && (

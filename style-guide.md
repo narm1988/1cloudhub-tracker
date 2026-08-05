@@ -1,6 +1,8 @@
 # 1CloudHub Tracker — Style Guide
 
-A living reference for the design tokens, components, and conventions used across the app. Typography follows the Pipeline Pulse guidelines (Inter + JetBrains Mono, rem-based scale). Colors and component patterns are project-specific.
+A living reference for the design tokens, components, and conventions used across the app. Typography, spacing, and border radius are **fully aligned with Pipeline Pulse design tokens**. Colors and component patterns remain project-specific.
+
+> **Pipeline Pulse alignment**: `index.css` exposes all `--pp-*` CSS custom properties (typography, spacing, radius). `tailwind.config.js` maps both standard Tailwind utility names (`text-xs`…`text-4xl`, `rounded-sm`…`rounded-2xl`) and semantic aliases (`text-caption`, `text-heading`, etc.) to the same Pipeline Pulse values.
 
 ---
 
@@ -47,45 +49,94 @@ Google Fonts loads: Inter (400, 500, 600, 700) and JetBrains Mono (400, 500).
 
 ### 2.2 Type Scale
 
-Rem-based scale adopted from Pipeline Pulse guidelines. Defined in `tailwind.config.js` under `theme.extend.fontSize`.
+Rem-based scale matching Pipeline Pulse design tokens exactly. Both standard Tailwind names and semantic aliases are available.
+
+| Tailwind Class | PP Token | Size | Line Height | Letter Spacing | Role |
+|---|---|---|---|---|---|
+| `text-xs` | `--pp-font-size-xs` | 0.75rem (12px) | 1.5 | — | Small UI text |
+| `text-sm` | `--pp-font-size-sm` | 0.875rem (14px) | 1.5 | — | Default body, controls |
+| `text-base` | `--pp-font-size-md` | 1rem (16px) | 1.5 | — | Larger body text |
+| `text-lg` | `--pp-font-size-lg` | 1.125rem (18px) | 1.5 | — | Section headers, nav |
+| `text-xl` | `--pp-font-size-xl` | 1.25rem (20px) | 1.25 | — | Sub-page headings |
+| `text-2xl` | `--pp-font-size-2xl` | 1.5rem (24px) | 1.25 | -0.015em | Page titles |
+| `text-3xl` | `--pp-font-size-3xl` | 1.875rem (30px) | 1.25 | -0.02em | Large headings |
+| `text-4xl` | `--pp-font-size-4xl` | 2.25rem (36px) | 1.25 | -0.02em | Hero/display text |
+
+**Semantic aliases** (convenience classes that map to the same PP values):
 
 | Token | Size | Line Height | Letter Spacing | Role |
 |---|---|---|---|---|
-| `text-caption` | 0.75rem (12px) | 1.4 | — | Metadata, timestamps, badges, small UI text |
-| `text-label` | 0.875rem (14px) | 1.5 | — | Field labels, dropdown items, form controls |
-| `text-body` | 0.875rem (14px) | 1.5 | — | Default body text, descriptions, inputs, buttons |
-| `text-subhead` | 1.125rem (18px) | 1.4 | — | Card titles, section headers, nav items |
-| `text-heading` | 1.875rem (30px) | 1.2 | -0.02em | Page titles, modal titles |
-| `text-display` | 2.25rem (36px) | 1.2 | -0.02em | Hero text (login page tagline) |
-| `text-metric` | 2.5rem (40px) | 1.2 | -0.02em | Key numbers on dashboards (future) |
+| `text-caption` | 0.75rem (12px) | 1.4 | — | Metadata, timestamps, badges |
+| `text-label` | 0.875rem (14px) | 1.5 | — | Field labels, dropdown items |
+| `text-body` | 0.875rem (14px) | 1.5 | — | Default body text, inputs, buttons |
+| `text-body-lg` | 1rem (16px) | 1.5 | — | Descriptions, larger body |
+| `text-subhead` | 1.125rem (18px) | 1.4 | — | Card titles, section headers |
+| `text-heading` | 1.5rem (24px) | 1.25 | -0.015em | Page titles, modal titles |
+| `text-heading-lg` | 1.875rem (30px) | 1.25 | -0.02em | Large headings, login title |
+| `text-display` | 2.25rem (36px) | 1.25 | -0.02em | Hero text (login tagline) |
+| `text-metric` | 2.5rem (40px) | 1.2 | -0.02em | Key numbers on dashboards |
 
-### 2.3 Typography Guidelines
+### 2.3 Font Weights (Pipeline Pulse aligned)
 
-- **Line height**: 1.5 for body/label text, 1.4 for subheads, 1.2 for headings/display
+| Tailwind Class | PP Token | Value |
+|---|---|---|
+| `font-normal` | `--pp-font-weight-normal` | 400 |
+| `font-medium` | `--pp-font-weight-medium` | 500 |
+| `font-semibold` | `--pp-font-weight-semibold` | 600 |
+| `font-bold` | `--pp-font-weight-bold` | 700 |
+
+### 2.4 Line Heights (Pipeline Pulse aligned)
+
+| Tailwind Class | PP Token | Value |
+|---|---|---|
+| `leading-tight` | `--pp-line-height-tight` | 1.25 |
+| `leading-normal` | `--pp-line-height-normal` | 1.5 |
+| `leading-relaxed` | `--pp-line-height-relaxed` | 1.75 |
+
+### 2.5 Typography Guidelines
+
+- **Line height**: 1.5 for body/label text, 1.4 for subheads, 1.25 for headings/display
 - **Letter spacing**: -0.02em for headings and display text, normal for body
 - **Max line length**: 65-75 characters for readability
 - **Font weight**: 400 for body, 500 for medium emphasis, 600 for labels/buttons/headings, 700 for bold display
 - **Monospace usage**: Display IDs (`1CH-101`), project keys, story points, dates, emails, code
 
-### 2.4 Migration from Old Scale
-
-| Old Token (removed) | New Token |
-|---|---|
-| `text-micro` (10px) | `text-caption` (0.75rem) |
-| `text-body-lg` (14px) | `text-body` (0.875rem) |
-
 ---
 
 ## 3. Spacing & Border Radius
 
-Spacing uses Tailwind's default 4px grid: `p-3.5`/`p-5`/`p-6`, `gap-3`/`gap-4`/`gap-5`, `mb-4`/`mb-5`.
+### 3.1 Spacing Scale (Pipeline Pulse aligned)
 
-| Role | Class | Approx Value |
-|---|---|---|
-| Cards, Modals | `rounded-xl` | 12px |
-| Buttons, Inputs, Dropdowns | `rounded-lg` | 8px |
-| Badges, Tags, Menu items | `rounded-md` | 6px |
-| Avatars | `rounded-full` | 50% |
+Matches `--pp-space-*` tokens exactly. Defined in `tailwind.config.js` under `theme.extend.spacing`.
+
+| Tailwind | PP Token | Value | Use Case |
+|---|---|---|---|
+| `0` | `--pp-space-0` | 0rem | Reset |
+| `1` | `--pp-space-1` | 0.25rem (4px) | Tight groupings |
+| `2` | `--pp-space-2` | 0.5rem (8px) | Related elements |
+| `3` | `--pp-space-3` | 0.75rem (12px) | Small gaps |
+| `4` | `--pp-space-4` | 1rem (16px) | Standard spacing |
+| `5` | `--pp-space-5` | 1.25rem (20px) | Medium gaps |
+| `6` | `--pp-space-6` | 1.5rem (24px) | Section breaks |
+| `8` | `--pp-space-8` | 2rem (32px) | Major sections |
+| `10` | `--pp-space-10` | 2.5rem (40px) | Large gaps |
+| `12` | `--pp-space-12` | 3rem (48px) | Page sections |
+| `16` | `--pp-space-16` | 4rem (64px) | XL spacing |
+| `20` | `--pp-space-20` | 5rem (80px) | Page-level spacing |
+
+### 3.2 Border Radius (Pipeline Pulse aligned)
+
+Matches `--pp-radius-*` tokens exactly. Defined in `tailwind.config.js` under `theme.extend.borderRadius`.
+
+| Tailwind Class | PP Token | Value | Use Case |
+|---|---|---|---|
+| `rounded-none` | `--pp-radius-none` | 0 | No rounding |
+| `rounded-sm` | `--pp-radius-sm` | 0.125rem (2px) | Subtle rounding |
+| `rounded` / `rounded-md` | `--pp-radius-md` | 0.375rem (6px) | Badges, tags, menu items |
+| `rounded-lg` | `--pp-radius-lg` | 0.5rem (8px) | Buttons, inputs, dropdowns |
+| `rounded-xl` | `--pp-radius-xl` | 0.75rem (12px) | Cards, modals |
+| `rounded-2xl` | `--pp-radius-2xl` | 1rem (16px) | Large containers |
+| `rounded-full` | `--pp-radius-full` | 9999px | Avatars, pills |
 
 ---
 
