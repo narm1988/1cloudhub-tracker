@@ -493,7 +493,8 @@ export default function IssueDetailPage() {
                 value={current.story_points ?? ''}
                 onChange={(e) => updateDraft({ story_points: e.target.value ? parseInt(e.target.value) : null })}
                 placeholder="None"
-                className="text-body font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
+                aria-label="Story points"
+                className="text-body font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
               />
             </DetailRow>
 
@@ -502,7 +503,8 @@ export default function IssueDetailPage() {
                 type="date"
                 value={current.start_date || ''}
                 onChange={(e) => updateDraft({ start_date: e.target.value || null })}
-                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+                aria-label="Start date"
+                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
 
@@ -511,7 +513,8 @@ export default function IssueDetailPage() {
                 type="date"
                 value={current.due_date || ''}
                 onChange={(e) => updateDraft({ due_date: e.target.value || null })}
-                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+                aria-label="Due date"
+                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
           </div>

@@ -9,6 +9,10 @@ import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import Pagination from '../components/ui/Pagination'
+import EmptyState from '../components/ui/EmptyState'
+
+const PAGE_SIZE = 20
 
 interface SearchResult {
   id: string
@@ -27,6 +31,8 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') || '')
   const [results, setResults] = useState<SearchResult[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
 
@@ -37,17 +43,26 @@ export default function SearchPage() {
   const [members, setMembers] = useState<User[]>([])
   const [showFilters, setShowFilters] = useState(false)
 
+  // Debounced live search — re-runs 300ms after the query or any filter
+  // settles. Skips the fetch entirely when nothing is set, so landing on
+  // the page cold doesn't dump every story/issue in the workspace.
   useEffect(() => {
-    const q = searchParams.get('q')
-    if (q) {
-      setQuery(q)
-      handleSearch(q)
+    if (!query.trim() && !statusFilter && !priorityFilter && !assigneeFilter) {
+      setResults([])
+      setTotal(0)
+      setSearched(false)
+      return
     }
+    const t = setTimeout(() => {
+      setPage(1)
+      handleSearch(1)
+    }, 300)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [query, statusFilter, priorityFilter, assigneeFilter])
 
-  async function handleSearch(overrideQuery?: string) {
-    const q = overrideQuery ?? query
+  async function handleSearch(pageOverride?: number) {
+    const p = pageOverride ?? page
     setLoading(true)
     setSearched(true)
 
@@ -61,17 +76,17 @@ export default function SearchPage() {
       .from('stories')
       .select('id, display_id, title, status, priority, due_date, assignee:profiles!stories_assignee_id_fkey(full_name)')
       .order('updated_at', { ascending: false })
-      .limit(50)
+      .limit(100)
 
     let issueQuery = supabase
       .from('issues')
       .select('id, type, display_id, title, status, priority, due_date, assignee:profiles!issues_assignee_id_fkey(full_name)')
       .order('updated_at', { ascending: false })
-      .limit(50)
+      .limit(100)
 
-    if (q.trim()) {
-      storyQuery = storyQuery.or(`title.ilike.%${q}%,display_id.ilike.%${q}%,description.ilike.%${q}%`)
-      issueQuery = issueQuery.or(`title.ilike.%${q}%,display_id.ilike.%${q}%,description.ilike.%${q}%`)
+    if (query.trim()) {
+      storyQuery = storyQuery.or(`title.ilike.%${query}%,display_id.ilike.%${query}%,description.ilike.%${query}%`)
+      issueQuery = issueQuery.or(`title.ilike.%${query}%,display_id.ilike.%${query}%,description.ilike.%${query}%`)
     }
     if (statusFilter) {
       storyQuery = storyQuery.eq('status', statusFilter)
@@ -88,6 +103,8 @@ export default function SearchPage() {
 
     const [{ data: stories }, { data: issues }] = await Promise.all([storyQuery, issueQuery])
 
+    // Stories/issues come from two separate queries, so pagination happens
+    // client-side over the merged set rather than at the DB level.
     const combined: SearchResult[] = [
       ...(stories || []).map((s: any) => ({
         id: s.id, kind: 'story' as const, type: 'Story', display_id: s.display_id, title: s.title,
@@ -99,8 +116,15 @@ export default function SearchPage() {
       })),
     ]
 
-    setResults(combined)
+    setTotal(combined.length)
+    const from = (p - 1) * PAGE_SIZE
+    setResults(combined.slice(from, from + PAGE_SIZE))
     setLoading(false)
+  }
+
+  function goToPage(p: number) {
+    setPage(p)
+    handleSearch(p)
   }
 
   return (
@@ -116,7 +140,8 @@ export default function SearchPage() {
             placeholder="Search by title, ID, or description..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); handleSearch(1) } }}
+            aria-label="Search by title, ID, or description"
           />
         </div>
         <button
@@ -127,7 +152,7 @@ export default function SearchPage() {
         >
           <Filter size={14} /> Filters
         </button>
-        <Button onClick={() => handleSearch()}>Search</Button>
+        <Button onClick={() => { setPage(1); handleSearch(1) }}>Search</Button>
       </div>
 
       {/* Filters */}
@@ -136,7 +161,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Status</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -147,7 +172,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Priority</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
@@ -158,7 +183,7 @@ export default function SearchPage() {
           <div>
             <label className="block text-caption font-semibold text-gray-500 mb-1">Assignee</label>
             <select
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
             >
@@ -178,11 +203,12 @@ export default function SearchPage() {
       {/* Results */}
       {loading && <p className="text-gray-400 text-body-lg">Searching...</p>}
 
-      {searched && !loading && results.length === 0 && (
-        <div className="text-center py-12 text-gray-400">
-          <Search size={32} className="mx-auto mb-3 text-gray-300" />
-          <p className="text-body-lg">No results found. Try a different search or filter.</p>
-        </div>
+      {searched && !loading && total === 0 && (
+        <EmptyState
+          icon={<Search size={32} />}
+          title="No results found"
+          description="Try a different search or filter."
+        />
       )}
 
       {results.length > 0 && (
@@ -210,6 +236,8 @@ export default function SearchPage() {
           ))}
         </Card>
       )}
+
+      <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={goToPage} />
     </div>
   )
 }

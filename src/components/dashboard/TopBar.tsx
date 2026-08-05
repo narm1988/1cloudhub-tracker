@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Bell, Shield, X } from 'lucide-react'
+import { Search, Bell, Shield, X, PanelLeft } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import type { Notification } from '../../types'
@@ -29,7 +29,13 @@ function notificationIcon(message: string) {
   return { emoji: '🔔', bg: '#F0F1F3' }
 }
 
-export default function TopBar() {
+export default function TopBar({
+  collapsed,
+  onToggleSidebar,
+}: {
+  collapsed: boolean
+  onToggleSidebar: () => void
+}) {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [showNotifs, setShowNotifs] = useState(false)
@@ -109,11 +115,22 @@ export default function TopBar() {
 
   return (
     <header className="h-[60px] bg-white border-b border-gray-200 flex items-center px-6 gap-4 shrink-0 relative">
+      {/* Sidebar collapse toggle */}
+      <button
+        onClick={onToggleSidebar}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-pressed={collapsed}
+        className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-1.5 -ml-1.5 transition-colors"
+      >
+        <PanelLeft size={18} />
+      </button>
+
       {/* Search */}
       <div className="relative w-72">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           placeholder='Search 1CH-104, "migration"…'
+          aria-label="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit() }}

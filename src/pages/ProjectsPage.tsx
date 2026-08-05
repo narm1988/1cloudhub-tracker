@@ -8,9 +8,16 @@ import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
+import Pagination from '../components/ui/Pagination'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+
+const PAGE_SIZE = 12
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
@@ -19,18 +26,27 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     fetchProjects()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
 
   async function fetchProjects() {
-    const { data } = await supabase
+    setLoading(true)
+    const from = (page - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
+    const { data, count } = await supabase
       .from('projects')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
-    if (data) setProjects(data)
+      .range(from, to)
+    if (data) {
+      setProjects(data)
+      setTotal(count || 0)
+    }
     setLoading(false)
   }
 
-  if (loading) {
+  if (loading && projects.length === 0) {
     return (
       <div>
         <div className="flex items-baseline justify-between mb-5">
@@ -39,20 +55,7 @@ export default function ProjectsPage() {
             <div className="h-4 w-40 rounded bg-gray-100 animate-pulse mt-2.5" />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {[0, 1, 2].map((i) => (
-            <Card
-              key={i}
-              className="animate-pulse"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <div className="w-9 h-9 rounded-lg bg-gray-200 mb-4" />
-              <div className="h-3.5 w-2/3 rounded bg-gray-200 mb-2" />
-              <div className="h-3 w-full rounded bg-gray-100 mb-1.5" />
-              <div className="h-3 w-4/5 rounded bg-gray-100" />
-            </Card>
-          ))}
-        </div>
+        <LoadingSkeleton variant="cards" count={3} />
       </div>
     )
   }
@@ -62,7 +65,7 @@ export default function ProjectsPage() {
       <div className="flex items-baseline justify-between mb-5 animate-fade-in-up">
         <div>
           <h1 className="font-display text-heading font-semibold text-ink">Projects</h1>
-          <p className="text-body text-gray-500 mt-1"><span className="font-mono tabular-nums">{projects.length}</span> projects in your workspace</p>
+          <p className="text-body text-gray-500 mt-1"><span className="font-mono tabular-nums">{total}</span> projects in your workspace</p>
         </div>
         {isAdmin && (
           <Button onClick={() => setShowCreate(true)}>
@@ -72,13 +75,11 @@ export default function ProjectsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="text-center py-20 text-gray-400 animate-fade-in">
-          <FolderKanban size={40} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-subhead font-medium text-gray-500">No projects yet</p>
-          <p className="text-body mt-1">
-            {isAdmin ? 'Create a project to organize your epics and stories.' : 'Ask an admin to create a project to get started.'}
-          </p>
-        </div>
+        <EmptyState
+          icon={<FolderKanban size={40} />}
+          title="No projects yet"
+          description={isAdmin ? 'Create a project to organize your epics and stories.' : 'Ask an admin to create a project to get started.'}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {projects.map((project, i) => (
@@ -112,6 +113,8 @@ export default function ProjectsPage() {
           ))}
         </div>
       )}
+
+      <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
 
       {showCreate && (
         <CreateProjectModal

@@ -9,9 +9,16 @@ import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
+import Pagination from '../components/ui/Pagination'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+
+const PAGE_SIZE = 12
 
 export default function EpicsPage() {
   const [epics, setEpics] = useState<Epic[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const [projects, setProjects] = useState<Project[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -19,18 +26,28 @@ export default function EpicsPage() {
   const { user } = useAuth()
 
   useEffect(() => {
-    fetchEpics()
     fetchProjects()
   }, [])
 
+  useEffect(() => {
+    fetchEpics()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
+
   async function fetchEpics() {
-    const { data, error } = await supabase
+    setLoading(true)
+    const from = (page - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
+    const { data, error, count } = await supabase
       .from('epics')
-      .select('*, owner:profiles!epics_owner_id_fkey(id, full_name, email), project:projects(id, name, key)')
+      .select('*, owner:profiles!epics_owner_id_fkey(id, full_name, email), project:projects(id, name, key)', { count: 'exact' })
       .order('created_at', { ascending: false })
+      .range(from, to)
 
     if (!error && data) {
       setEpics(data)
+      setTotal(count || 0)
     }
     setLoading(false)
   }
@@ -55,10 +72,16 @@ export default function EpicsPage() {
     }
   }
 
-  if (loading) {
+  if (loading && epics.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400">
-        Loading epics...
+      <div>
+        <div className="flex items-baseline justify-between mb-5">
+          <div>
+            <div className="h-6 w-28 rounded bg-gray-200 animate-pulse" />
+            <div className="h-4 w-40 rounded bg-gray-100 animate-pulse mt-2.5" />
+          </div>
+        </div>
+        <LoadingSkeleton variant="rows" count={5} />
       </div>
     )
   }
@@ -70,7 +93,7 @@ export default function EpicsPage() {
         <div>
           <h1 className="font-display text-heading font-semibold text-ink">Epics</h1>
           <p className="text-body text-gray-500 mt-1">
-            <span className="font-mono tabular-nums">{epics.length}</span> epics in your workspace
+            <span className="font-mono tabular-nums">{total}</span> epics in your workspace
           </p>
         </div>
         <Button onClick={() => setShowCreateModal(true)} disabled={projects.length === 0} title={projects.length === 0 ? 'Create a project first' : undefined}>
@@ -78,60 +101,58 @@ export default function EpicsPage() {
         </Button>
       </div>
 
-      {/* Epics grid */}
+      {/* Epics row list */}
       {epics.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <Flag size={40} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-subhead font-medium text-gray-500">No epics yet</p>
-          <p className="text-body mt-1">
-            {projects.length === 0
+        <EmptyState
+          icon={<Flag size={40} />}
+          title="No epics yet"
+          description={
+            projects.length === 0
               ? 'A project needs to exist before you can create an epic.'
-              : 'Create your first epic to get started.'}
-          </p>
-        </div>
+              : 'Create your first epic to get started.'
+          }
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {epics.map((epic) => (
-            <Card
+        <Card padding="none" className="overflow-hidden">
+          {epics.map((epic, i) => (
+            <div
               key={epic.id}
               onClick={() => navigate(`/epics/${epic.id}`)}
-              className="cursor-pointer hover:border-brand/40 hover:shadow-sm transition-all"
+              className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer hover:bg-gray-50 transition-colors ${
+                i < epics.length - 1 ? 'border-b border-gray-100' : ''
+              }`}
             >
-              <div className="flex items-center gap-1.5 mb-2.5">
-                <div className="bg-violet-50 rounded p-0.5 flex">
-                  <Flag size={12} className="text-violet-500" />
-                </div>
-                <span className="font-mono text-caption text-gray-400">{epic.id.slice(0, 8)}</span>
-                <ChevronRight size={13} className="text-gray-400 ml-auto" />
+              <div className="bg-violet-50 rounded p-1 flex shrink-0">
+                <Flag size={13} className="text-violet-500" />
               </div>
-              <div className="text-body-lg font-semibold text-ink mb-1">{epic.title}</div>
+              <span className="font-mono text-caption text-gray-400 shrink-0 w-16">{epic.id.slice(0, 8)}</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-body-lg font-semibold text-ink truncate">{epic.title}</div>
+                {epic.description && (
+                  <div className="text-label text-gray-500 truncate">{epic.description}</div>
+                )}
+              </div>
               {epic.project && (
-                <span className="inline-block text-caption font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded mb-1.5">
+                <span className="text-caption font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
                   {epic.project.key}
                 </span>
               )}
-              <div className="text-label text-gray-500 leading-relaxed mb-4 line-clamp-2">
-                {epic.description}
-              </div>
-
-              {/* Perforation */}
-              <div className="h-px my-2.5 bg-[repeating-linear-gradient(90deg,#F0F1F3_0,#F0F1F3_3px,transparent_3px,transparent_7px)]" />
-
-              <div className="flex items-center justify-between mt-2.5">
-                <div className="flex items-center gap-1.5">
-                  <Avatar name={epic.owner?.full_name || 'Unknown'} size="sm" />
-                  <span className="text-caption text-gray-500">
-                    {epic.owner?.full_name || 'Unassigned'}
-                  </span>
-                </div>
-                <span className="text-caption text-gray-400">
-                  {epic.status}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Avatar name={epic.owner?.full_name || 'Unknown'} size="sm" />
+                <span className="text-caption text-gray-500 hidden sm:inline">
+                  {epic.owner?.full_name || 'Unassigned'}
                 </span>
               </div>
-            </Card>
+              <span className="text-caption font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 shrink-0">
+                {epic.status}
+              </span>
+              <ChevronRight size={14} className="text-gray-400 shrink-0" />
+            </div>
           ))}
-        </div>
+        </Card>
       )}
+
+      <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
 
       {/* Create Epic Modal */}
       {showCreateModal && (
@@ -164,7 +185,7 @@ function CreateEpicModal({
         <div>
           <label className="block text-body font-semibold text-ink mb-1.5">Project</label>
           <select
-            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand"
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-body-lg outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
           >

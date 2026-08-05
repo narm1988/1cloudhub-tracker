@@ -8,8 +8,11 @@ import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
+import Pagination from '../components/ui/Pagination'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 const ALLOWED_DOMAIN = '1cloudhub.com'
+const PAGE_SIZE = 20
 
 // supabase.functions.invoke() only gives a generic "non-2xx status code"
 // message on failure — the actual { error: "..." } JSON body the function
@@ -28,6 +31,8 @@ async function extractFunctionErrorMessage(error: unknown): Promise<string | nul
 
 export default function PeoplePage() {
   const [people, setPeople] = useState<User[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
   const [showInvite, setShowInvite] = useState(false)
   const [loading, setLoading] = useState(true)
   const [inviteError, setInviteError] = useState('')
@@ -37,14 +42,23 @@ export default function PeoplePage() {
 
   useEffect(() => {
     fetchPeople()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
 
   async function fetchPeople() {
-    const { data } = await supabase
+    setLoading(true)
+    const from = (page - 1) * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
+    const { data, count } = await supabase
       .from('profiles')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('full_name')
-    if (data) setPeople(data)
+      .range(from, to)
+    if (data) {
+      setPeople(data)
+      setTotal(count || 0)
+    }
     setLoading(false)
   }
 
@@ -99,8 +113,16 @@ export default function PeoplePage() {
     setPeople((prev) => prev.filter((p) => p.id !== person.id))
   }
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading people...</div>
+  if (loading && people.length === 0) {
+    return (
+      <div>
+        <div className="mb-5">
+          <div className="h-6 w-24 rounded bg-gray-200 animate-pulse" />
+          <div className="h-4 w-56 rounded bg-gray-100 animate-pulse mt-2.5" />
+        </div>
+        <LoadingSkeleton variant="rows" count={5} />
+      </div>
+    )
   }
 
   return (
@@ -156,6 +178,8 @@ export default function PeoplePage() {
           ))
         )}
       </Card>
+
+      <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
 
       {user?.role === 'admin' && (
         <Button onClick={() => setShowInvite(true)} className="mt-4">

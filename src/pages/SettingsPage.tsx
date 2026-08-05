@@ -13,10 +13,10 @@ export default function SettingsPage() {
     <div>
       <h1 className="font-display text-heading font-semibold text-ink mb-5">Settings</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="space-y-5">
         <Card padding="lg">
           <h2 className={`${SECTION_HEADER} mb-4`}>Profile</h2>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-label text-gray-500 block">Name</label>
               <p className="text-body-lg text-ink">{user?.full_name}</p>

@@ -536,7 +536,8 @@ export default function StoryDetailPage() {
                           </div>
                           <button
                             onClick={() => deleteAttachment(att)}
-                            className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                            aria-label={`Delete ${att.file_name}`}
+                            className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-1 focus-visible:ring-brand/30 rounded"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -568,7 +569,8 @@ export default function StoryDetailPage() {
                           {comment.author_id === user?.id && (
                             <button
                               onClick={() => deleteComment(comment.id)}
-                              className="text-gray-300 hover:text-danger ml-auto"
+                              aria-label="Delete comment"
+                              className="text-gray-300 hover:text-danger ml-auto focus-visible:ring-1 focus-visible:ring-brand/30 rounded"
                             >
                               <Trash2 size={12} />
                             </button>
@@ -647,7 +649,8 @@ export default function StoryDetailPage() {
                 value={current.story_points ?? ''}
                 onChange={(e) => updateDraft({ story_points: e.target.value ? parseInt(e.target.value) : null })}
                 placeholder="None"
-                className="text-body font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
+                aria-label="Story points"
+                className="text-body font-mono tabular-nums text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5 text-right w-20"
               />
             </DetailRow>
 
@@ -656,7 +659,8 @@ export default function StoryDetailPage() {
                 type="date"
                 value={current.start_date || ''}
                 onChange={(e) => updateDraft({ start_date: e.target.value || null })}
-                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+                aria-label="Start date"
+                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
 
@@ -665,7 +669,8 @@ export default function StoryDetailPage() {
                 type="date"
                 value={current.due_date || ''}
                 onChange={(e) => updateDraft({ due_date: e.target.value || null })}
-                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 rounded px-1.5 py-1 -mx-1.5"
+                aria-label="Due date"
+                className="text-body text-ink font-medium bg-transparent outline-none hover:bg-gray-50 focus:bg-gray-50 focus:ring-1 focus:ring-brand/30 rounded px-1.5 py-1 -mx-1.5"
               />
             </DetailRow>
           </div>

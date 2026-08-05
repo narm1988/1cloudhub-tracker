@@ -33,7 +33,7 @@ const PARTICLE_ANIMATION: Record<string, string> = {
   dust: 'animate-dust-drift',
 }
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { signOut, user } = useAuth()
@@ -46,7 +46,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-64 flex flex-col p-5 shrink-0 transition-colors relative overflow-hidden"
+      className={`${collapsed ? 'w-16 p-3' : 'w-64 p-5'} flex flex-col shrink-0 transition-[width] duration-200 relative overflow-hidden`}
       style={{
         backgroundColor: theme.bg,
         color: theme.textActive,
@@ -91,7 +91,7 @@ export default function Sidebar() {
       </div>
 
       {/* Logo, orbited by a small satellite dot */}
-      <div className="relative z-10 flex items-center gap-2.5 px-2 pb-5">
+      <div className={`relative z-10 flex items-center gap-2.5 pb-5 ${collapsed ? 'justify-center px-0' : 'px-2'}`}>
         <div className="relative w-7 h-7 shrink-0">
           <div
             className="absolute -inset-2 rounded-full border border-dashed animate-orbit-spin-slow"
@@ -107,10 +107,12 @@ export default function Sidebar() {
             <Cloud size={14} className="text-white" />
           </div>
         </div>
-        <div>
-          <div className="font-display font-bold text-subhead leading-none">1CloudHub</div>
-          <div className="text-micro tracking-[0.12em] mt-0.5" style={{ color: theme.subText }}>TRACKER</div>
-        </div>
+        {!collapsed && (
+          <div>
+            <div className="font-display font-bold text-subhead leading-none">1CloudHub</div>
+            <div className="text-micro tracking-[0.12em] mt-0.5" style={{ color: theme.subText }}>TRACKER</div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -123,22 +125,30 @@ export default function Sidebar() {
             <button
               key={item.key}
               onClick={() => navigate(item.path)}
-              className={`group flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-body font-medium transition-colors ${
+              title={collapsed ? item.label : undefined}
+              aria-label={item.label}
+              className={`group flex items-center gap-2.5 py-2 rounded-lg text-left text-body font-medium transition-colors ${
+                collapsed ? 'justify-center px-0' : 'px-2.5'
+              } ${
                 isActive
                   ? 'bg-[var(--nav-active-bg)]'
                   : 'text-[var(--nav-text-inactive)] hover:text-[var(--nav-text-hover)] hover:bg-[var(--nav-hover-bg)]'
               }`}
               style={isActive ? { color: theme.textActive } : undefined}
             >
-              <Icon size={15} className={`transition-transform duration-300 ${item.hoverClass}`} />
-              {item.label}
-              {item.admin && (
-                <span
-                  className="ml-auto text-micro px-1.5 py-0.5 rounded"
-                  style={{ backgroundColor: theme.hoverBg, color: theme.textInactive }}
-                >
-                  ADMIN
-                </span>
+              <Icon size={15} className={`shrink-0 transition-transform duration-300 ${item.hoverClass}`} />
+              {!collapsed && (
+                <>
+                  {item.label}
+                  {item.admin && (
+                    <span
+                      className="ml-auto text-micro px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: theme.hoverBg, color: theme.textInactive }}
+                    >
+                      ADMIN
+                    </span>
+                  )}
+                </>
               )}
             </button>
           )
@@ -150,9 +160,14 @@ export default function Sidebar() {
         <div className="my-3 border-t" style={{ borderColor: theme.borderColor }} />
         <button
           onClick={handleSignOut}
-          className="group w-full flex items-center gap-2.5 text-[var(--nav-text-inactive)] hover:text-danger hover:bg-danger/10 text-body font-medium rounded-lg px-2.5 py-2 transition-colors"
+          title={collapsed ? 'Sign out' : undefined}
+          aria-label="Sign out"
+          className={`group w-full flex items-center gap-2.5 text-[var(--nav-text-inactive)] hover:text-danger hover:bg-danger/10 text-body font-medium rounded-lg py-2 transition-colors ${
+            collapsed ? 'justify-center px-0' : 'px-2.5'
+          }`}
         >
-          <LogOut size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" /> Sign out
+          <LogOut size={15} className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
+          {!collapsed && 'Sign out'}
         </button>
       </div>
     </aside>

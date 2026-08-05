@@ -112,7 +112,8 @@ function StatusSelect({ status, onChange }: { status: Status; onChange: (s: Stat
     <select
       value={status}
       onChange={(e) => onChange(e.target.value as Status)}
-      className={`text-caption font-semibold pl-2.5 pr-6 py-0.5 rounded-md whitespace-nowrap outline-none cursor-pointer border-0 appearance-none ${meta.tailwind}`}
+      aria-label="Status"
+      className={`text-caption font-semibold pl-2.5 pr-6 py-0.5 rounded-md whitespace-nowrap outline-none cursor-pointer border-0 appearance-none focus:ring-2 focus:ring-brand/50 ${meta.tailwind}`}
       style={{
         backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'><path d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>")`,
         backgroundRepeat: 'no-repeat',

@@ -4,6 +4,11 @@ import { ArrowLeft, Flag, List, CalendarDays, Tags } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Project } from '../types'
 import Card from '../components/ui/Card'
+import Pagination from '../components/ui/Pagination'
+import EmptyState from '../components/ui/EmptyState'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+
+const BACKLOG_PAGE_SIZE = 10
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -25,7 +30,13 @@ export default function ProjectDetailPage() {
   }
 
   if (!project) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading project...</div>
+    return (
+      <div>
+        <div className="h-4 w-24 rounded bg-gray-100 animate-pulse mb-3" />
+        <div className="h-6 w-56 rounded bg-gray-200 animate-pulse mb-5" />
+        <LoadingSkeleton variant="rows" count={4} />
+      </div>
+    )
   }
 
   const tabs = [
@@ -152,21 +163,35 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
 /* ---- Backlog Tab: Sprint planning ---- */
 function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectKey: string }) {
   const { user } = useAuth()
-  const [stories, setStories] = useState<Story[]>([])
+  // Sprint-assigned stories are fetched in full (sprints are naturally bounded);
+  // the unassigned backlog is the one list that can grow large, so it's the
+  // one that's actually paginated at the DB level.
+  const [sprintStories, setSprintStories] = useState<Story[]>([])
+  const [backlogStories, setBacklogStories] = useState<Story[]>([])
+  const [backlogTotal, setBacklogTotal] = useState(0)
+  const [backlogPage, setBacklogPage] = useState(1)
   const [sprints, setSprints] = useState<any[]>([])
   const [showCreateSprint, setShowCreateSprint] = useState(false)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetchData()
+    Promise.all([fetchSprintsAndStories(), fetchBacklog()]).then(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
-  async function fetchData() {
+  useEffect(() => {
+    fetchBacklog()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backlogPage])
+
+  async function fetchSprintsAndStories() {
     const [storiesRes, sprintsRes] = await Promise.all([
       supabase
         .from('stories')
         .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)')
         .eq('project_id', projectId)
+        .not('sprint_id', 'is', null)
         .order('created_at', { ascending: false }),
       supabase
         .from('sprints')
@@ -174,8 +199,32 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
         .eq('project_id', projectId)
         .order('created_at', { ascending: false }),
     ])
-    if (storiesRes.data) setStories(storiesRes.data)
+    if (storiesRes.data) setSprintStories(storiesRes.data)
     if (sprintsRes.data) setSprints(sprintsRes.data)
+  }
+
+  async function fetchBacklog(pageOverride?: number) {
+    const p = pageOverride ?? backlogPage
+    const from = (p - 1) * BACKLOG_PAGE_SIZE
+    const to = from + BACKLOG_PAGE_SIZE - 1
+    const { data, count } = await supabase
+      .from('stories')
+      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)', { count: 'exact' })
+      .eq('project_id', projectId)
+      .is('sprint_id', null)
+      .order('created_at', { ascending: false })
+      .range(from, to)
+    if (data) {
+      setBacklogStories(data)
+      setBacklogTotal(count || 0)
+    }
+  }
+
+  async function refetchAll() {
+    // Pass the target page explicitly — setBacklogPage(1) hasn't landed yet
+    // when fetchBacklog() would otherwise read backlogPage from a stale closure.
+    setBacklogPage(1)
+    await Promise.all([fetchSprintsAndStories(), fetchBacklog(1)])
   }
 
   async function createSprint(name: string, goal: string, startDate: string, endDate: string) {
@@ -188,17 +237,17 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
       status: 'planned',
     })
     setShowCreateSprint(false)
-    fetchData()
+    refetchAll()
   }
 
   async function moveToSprint(storyId: string, sprintId: string | null) {
     await supabase.from('stories').update({ sprint_id: sprintId }).eq('id', storyId)
-    fetchData()
+    refetchAll()
   }
 
   async function startSprint(sprintId: string) {
     await supabase.from('sprints').update({ status: 'active' }).eq('id', sprintId)
-    fetchData()
+    refetchAll()
   }
 
   async function completeSprint(sprintId: string) {
@@ -208,18 +257,21 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
       .update({ sprint_id: null })
       .eq('sprint_id', sprintId)
       .neq('status', 'Done')
-    fetchData()
+    refetchAll()
   }
 
-  const backlogStories = stories.filter((s) => !s.sprint_id)
   const activeSprints = sprints.filter((s) => s.status !== 'completed')
+
+  if (loading) {
+    return <LoadingSkeleton variant="rows" count={4} />
+  }
 
   return (
     <div className="space-y-6">
       {/* Sprints */}
       {activeSprints.map((sprint) => {
-        const sprintStories = stories.filter((s) => s.sprint_id === sprint.id)
-        const totalPoints = sprintStories.reduce((sum, s) => sum + (s.story_points || 0), 0)
+        const sprintStoriesForSprint = sprintStories.filter((s) => s.sprint_id === sprint.id)
+        const totalPoints = sprintStoriesForSprint.reduce((sum, s) => sum + (s.story_points || 0), 0)
         return (
           <Card key={sprint.id}>
             <div className="flex items-center justify-between mb-3">
@@ -236,7 +288,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
                 <div className="flex gap-3 mt-1 text-caption text-gray-400">
                   {sprint.start_date && <span>Start: {sprint.start_date}</span>}
                   {sprint.end_date && <span>End: {sprint.end_date}</span>}
-                  <span><span className="font-mono tabular-nums">{sprintStories.length}</span> stories · <span className="font-mono tabular-nums">{totalPoints}</span> pts</span>
+                  <span><span className="font-mono tabular-nums">{sprintStoriesForSprint.length}</span> stories · <span className="font-mono tabular-nums">{totalPoints}</span> pts</span>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -249,13 +301,13 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
               </div>
             </div>
 
-            {sprintStories.length === 0 ? (
+            {sprintStoriesForSprint.length === 0 ? (
               <p className="text-label text-gray-400 text-center py-3 border border-dashed border-gray-200 rounded-lg">
                 Drag stories here or assign from backlog
               </p>
             ) : (
               <div className="space-y-1.5">
-                {sprintStories.map((story) => (
+                {sprintStoriesForSprint.map((story) => (
                   <BacklogStoryRow
                     key={story.id}
                     story={story}
@@ -277,7 +329,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
       {/* Backlog */}
       <Card>
         <h3 className="font-display text-body-lg font-semibold text-ink mb-3">
-          Backlog (<span className="font-mono tabular-nums">{backlogStories.length}</span>)
+          Backlog (<span className="font-mono tabular-nums">{backlogTotal}</span>)
         </h3>
         {backlogStories.length === 0 ? (
           <p className="text-label text-gray-400 text-center py-4">All stories are assigned to sprints.</p>
@@ -294,6 +346,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
             ))}
           </div>
         )}
+        <Pagination page={backlogPage} pageSize={BACKLOG_PAGE_SIZE} total={backlogTotal} onPageChange={setBacklogPage} />
       </Card>
 
       {showCreateSprint && (
@@ -338,7 +391,8 @@ function BacklogStoryRow({
       {/* Sprint action */}
       {sprints && onMoveToSprint && (
         <select
-          className="text-caption border border-gray-200 rounded px-1.5 py-0.5 outline-none opacity-0 group-hover:opacity-100 transition-opacity"
+          aria-label={`Move "${story.title}" to sprint`}
+          className="text-caption border border-gray-200 rounded px-1.5 py-0.5 outline-none opacity-0 group-hover:opacity-100 focus:opacity-100 focus:ring-1 focus:ring-brand/30 transition-opacity"
           defaultValue=""
           onChange={(e) => { if (e.target.value) onMoveToSprint(e.target.value) }}
         >
@@ -349,7 +403,8 @@ function BacklogStoryRow({
       {onRemoveFromSprint && (
         <button
           onClick={onRemoveFromSprint}
-          className="text-caption text-gray-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
+          aria-label={`Remove "${story.title}" from sprint`}
+          className="text-caption text-gray-400 hover:text-danger opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-1 focus-visible:ring-brand/30 rounded transition-opacity"
         >
           ✕
         </button>
@@ -377,11 +432,11 @@ function ProjectTimeline({ projectId }: { projectId: string }) {
 
   if (stories.length === 0) {
     return (
-      <div className="text-center py-10 text-gray-400">
-        <CalendarDays size={32} className="mx-auto mb-3 text-gray-300" />
-        <p className="text-body-lg">No stories with dates assigned yet.</p>
-        <p className="text-label mt-1">Add start/due dates to stories to see them on the timeline.</p>
-      </div>
+      <EmptyState
+        icon={<CalendarDays size={32} />}
+        title="No stories with dates assigned yet"
+        description="Add start/due dates to stories to see them on the timeline."
+      />
     )
   }
 
