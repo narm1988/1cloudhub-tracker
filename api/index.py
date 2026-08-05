@@ -103,3 +103,55 @@ def debug_jwt():
         info["verify_error"] = str(e)
 
     return info
+
+
+@app.get("/api/debug/me-test")
+def debug_me_test():
+    """Simulates the /auth/me flow: mints a token for a real profile, then verifies it."""
+    from api.deps import get_supabase_admin
+    from api.lib.jwt import create_access_token, verify_access_token
+
+    supabase = get_supabase_admin()
+    # Grab the first profile in the DB
+    result = supabase.table("profiles").select("*").limit(1).execute()
+    if not result.data:
+        return {"error": "No profiles in DB"}
+
+    profile = result.data[0]
+    info = {
+        "profile_id": profile["id"],
+        "profile_email": profile["email"],
+        "profile_role": profile.get("role"),
+    }
+
+    try:
+        token = create_access_token(profile["id"], profile["email"], profile.get("role", "member"))
+        info["token_created"] = True
+    except Exception as e:
+        info["token_created"] = False
+        info["create_error"] = str(e)
+        return info
+
+    try:
+        claims = verify_access_token(token)
+        info["token_verified"] = True
+        info["claims"] = claims
+    except Exception as e:
+        info["token_verified"] = False
+        info["verify_error"] = str(e)
+        return info
+
+    # Now simulate the /me lookup
+    try:
+        profile_lookup = supabase.table("profiles").select("*").eq("id", claims["sub"]).single().execute()
+        info["me_lookup"] = "OK"
+        info["me_data"] = {
+            "id": profile_lookup.data["id"],
+            "email": profile_lookup.data["email"],
+            "full_name": profile_lookup.data["full_name"],
+        }
+    except Exception as e:
+        info["me_lookup"] = "FAILED"
+        info["me_error"] = str(e)
+
+    return info
