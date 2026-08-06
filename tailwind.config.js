@@ -150,6 +150,13 @@ export default {
           '15%': { opacity: '0.9' },
           '100%': { transform: 'translateY(-40px)', opacity: '0' },
         },
+        ribbonSway: {
+          '0%': { transform: 'translateX(0) skewX(0deg)' },
+          '25%': { transform: 'translateX(10px) skewX(6deg)' },
+          '50%': { transform: 'translateX(-6px) skewX(-4deg)' },
+          '75%': { transform: 'translateX(14px) skewX(3deg)' },
+          '100%': { transform: 'translateX(0) skewX(0deg)' },
+        },
         dustDrift: {
           '0%, 100%': { transform: 'translate(0,0)', opacity: '0.35' },
           '50%': { transform: 'translate(6px,-10px)', opacity: '0.7' },
@@ -172,6 +179,7 @@ export default {
         'aurora-c': 'auroraC 26s ease-in-out infinite',
         'light-sweep': 'lightSweep 6s ease-in-out infinite',
         'ember-rise': 'emberRise 5s ease-in-out infinite',
+        'ribbon-sway': 'ribbonSway 8s ease-in-out infinite',
         'dust-drift': 'dustDrift 9s ease-in-out infinite',
         'drawer-slide-in': 'drawerSlideIn 0.25s cubic-bezier(0.2,0.8,0.3,1) both',
       },

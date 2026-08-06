@@ -15,6 +15,8 @@ export interface SidebarTheme {
   particle: 'stars' | 'embers' | 'dust'
   particleColor: string
   particleColor2?: string
+  animationStyle?: 'blobs' | 'curtain'
+  ribbonColors?: [string, string, string]
 }
 
 export const SIDEBAR_THEMES: SidebarTheme[] = [
@@ -36,22 +38,23 @@ export const SIDEBAR_THEMES: SidebarTheme[] = [
     particleColor: '255,255,255',
   },
   {
-    id: 'ember',
-    name: 'Ember',
-    bg: '#1A1210',
-    textActive: '#FDF4E9',
-    textInactive: '#B79E8A',
-    textHover: '#FDF4E9',
-    activeBg: 'rgba(245,158,11,0.16)',
-    hoverBg: 'rgba(245,158,11,0.08)',
-    subText: '#9C7A5C',
-    borderColor: 'rgba(245,158,11,0.15)',
-    accent: '#F59E0B',
-    blobs: ['#F59E0B', '#FB7185'],
+    id: 'borealis',
+    name: 'Borealis',
+    bg: '#0A120E',
+    textActive: '#EAFBF3',
+    textInactive: '#8FA89A',
+    textHover: '#EAFBF3',
+    activeBg: 'rgba(52,211,153,0.16)',
+    hoverBg: 'rgba(52,211,153,0.08)',
+    subText: '#6B8577',
+    borderColor: 'rgba(52,211,153,0.15)',
+    accent: '#34D399',
+    blobs: ['#34D399', '#A78BFA'],
     blend: 'screen',
-    particle: 'embers',
-    particleColor: '245,158,11',
-    particleColor2: '251,113,133',
+    particle: 'stars',
+    particleColor: '224,255,240',
+    animationStyle: 'curtain',
+    ribbonColors: ['#34D399', '#22D3EE', '#A78BFA'],
   },
   {
     id: 'daylight',

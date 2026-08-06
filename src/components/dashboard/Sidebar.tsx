@@ -35,6 +35,13 @@ const PARTICLE_ANIMATION: Record<string, string> = {
   dust: 'animate-dust-drift',
 }
 
+const CURTAIN_RIBBONS = [
+  { left: '2%', c1: 0, c2: 1, duration: 7, delay: 0 },
+  { left: '28%', c1: 1, c2: 2, duration: 9, delay: -2 },
+  { left: '56%', c1: 0, c2: 2, duration: 8, delay: -4 },
+  { left: '80%', c1: 2, c2: 0, duration: 6.5, delay: -1 },
+]
+
 export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -58,17 +65,34 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         '--nav-text-hover': theme.textHover,
       } as React.CSSProperties}
     >
-      {/* Aurora mesh — soft drifting color blobs */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute w-56 h-56 -top-14 -left-16 rounded-full blur-3xl animate-aurora-a"
-          style={{ backgroundColor: theme.blobs[0], mixBlendMode: theme.blend, opacity: theme.blend === 'screen' ? 0.3 : 0.55 }}
-        />
-        <div
-          className="absolute w-48 h-48 bottom-24 -right-16 rounded-full blur-3xl animate-aurora-b"
-          style={{ backgroundColor: theme.blobs[1], mixBlendMode: theme.blend, opacity: theme.blend === 'screen' ? 0.25 : 0.5 }}
-        />
-      </div>
+      {/* Aurora mesh — soft drifting color blobs, or swaying curtain ribbons */}
+      {theme.animationStyle === 'curtain' && theme.ribbonColors ? (
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {CURTAIN_RIBBONS.map((r, i) => (
+            <div
+              key={i}
+              className="absolute -top-[10%] h-[130%] w-10 blur-xl opacity-55 rounded-[40%] animate-ribbon-sway"
+              style={{
+                left: r.left,
+                background: `linear-gradient(180deg, transparent, ${theme.ribbonColors![r.c1]}, ${theme.ribbonColors![r.c2]}, transparent)`,
+                animationDuration: `${r.duration}s`,
+                animationDelay: `${r.delay}s`,
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div
+            className="absolute w-56 h-56 -top-14 -left-16 rounded-full blur-3xl animate-aurora-a"
+            style={{ backgroundColor: theme.blobs[0], mixBlendMode: theme.blend, opacity: theme.blend === 'screen' ? 0.3 : 0.55 }}
+          />
+          <div
+            className="absolute w-48 h-48 bottom-24 -right-16 rounded-full blur-3xl animate-aurora-b"
+            style={{ backgroundColor: theme.blobs[1], mixBlendMode: theme.blend, opacity: theme.blend === 'screen' ? 0.25 : 0.5 }}
+          />
+        </div>
+      )}
 
       {/* Particles — stars / embers / dust depending on theme */}
       <div className="absolute inset-0 z-0 pointer-events-none">
