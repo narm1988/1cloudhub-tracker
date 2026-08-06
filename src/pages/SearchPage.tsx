@@ -188,7 +188,7 @@ export default function SearchPage() {
           {results.map((item, i) => (
             <div
               key={`${item.kind}-${item.id}`}
-              onClick={() => navigate(item.kind === 'story' ? `/stories/${item.id}` : `/issues/${item.id}`)}
+              onClick={() => navigate(item.kind === 'story' ? `/stories/${item.display_id}` : `/issues/${item.display_id}`)}
               className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
                 i < results.length - 1 ? 'border-b border-gray-100' : ''
               }`}

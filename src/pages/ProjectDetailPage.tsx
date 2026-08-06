@@ -128,7 +128,7 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
               {items.map((story) => (
                 <div
                   key={story.id}
-                  onClick={() => navigate(`/stories/${story.id}`)}
+                  onClick={() => navigate(`/stories/${story.display_id}`)}
                   className="bg-white rounded-xl border border-gray-200 p-3.5 cursor-pointer hover:border-brand/30 hover:shadow-sm transition-all"
                   style={{ borderLeftWidth: 3, borderLeftColor: STATUS_META[story.status as Status]?.color || '#6B7280' }}
                 >
@@ -285,7 +285,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
                     key={story.id}
                     story={story}
                     onRemoveFromSprint={() => moveToSprint(story.id, null)}
-                    onClick={() => navigate(`/stories/${story.id}`)}
+                    onClick={() => navigate(`/stories/${story.display_id}`)}
                   />
                 ))}
               </div>
@@ -314,7 +314,7 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
                 story={story}
                 sprints={activeSprints}
                 onMoveToSprint={(sprintId) => moveToSprint(story.id, sprintId)}
-                onClick={() => navigate(`/stories/${story.id}`)}
+                onClick={() => navigate(`/stories/${story.display_id}`)}
               />
             ))}
           </div>

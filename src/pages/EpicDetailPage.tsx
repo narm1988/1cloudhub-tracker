@@ -136,7 +136,7 @@ export default function EpicDetailPage() {
                   <StoryCard
                     key={story.id}
                     story={story}
-                    onClick={() => navigate(`/stories/${story.id}`)}
+                    onClick={() => navigate(`/stories/${story.display_id}`)}
                   />
                 ))}
                 {items.length === 0 && (

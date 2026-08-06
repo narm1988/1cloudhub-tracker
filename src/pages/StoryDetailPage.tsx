@@ -210,10 +210,10 @@ export default function StoryDetailPage() {
             breadcrumb: epic?.title,
             priority: data.priority,
             due_date: data.due_date,
-            item_path: `/stories/${data.id}`,
+            item_path: `/stories/${data.display_id}`,
           }).catch(() => {})
         }
-        navigate(`/stories/${data.id}`, { replace: true })
+        navigate(`/stories/${data.display_id}`, { replace: true })
       } finally {
         setSaving(false)
       }
@@ -424,7 +424,7 @@ export default function StoryDetailPage() {
                     {issues.map((issue) => (
                       <div
                         key={issue.id}
-                        onClick={() => navigate(`/issues/${issue.id}`)}
+                        onClick={() => navigate(`/issues/${issue.display_id}`)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-brand/30 hover:shadow-sm cursor-pointer transition-all"
                       >
                         <span className="text-[13px] shrink-0">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>

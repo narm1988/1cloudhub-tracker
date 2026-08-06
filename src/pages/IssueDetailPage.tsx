@@ -174,10 +174,10 @@ export default function IssueDetailPage() {
             breadcrumb: parentStory ? `${parentStory.display_id} · ${parentStory.title}` : undefined,
             priority: data.priority,
             due_date: data.due_date,
-            item_path: `/issues/${data.id}`,
+            item_path: `/issues/${data.display_id}`,
           }).catch(() => {})
         }
-        navigate(`/issues/${data.id}`, { replace: true })
+        navigate(`/issues/${data.display_id}`, { replace: true })
       } finally {
         setSaving(false)
       }
@@ -465,7 +465,7 @@ export default function IssueDetailPage() {
             <DetailRow label="Parent">
               {parentStory ? (
                 <button
-                  onClick={() => navigate(`/stories/${parentStory.id}`)}
+                  onClick={() => navigate(`/stories/${parentStory.display_id}`)}
                   className="text-[13px] text-brand hover:underline font-medium truncate max-w-[170px] text-right"
                 >
                   {parentStory.display_id}

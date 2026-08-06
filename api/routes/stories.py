@@ -84,11 +84,16 @@ async def list_backlog_stories(
 
 @router.get("/{story_id}")
 async def get_story(story_id: str, current_user: dict = Depends(get_current_user)):
-    """Get a single story."""
+    """Get a single story by UUID or display_id (e.g. 1CH-112)."""
     supabase = get_supabase_admin()
-    result = supabase.table("stories").select(
-        "*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)"
-    ).eq("id", story_id).single().execute()
+    select = "*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)"
+
+    # If it looks like a display_id (contains a dash and doesn't look like UUID)
+    if "-" in story_id and len(story_id) < 20:
+        result = supabase.table("stories").select(select).eq("display_id", story_id.upper()).maybe_single().execute()
+    else:
+        result = supabase.table("stories").select(select).eq("id", story_id).maybe_single().execute()
+
     if not result.data:
         raise HTTPException(status_code=404, detail="Story not found")
     return result.data
@@ -123,7 +128,7 @@ async def create_story(body: StoryCreate, current_user: dict = Depends(get_curre
         supabase.table("notifications").insert({
             "user_id": body.assignee_id,
             "message": f"You were assigned to {display_id}: {body.title}",
-            "link": f"/stories/{result.get('id', '')}",
+            "link": f"/stories/{result.get('display_id', '')}",
             "read": False,
         }).execute()
 
@@ -164,7 +169,7 @@ async def update_story(story_id: str, body: StoryUpdate, current_user: dict = De
             supabase.table("notifications").insert({
                 "user_id": new_assignee,
                 "message": f"You were assigned to {display_id}: {title}",
-                "link": f"/stories/{story_id}",
+                "link": f"/stories/{display_id}",
                 "read": False,
             }).execute()
 

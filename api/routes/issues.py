@@ -54,9 +54,14 @@ async def list_issues(story_id: Optional[str] = None, current_user: dict = Depen
 
 @router.get("/{issue_id}")
 async def get_issue(issue_id: str, current_user: dict = Depends(get_current_user)):
-    """Get a single issue."""
+    """Get a single issue by UUID or display_id (e.g. BUG-106, TSK-101)."""
     supabase = get_supabase_admin()
-    result = supabase.table("issues").select(_SELECT).eq("id", issue_id).single().execute()
+
+    if "-" in issue_id and len(issue_id) < 20:
+        result = supabase.table("issues").select(_SELECT).eq("display_id", issue_id.upper()).maybe_single().execute()
+    else:
+        result = supabase.table("issues").select(_SELECT).eq("id", issue_id).maybe_single().execute()
+
     if not result.data:
         raise HTTPException(status_code=404, detail="Issue not found")
     return result.data
@@ -92,7 +97,7 @@ async def create_issue(body: IssueCreate, current_user: dict = Depends(get_curre
         supabase.table("notifications").insert({
             "user_id": body.assignee_id,
             "message": f"You were assigned to {display_id}: {body.title}",
-            "link": f"/issues/{result.get('id', '')}",
+            "link": f"/issues/{result.get('display_id', '')}",
             "read": False,
         }).execute()
 
@@ -135,7 +140,7 @@ async def update_issue(issue_id: str, body: IssueUpdate, current_user: dict = De
             supabase.table("notifications").insert({
                 "user_id": new_assignee,
                 "message": f"You were assigned to {display_id}: {title}",
-                "link": f"/issues/{issue_id}",
+                "link": f"/issues/{display_id}",
                 "read": False,
             }).execute()
 
