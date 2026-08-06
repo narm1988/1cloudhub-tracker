@@ -153,8 +153,12 @@ export const api = {
   },
 
   // ---- Stories ----
-  listStories(epicId?: string) {
-    return request<Story[]>(`/stories/${qs({ epic_id: epicId })}`)
+  listStories(epicId?: string, projectId?: string, hasSprintOnly?: boolean) {
+    return request<Story[]>(`/stories/${qs({ epic_id: epicId, project_id: projectId, has_sprint: hasSprintOnly === false ? 'no' : hasSprintOnly === true ? 'yes' : undefined })}`)
+  },
+
+  listBacklogStories(projectId: string, page: number, pageSize = 10) {
+    return request<{ data: Story[]; total: number }>(`/stories/backlog${qs({ project_id: projectId, page, page_size: pageSize })}`)
   },
 
   getStory(id: string) {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Bell, Shield, X, PanelLeft } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../lib/api'
 import type { Notification } from '../../types'
 import Avatar from '../ui/Avatar'
 
@@ -54,47 +54,34 @@ export default function TopBar({
     fetchNotifications()
     fetchUnreadCount()
 
-    const channel = supabase
-      .channel(`notifications:${user.id}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev].slice(0, 30))
-          setUnreadCount((c) => c + 1)
-        }
-      )
-      .subscribe()
+    // Poll every 30s instead of realtime (Vercel serverless can't hold websockets)
+    const interval = setInterval(() => {
+      fetchNotifications()
+      fetchUnreadCount()
+    }, 30000)
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => clearInterval(interval)
   }, [user?.id])
 
   async function fetchNotifications() {
-    const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user!.id)
-      .order('created_at', { ascending: false })
-      .limit(30)
-    if (data) setNotifications(data)
+    try {
+      const data = await api.listNotifications()
+      setNotifications(data)
+    } catch {}
   }
 
   async function fetchUnreadCount() {
-    const { count } = await supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user!.id)
-      .eq('read', false)
-    setUnreadCount(count || 0)
+    try {
+      const { count } = await api.unreadNotificationCount()
+      setUnreadCount(count)
+    } catch {}
   }
 
   async function markRead(n: Notification) {
     if (n.read) return
     setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))
     setUnreadCount((c) => Math.max(0, c - 1))
-    await supabase.from('notifications').update({ read: true }).eq('id', n.id)
+    try { await api.markNotificationRead(n.id) } catch {}
   }
 
   async function viewNotification(n: Notification) {
@@ -108,7 +95,7 @@ export default function TopBar({
     if (unreadIds.length === 0) return
     setNotifications((prev) => prev.map((x) => ({ ...x, read: true })))
     setUnreadCount(0)
-    await supabase.from('notifications').update({ read: true }).in('id', unreadIds)
+    try { await api.markAllNotificationsRead(unreadIds) } catch {}
   }
 
   const visibleNotifications = notifTab === 'unread' ? notifications.filter((n) => !n.read) : notifications

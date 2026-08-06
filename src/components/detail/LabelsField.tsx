@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Tags } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../lib/api'
 
 const LABEL_COLORS = ['#5B5FEF', '#1E9E6B', '#C6820F', '#E5484D', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6']
 
@@ -11,9 +11,6 @@ export default function LabelsField({
   parentId: string
   kind: 'story' | 'issue'
 }) {
-  const junctionTable = kind === 'story' ? 'story_labels' : 'issue_labels'
-  const junctionColumn = kind === 'story' ? 'story_id' : 'issue_id'
-  const junctionFk = kind === 'story' ? 'story_labels_label_id_fkey' : 'issue_labels_label_id_fkey'
 
   const [labels, setLabels] = useState<{ id: string; name: string; color: string }[]>([])
   const [allLabels, setAllLabels] = useState<{ id: string; name: string; color: string }[]>([])
@@ -28,35 +25,25 @@ export default function LabelsField({
   }, [parentId])
 
   async function fetchLabels() {
-    const { data } = await supabase
-      .from(junctionTable)
-      .select(`label_id, labels:labels!${junctionFk}(id, name, color)`)
-      .eq(junctionColumn, parentId)
-    if (data) {
-      const mapped = data.map((d: any) => d.labels).filter(Boolean)
-      setLabels(mapped)
-    }
+    try {
+      const data = await api.listAttachedLabels(parentId, kind)
+      setLabels(data)
+    } catch {}
   }
 
   async function fetchAllLabels() {
-    const { data } = await supabase.from('labels').select('*').order('name')
-    if (data) setAllLabels(data)
+    try {
+      const data = await api.listLabels()
+      setAllLabels(data)
+    } catch {}
   }
 
   async function createAndAttachLabel() {
     if (!newLabelName.trim()) return
-    const { data } = await supabase.from('labels').insert({
-      name: newLabelName.trim(),
-      color: newLabelColor,
-      project_id: null,
-    }).select().single()
-
-    if (data) {
-      await supabase.from(junctionTable).insert({
-        [junctionColumn]: parentId,
-        label_id: data.id,
-      })
-    }
+    try {
+      const label = await api.createLabel(newLabelName.trim(), newLabelColor, null)
+      await api.attachLabel(parentId, kind, label.id)
+    } catch {}
     setNewLabelName('')
     setShowAdd(false)
     fetchLabels()
@@ -64,17 +51,16 @@ export default function LabelsField({
   }
 
   async function attachExistingLabel(labelId: string) {
-    await supabase.from(junctionTable).insert({
-      [junctionColumn]: parentId,
-      label_id: labelId,
-    })
+    try {
+      await api.attachLabel(parentId, kind, labelId)
+    } catch {}
     fetchLabels()
   }
 
   async function removeLabel(labelId: string) {
-    await supabase.from(junctionTable).delete()
-      .eq(junctionColumn, parentId)
-      .eq('label_id', labelId)
+    try {
+      await api.detachLabel(parentId, kind, labelId)
+    } catch {}
     fetchLabels()
   }
 

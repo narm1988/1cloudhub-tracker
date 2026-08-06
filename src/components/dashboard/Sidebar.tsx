@@ -109,8 +109,8 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         </div>
         {!collapsed && (
           <div>
-            <div className="font-display font-bold text-subhead leading-none">1CloudHub</div>
-            <div className="text-caption tracking-[0.12em] mt-0.5" style={{ color: theme.subText }}>TRACKER</div>
+            <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
+            <div className="text-[10px] tracking-[0.12em] mt-0.5 uppercase" style={{ color: theme.subText }}>TRACKER</div>
           </div>
         )}
       </div>
@@ -127,7 +127,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
               onClick={() => navigate(item.path)}
               title={collapsed ? item.label : undefined}
               aria-label={item.label}
-              className={`group flex items-center gap-2.5 py-2 rounded-lg text-left text-body font-medium transition-colors ${
+              className={`group flex items-center gap-2.5 py-2 rounded-lg text-left text-[13px] font-medium transition-colors ${
                 collapsed ? 'justify-center px-0' : 'px-2.5'
               } ${
                 isActive
@@ -142,7 +142,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
                   {item.label}
                   {item.admin && (
                     <span
-                      className="ml-auto text-caption px-1.5 py-0.5 rounded"
+                      className="ml-auto text-[10px] px-1.5 py-0.5 rounded"
                       style={{ backgroundColor: theme.hoverBg, color: theme.textInactive }}
                     >
                       ADMIN
@@ -162,7 +162,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
           onClick={handleSignOut}
           title={collapsed ? 'Sign out' : undefined}
           aria-label="Sign out"
-          className={`group w-full flex items-center gap-2.5 text-[var(--nav-text-inactive)] hover:text-danger hover:bg-danger/10 text-body font-medium rounded-lg py-2 transition-colors ${
+          className={`group w-full flex items-center gap-2.5 text-[var(--nav-text-inactive)] hover:text-danger hover:bg-danger/10 text-[13px] font-medium rounded-lg py-2 transition-colors ${
             collapsed ? 'justify-center px-0' : 'px-2.5'
           }`}
         >

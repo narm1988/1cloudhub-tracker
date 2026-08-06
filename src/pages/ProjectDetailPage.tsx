@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Outlet } from 'react-router-dom'
 import { ArrowLeft, Flag, List, CalendarDays, Tags } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import type { Project } from '../types'
 import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
@@ -21,12 +21,10 @@ export default function ProjectDetailPage() {
   }, [projectId])
 
   async function fetchProject() {
-    const { data } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .single()
-    if (data) setProject(data)
+    try {
+      const data = await api.getProject(projectId!)
+      setProject(data)
+    } catch {}
   }
 
   if (!project) {
@@ -110,12 +108,10 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
   }, [projectId])
 
   async function fetchStories() {
-    const { data } = await supabase
-      .from('stories')
-      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false })
-    if (data) setStories(data)
+    try {
+      const data = await api.listStories(undefined, projectId)
+      setStories(data)
+    } catch {}
   }
 
   return (
@@ -186,38 +182,23 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
   }, [backlogPage])
 
   async function fetchSprintsAndStories() {
-    const [storiesRes, sprintsRes] = await Promise.all([
-      supabase
-        .from('stories')
-        .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)')
-        .eq('project_id', projectId)
-        .not('sprint_id', 'is', null)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('sprints')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false }),
-    ])
-    if (storiesRes.data) setSprintStories(storiesRes.data)
-    if (sprintsRes.data) setSprints(sprintsRes.data)
+    try {
+      const [storiesData, sprintsData] = await Promise.all([
+        api.listStories(undefined, projectId, false),
+        api.listSprints(projectId),
+      ])
+      setSprintStories(storiesData)
+      setSprints(sprintsData)
+    } catch {}
   }
 
   async function fetchBacklog(pageOverride?: number) {
     const p = pageOverride ?? backlogPage
-    const from = (p - 1) * BACKLOG_PAGE_SIZE
-    const to = from + BACKLOG_PAGE_SIZE - 1
-    const { data, count } = await supabase
-      .from('stories')
-      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)', { count: 'exact' })
-      .eq('project_id', projectId)
-      .is('sprint_id', null)
-      .order('created_at', { ascending: false })
-      .range(from, to)
-    if (data) {
+    try {
+      const { data, total } = await api.listBacklogStories(projectId, p, BACKLOG_PAGE_SIZE)
       setBacklogStories(data)
-      setBacklogTotal(count || 0)
-    }
+      setBacklogTotal(total)
+    } catch {}
   }
 
   async function refetchAll() {
@@ -228,35 +209,27 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
   }
 
   async function createSprint(name: string, goal: string, startDate: string, endDate: string) {
-    await supabase.from('sprints').insert({
-      project_id: projectId,
-      name,
-      goal: goal || null,
-      start_date: startDate || null,
-      end_date: endDate || null,
-      status: 'planned',
-    })
+    try {
+      await api.createSprint({ project_id: projectId, name, goal: goal || null, start_date: startDate || null, end_date: endDate || null })
+    } catch {}
     setShowCreateSprint(false)
     refetchAll()
   }
 
   async function moveToSprint(storyId: string, sprintId: string | null) {
-    await supabase.from('stories').update({ sprint_id: sprintId }).eq('id', storyId)
+    try {
+      await api.updateStory(storyId, { sprint_id: sprintId })
+    } catch {}
     refetchAll()
   }
 
   async function startSprint(sprintId: string) {
-    await supabase.from('sprints').update({ status: 'active' }).eq('id', sprintId)
+    try { await api.startSprint(sprintId) } catch {}
     refetchAll()
   }
 
   async function completeSprint(sprintId: string) {
-    await supabase.from('sprints').update({ status: 'completed' }).eq('id', sprintId)
-    // Move incomplete stories back to backlog
-    await supabase.from('stories')
-      .update({ sprint_id: null })
-      .eq('sprint_id', sprintId)
-      .neq('status', 'Done')
+    try { await api.completeSprint(sprintId) } catch {}
     refetchAll()
   }
 
@@ -419,13 +392,10 @@ function ProjectTimeline({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     async function fetch() {
-      const { data } = await supabase
-        .from('stories')
-        .select('*')
-        .eq('project_id', projectId)
-        .not('start_date', 'is', null)
-        .order('start_date')
-      if (data) setStories(data as Story[])
+      try {
+        const data = await api.listStories(undefined, projectId)
+        setStories(data.filter((s: Story) => s.start_date))
+      } catch {}
     }
     fetch()
   }, [projectId])

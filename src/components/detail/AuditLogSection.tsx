@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { History, ChevronDown } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
+import { api } from '../../lib/api'
 import Avatar from '../ui/Avatar'
 import Card from '../ui/Card'
 import { SECTION_HEADER } from './DetailFields'
@@ -49,13 +49,10 @@ export default function AuditLogSection({
   const [loaded, setLoaded] = useState(false)
 
   async function fetchLogs() {
-    const { data } = await supabase
-      .from('activity_log')
-      .select('*, user:profiles!activity_log_user_id_fkey(id, full_name)')
-      .eq('parent_id', parentId)
-      .eq('parent_type', parentType)
-      .order('created_at', { ascending: false })
-    if (data) setLogs(data as unknown as ActivityLogEntry[])
+    try {
+      const data = await api.listActivity(parentId, parentType)
+      setLogs(data as unknown as ActivityLogEntry[])
+    } catch {}
     setLoaded(true)
   }
 

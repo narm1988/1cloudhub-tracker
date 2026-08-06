@@ -34,16 +34,52 @@ class StoryUpdate(BaseModel):
 
 
 @router.get("/")
-async def list_stories(epic_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """List stories, optionally filtered by epic."""
+async def list_stories(
+    epic_id: Optional[str] = None,
+    project_id: Optional[str] = None,
+    has_sprint: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
+):
+    """List stories, optionally filtered by epic, project, or sprint status."""
     supabase = get_supabase_admin()
     query = supabase.table("stories").select(
         "*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)"
     )
     if epic_id:
         query = query.eq("epic_id", epic_id)
+    if project_id:
+        query = query.eq("project_id", project_id)
+    if has_sprint == "yes":
+        query = query.not_("sprint_id", "is", "null")
+    elif has_sprint == "no":
+        query = query.is_("sprint_id", "null")
     result = query.order("created_at", desc=True).execute()
     return result.data or []
+
+
+@router.get("/backlog")
+async def list_backlog_stories(
+    project_id: str,
+    page: int = 1,
+    page_size: int = 10,
+    current_user: dict = Depends(get_current_user),
+):
+    """Paginated list of stories with no sprint assignment (backlog)."""
+    supabase = get_supabase_admin()
+    offset = (page - 1) * page_size
+    query = (
+        supabase.table("stories")
+        .select(
+            "*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email)",
+            count="exact",
+        )
+        .eq("project_id", project_id)
+        .is_("sprint_id", "null")
+        .order("created_at", desc=True)
+        .range(offset, offset + page_size - 1)
+    )
+    result = query.execute()
+    return {"data": result.data or [], "total": result.count or 0}
 
 
 @router.get("/{story_id}")
