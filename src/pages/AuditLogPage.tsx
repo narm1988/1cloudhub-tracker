@@ -7,6 +7,7 @@ import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const PAGE_SIZE = 25
 
@@ -33,6 +34,7 @@ function describeAction(log: ActivityLogEntry) {
 }
 
 export default function AuditLogPage() {
+  useDocumentTitle('Audit Log')
   const [logs, setLogs] = useState<ActivityLogEntry[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)

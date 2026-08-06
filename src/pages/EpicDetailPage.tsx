@@ -10,6 +10,7 @@ import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 export default function EpicDetailPage() {
@@ -18,6 +19,7 @@ export default function EpicDetailPage() {
 
   const toast = useToast()
   const [epic, setEpic] = useState<Epic | null>(null)
+  useDocumentTitle(epic?.title)
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
   const [movingToBacklog, setMovingToBacklog] = useState(false)

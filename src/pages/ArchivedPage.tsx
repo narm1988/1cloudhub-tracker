@@ -8,6 +8,7 @@ import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import Avatar from '../components/ui/Avatar'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const PAGE_SIZE = 12
 
@@ -21,6 +22,7 @@ export default function ArchivedPage() {
   const [epicPage, setEpicPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const toast = useToast()
+  useDocumentTitle('Archived')
 
   useEffect(() => {
     if (tab === 'projects') fetchProjects()

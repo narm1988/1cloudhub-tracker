@@ -14,6 +14,7 @@ import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   SECTION_HEADER, DetailRow, InlineTitle, InlineDescription,
   StatusField, PriorityField, AssigneeField, CommentInput, FileUploadButton,
@@ -73,6 +74,7 @@ export default function StoryDetailPage() {
   const epicIdParam = searchParams.get('epicId')
 
   const [story, setStory] = useState<Story | null>(null)
+  useDocumentTitle(isNew ? 'New story' : story ? `${story.display_id} · ${story.title}` : undefined)
   const [epic, setEpic] = useState<{ id: string; title: string; project_id: string | null } | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
   const [comments, setComments] = useState<Comment[]>([])
@@ -109,15 +111,20 @@ export default function StoryDetailPage() {
     // First fetch the story to get its UUID (storyId might be a display_id)
     const storyData = await fetchStory()
     const uuid = storyData?.id || storyId!
+    // Only what the page needs to actually render gates the loading state.
     await Promise.all([
       fetchIssues(uuid),
       fetchComments(uuid),
       fetchAttachments(uuid),
       fetchLinks(uuid),
-      fetchMembers(),
-      fetchAllStories(),
     ])
     setLoading(false)
+    // Assignee picker + link-issue picker data — only needed once those
+    // dropdowns/modals are opened, so it loads in the background instead
+    // of blocking the whole page (fetchAllStories in particular has no
+    // filters and can return every story in the workspace).
+    fetchMembers()
+    fetchAllStories()
   }
 
   async function fetchStory() {

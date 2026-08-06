@@ -12,6 +12,7 @@ import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const ALLOWED_DOMAIN = '1cloudhub.com'
 const PAGE_SIZE = 20
@@ -28,6 +29,7 @@ export default function PeoplePage() {
   const [confirmPerson, setConfirmPerson] = useState<User | null>(null)
   const { user } = useAuth()
   const toast = useToast()
+  useDocumentTitle('People')
 
   useEffect(() => {
     fetchPeople()

@@ -8,6 +8,7 @@ import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const BACKLOG_PAGE_SIZE = 10
 
@@ -16,6 +17,7 @@ export default function ProjectDetailPage() {
   const navigate = useNavigate()
   const [project, setProject] = useState<Project | null>(null)
   const [activeTab, setActiveTab] = useState<'board' | 'backlog' | 'timeline'>('board')
+  useDocumentTitle(project?.name)
 
   useEffect(() => {
     if (projectId) fetchProject()

@@ -10,6 +10,7 @@ import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
   SECTION_HEADER, DetailRow, InlineTitle, InlineDescription,
   StatusField, PriorityField, AssigneeField, CommentInput, FileUploadButton,
@@ -76,6 +77,7 @@ export default function IssueDetailPage() {
   const typeParam = (searchParams.get('type') as IssueType) || 'Task'
 
   const [issue, setIssue] = useState<Issue | null>(null)
+  useDocumentTitle(isNew ? `New ${typeParam}` : issue ? `${issue.display_id} · ${issue.title}` : undefined)
   const [parentStory, setParentStory] = useState<{ id: string; title: string; display_id: string } | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -105,8 +107,12 @@ export default function IssueDetailPage() {
   async function fetchAll() {
     const issueData = await fetchIssue()
     const uuid = issueData?.id || issueId!
-    await Promise.all([fetchComments(uuid), fetchAttachments(uuid), fetchMembers()])
+    // Only what the page needs to actually render gates the loading state.
+    await Promise.all([fetchComments(uuid), fetchAttachments(uuid)])
     setLoading(false)
+    // Assignee picker data — only needed once that dropdown is opened, so
+    // it loads in the background instead of blocking the whole page.
+    fetchMembers()
   }
 
   async function fetchIssue() {

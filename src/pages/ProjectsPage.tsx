@@ -11,6 +11,7 @@ import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import Button from '../components/ui/Button'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const PAGE_SIZE = 12
 
@@ -24,6 +25,7 @@ export default function ProjectsPage() {
   const { user } = useAuth()
   const toast = useToast()
   const isAdmin = user?.role === 'admin'
+  useDocumentTitle('Projects')
 
   useEffect(() => {
     fetchProjects()

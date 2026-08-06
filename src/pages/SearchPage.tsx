@@ -11,6 +11,7 @@ import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const PAGE_SIZE = 20
 
@@ -29,6 +30,7 @@ interface SearchResult {
 export default function SearchPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  useDocumentTitle('Search')
   const [query, setQuery] = useState(searchParams.get('q') || '')
   const [results, setResults] = useState<SearchResult[]>([])
   const [total, setTotal] = useState(0)

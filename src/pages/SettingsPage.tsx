@@ -4,10 +4,12 @@ import { SIDEBAR_THEMES } from '../lib/themes'
 import { Check } from 'lucide-react'
 import Card from '../components/ui/Card'
 import { SECTION_HEADER } from '../components/detail/DetailFields'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export default function SettingsPage() {
   const { user } = useAuth()
   const { theme, setThemeId } = useTheme()
+  useDocumentTitle('Settings')
 
   return (
     <div>

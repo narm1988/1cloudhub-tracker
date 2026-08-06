@@ -12,6 +12,7 @@ import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import { useToast } from '../context/ToastContext'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const PAGE_SIZE = 12
 
@@ -24,6 +25,7 @@ export default function EpicsPage() {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const toast = useToast()
+  useDocumentTitle('Epics')
 
   useEffect(() => {
     fetchProjects()

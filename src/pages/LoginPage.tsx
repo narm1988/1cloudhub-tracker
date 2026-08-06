@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, Cloud } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Button from '../components/ui/Button'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const STARS = [
   { top: '12%', left: '8%', size: 3, delay: 0 },
@@ -18,6 +19,7 @@ const STARS = [
 ]
 
 export default function LoginPage() {
+  useDocumentTitle('Sign in')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)

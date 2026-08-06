@@ -4,8 +4,10 @@ import { Lock, User, Eye, EyeOff, Cloud, AlertCircle } from 'lucide-react'
 import { api, ApiError, setToken } from '../lib/api'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export default function AcceptInvitePage() {
+  useDocumentTitle('Set up your account')
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
   const [fullName, setFullName] = useState('')
