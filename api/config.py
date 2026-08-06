@@ -31,7 +31,10 @@ ENTRA_AUTHORITY = f"https://login.microsoftonline.com/{ENTRA_TENANT_ID}"
 FRONTEND_URL = os.getenv("FRONTEND_URL", "")
 
 # ==============================================
-# AWS SES — invite / password-reset email delivery
+# Email — SMTP (Gmail or any provider)
 # ==============================================
-AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-SES_SENDER_EMAIL = os.getenv("SES_SENDER_EMAIL", "")
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Gmail: use App Password, not login password
+SMTP_FROM = os.getenv("SMTP_FROM", "") or SMTP_USER  # defaults to SMTP_USER if not set
