@@ -321,7 +321,7 @@ export default function IssueDetailPage() {
           {/* Header card */}
           <Card padding="lg" className="mb-4">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <TypeField type={current.type} onChange={(type) => updateDraft({ type })} />
+              <TypeField type={current.type} onChange={(type) => updateDraft({ type })} editable={isNew} />
               {isNew ? (
                 <span className="text-[13px] text-brand font-semibold">New — not yet saved</span>
               ) : (
@@ -531,20 +531,20 @@ export default function IssueDetailPage() {
 }
 
 /* ---- Issue type field (header) ---- */
-function TypeField({ type, onChange }: { type: IssueType; onChange: (t: IssueType) => void }) {
+function TypeField({ type, onChange, editable = true }: { type: IssueType; onChange: (t: IssueType) => void; editable?: boolean }) {
   const [open, setOpen] = useState(false)
   const meta = ISSUE_TYPE_META[type]
   const options = ISSUE_TYPES.filter((t) => t !== 'Story')
 
   return (
     <div className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-1 text-[13px] px-2 py-0.5 rounded font-semibold transition-colors ${meta.tailwind}`}
+      <span
+        onClick={editable ? () => setOpen((o) => !o) : undefined}
+        className={`flex items-center gap-1 text-[13px] px-2 py-0.5 rounded font-semibold ${meta.tailwind} ${editable ? 'cursor-pointer' : ''}`}
       >
-        {meta.icon} {type} <ChevronDown size={12} />
-      </button>
-      {open && (
+        {meta.icon} {type} {editable && <ChevronDown size={12} />}
+      </span>
+      {open && editable && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">

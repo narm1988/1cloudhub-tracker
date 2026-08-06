@@ -38,7 +38,7 @@ export function InlineTitle({
       <h1
         onClick={() => setEditing(true)}
         title="Click to edit"
-        className="text-[22px] font-semibold tracking-[-0.02em] cursor-text rounded-md px-1.5 -mx-1.5 py-0.5 hover:bg-gray-50 transition-colors"
+        className="text-[17px] font-semibold tracking-[-0.01em] cursor-text rounded-md px-1.5 -mx-1.5 py-0.5 hover:bg-gray-50 transition-colors"
       >
         {value ? (
           <span className="text-gray-900">{value}</span>
@@ -64,7 +64,7 @@ export function InlineTitle({
         if (e.key === 'Enter') e.currentTarget.blur()
         if (e.key === 'Escape') { setDraft(value); setEditing(false) }
       }}
-      className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900 w-full px-1.5 -mx-1.5 py-0.5 rounded-md border border-brand outline-none focus:ring-1 focus:ring-brand/30"
+      className="text-[17px] font-semibold tracking-[-0.01em] text-gray-900 w-full px-1.5 -mx-1.5 py-0.5 rounded-md border border-brand outline-none focus:ring-1 focus:ring-brand/30"
     />
   )
 }
@@ -318,7 +318,7 @@ export function FileUploadButton({ onUpload }: { onUpload: (file: File) => void 
           e.target.value = ''
         }}
       />
-      <Button size="sm" variant="secondary" onClick={() => inputRef.current?.click()}>
+      <Button size="sm" onClick={() => inputRef.current?.click()}>
         <Upload size={13} /> Upload
       </Button>
     </>
