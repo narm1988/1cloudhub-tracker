@@ -16,7 +16,6 @@ import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
 import Card from '../components/ui/Card'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
-import { notifyAssignment } from '../lib/notifyAssignment'
 
 interface IssueDraft {
   title: string
@@ -167,16 +166,16 @@ export default function IssueDetailPage() {
         })
 
         if (data.assignee_id) {
-          notifyAssignment({
-            assigneeId: data.assignee_id,
-            itemType: data.type,
-            displayId: data.display_id,
+          api.notifyAssignment({
+            assignee_id: data.assignee_id,
+            item_type: data.type,
+            display_id: data.display_id,
             title: data.title,
             breadcrumb: parentStory ? `${parentStory.display_id} · ${parentStory.title}` : undefined,
             priority: data.priority,
-            dueDate: data.due_date,
-            itemPath: `/issues/${data.id}`,
-          })
+            due_date: data.due_date,
+            item_path: `/issues/${data.id}`,
+          }).catch(() => {})
         }
         navigate(`/issues/${data.id}`, { replace: true })
       } finally {
@@ -201,16 +200,16 @@ export default function IssueDetailPage() {
       })
 
       if (assigneeChanged && current.assignee_id) {
-        notifyAssignment({
-          assigneeId: current.assignee_id,
-          itemType: current.type,
-          displayId: issue!.display_id,
+        api.notifyAssignment({
+          assignee_id: current.assignee_id,
+          item_type: current.type,
+          display_id: issue!.display_id,
           title: current.title,
           breadcrumb: parentStory ? `${parentStory.display_id} · ${parentStory.title}` : undefined,
           priority: current.priority,
-          dueDate: current.due_date,
-          itemPath: `/issues/${issueId}`,
-        })
+          due_date: current.due_date || undefined,
+          item_path: `/issues/${issueId}`,
+        }).catch(() => {})
       }
 
       await fetchIssue()

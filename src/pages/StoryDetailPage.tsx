@@ -20,7 +20,6 @@ import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
 import Card from '../components/ui/Card'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
-import { notifyAssignment } from '../lib/notifyAssignment'
 
 interface StoryDraft {
   title: string
@@ -203,16 +202,16 @@ export default function StoryDetailPage() {
         })
 
         if (data.assignee_id) {
-          notifyAssignment({
-            assigneeId: data.assignee_id,
-            itemType: 'Story',
-            displayId: data.display_id,
+          api.notifyAssignment({
+            assignee_id: data.assignee_id,
+            item_type: 'Story',
+            display_id: data.display_id,
             title: data.title,
             breadcrumb: epic?.title,
             priority: data.priority,
-            dueDate: data.due_date,
-            itemPath: `/stories/${data.id}`,
-          })
+            due_date: data.due_date,
+            item_path: `/stories/${data.id}`,
+          }).catch(() => {})
         }
         navigate(`/stories/${data.id}`, { replace: true })
       } finally {
@@ -236,16 +235,16 @@ export default function StoryDetailPage() {
       })
 
       if (assigneeChanged && current.assignee_id) {
-        notifyAssignment({
-          assigneeId: current.assignee_id,
-          itemType: 'Story',
-          displayId: story!.display_id,
+        api.notifyAssignment({
+          assignee_id: current.assignee_id,
+          item_type: 'Story',
+          display_id: story!.display_id,
           title: current.title,
           breadcrumb: epic?.title,
           priority: current.priority,
-          dueDate: current.due_date,
-          itemPath: `/stories/${storyId}`,
-        })
+          due_date: current.due_date || undefined,
+          item_path: `/stories/${storyId}`,
+        }).catch(() => {})
       }
 
       await fetchStory()
