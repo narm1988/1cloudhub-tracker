@@ -345,9 +345,9 @@ function BacklogStoryRow({
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-gray-100 hover:border-gray-200 group transition-colors">
-      <span className="font-mono text-[12px] text-gray-400 shrink-0 w-16">{story.display_id}</span>
+      <span className="font-mono text-[12px] text-gray-400 shrink-0 w-[70px]">{story.display_id}</span>
       <span
-        className="text-[13px] text-gray-900 font-medium flex-1 truncate cursor-pointer hover:text-brand"
+        className="text-[13px] text-gray-900 font-medium flex-1 min-w-0 truncate cursor-pointer hover:text-brand"
         onClick={onClick}
       >
         {story.title}
@@ -357,9 +357,9 @@ function BacklogStoryRow({
           {story.story_points} pts
         </span>
       )}
-      <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
-      {story.assignee && <Avatar name={story.assignee.full_name} size="sm" />}
-      <StatusBadge status={story.status as Status} />
+      <span className="text-[12px] shrink-0">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+      {story.assignee && <span className="shrink-0"><Avatar name={story.assignee.full_name} size="sm" /></span>}
+      <span className="shrink-0"><StatusBadge status={story.status as Status} /></span>
 
       {/* Sprint action */}
       {sprints && onMoveToSprint && (
