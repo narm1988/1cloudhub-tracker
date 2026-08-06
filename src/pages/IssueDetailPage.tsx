@@ -5,10 +5,11 @@ import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { ISSUE_TYPES, ISSUE_TYPE_META } from '../lib/constants'
 import type { Status, Priority, IssueType } from '../lib/constants'
-import type { Issue, Comment, Attachment, User } from '../types'
+import type { Issue, Comment, Attachment, User, Story, Epic } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
 import { useToast } from '../context/ToastContext'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
@@ -78,7 +79,8 @@ export default function IssueDetailPage() {
 
   const [issue, setIssue] = useState<Issue | null>(null)
   useDocumentTitle(isNew ? `New ${typeParam}` : issue ? `${issue.display_id} · ${issue.title}` : undefined)
-  const [parentStory, setParentStory] = useState<{ id: string; title: string; display_id: string } | null>(null)
+  const [parentStory, setParentStory] = useState<Story | null>(null)
+  const [parentEpic, setParentEpic] = useState<Epic | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [members, setMembers] = useState<User[]>([])
@@ -105,14 +107,15 @@ export default function IssueDetailPage() {
   }, [issueId])
 
   async function fetchAll() {
-    const issueData = await fetchIssue()
-    const uuid = issueData?.id || issueId!
-    // Only what the page needs to actually render gates the loading state.
-    await Promise.all([fetchComments(uuid), fetchAttachments(uuid)])
+    try {
+      const data = await api.getIssueFull(issueId!)
+      setIssue(data.issue)
+      setComments(data.comments)
+      setAttachments(data.attachments)
+      setMembers(data.members)
+      if (data.parent_story) setParentStory(data.parent_story as any)
+    } catch {}
     setLoading(false)
-    // Assignee picker data — only needed once that dropdown is opened, so
-    // it loads in the background instead of blocking the whole page.
-    fetchMembers()
   }
 
   async function fetchIssue() {
@@ -130,8 +133,17 @@ export default function IssueDetailPage() {
     try {
       const data = await api.getStory(storyId)
       setParentStory(data)
+      if (data.epic_id) fetchParentEpic(data.epic_id)
     } catch {
       // Parent-story link just won't show; not fatal to the page.
+    }
+  }
+
+  async function fetchParentEpic(epicId: string) {
+    try {
+      setParentEpic(await api.getEpic(epicId))
+    } catch {
+      // Breadcrumb just stays shorter; not fatal to the page.
     }
   }
 
@@ -309,6 +321,18 @@ export default function IssueDetailPage() {
 
   return (
     <div className="max-w-[1600px]">
+      {!isNew && issue && (
+        <Breadcrumbs
+          items={[
+            { label: 'Epics', href: '/epics' },
+            ...(parentEpic?.project ? [{ label: parentEpic.project.name, href: `/projects/${parentEpic.project.id}` }] : []),
+            ...(parentEpic ? [{ label: parentEpic.title, href: `/epics/${parentEpic.id}` }] : []),
+            ...(parentStory ? [{ label: parentStory.display_id, href: `/stories/${parentStory.display_id}` }] : []),
+            { label: issue.display_id },
+          ]}
+        />
+      )}
+
       {/* Back */}
       <div className="flex items-center justify-between mb-4">
         <button

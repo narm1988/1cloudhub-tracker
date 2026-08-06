@@ -52,6 +52,54 @@ async def list_issues(story_id: Optional[str] = None, current_user: dict = Depen
     return result.data or []
 
 
+@router.get("/full/{issue_id}")
+async def get_issue_full(issue_id: str, current_user: dict = Depends(get_current_user)):
+    """Get issue + comments + attachments + labels + members in one call."""
+    supabase = get_supabase_admin()
+
+    # Resolve display_id to UUID
+    if "-" in issue_id and len(issue_id) < 20:
+        res = supabase.table("issues").select("id").eq("display_id", issue_id.upper()).maybe_single().execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Issue not found")
+        uuid = res.data["id"]
+    else:
+        uuid = issue_id
+
+    # Parallel queries
+    issue_res = supabase.table("issues").select(_SELECT).eq("id", uuid).maybe_single().execute()
+    if not issue_res.data:
+        raise HTTPException(status_code=404, detail="Issue not found")
+
+    comments_res = supabase.table("comments").select(
+        "*, author:profiles!comments_author_id_fkey(id, full_name, email)"
+    ).eq("parent_id", uuid).eq("parent_type", "issue").order("created_at", desc=True).execute()
+
+    attachments_res = supabase.table("attachments").select("*").eq("parent_id", uuid).eq("parent_type", "issue").order("created_at", desc=True).execute()
+
+    # Labels via junction table
+    labels_res = supabase.table("issue_labels").select(
+        "label_id, labels:labels!issue_labels_label_id_fkey(id, name, color)"
+    ).eq("issue_id", uuid).execute()
+
+    members_res = supabase.table("profiles").select("id, full_name, email, role").order("full_name").execute()
+
+    # Parent story (if exists)
+    parent_story = None
+    if issue_res.data.get("story_id"):
+        ps_res = supabase.table("stories").select("id, display_id, title").eq("id", issue_res.data["story_id"]).maybe_single().execute()
+        parent_story = ps_res.data
+
+    return {
+        "issue": issue_res.data,
+        "comments": comments_res.data or [],
+        "attachments": attachments_res.data or [],
+        "labels": [row["labels"] for row in (labels_res.data or []) if row.get("labels")],
+        "members": members_res.data or [],
+        "parent_story": parent_story,
+    }
+
+
 @router.get("/{issue_id}")
 async def get_issue(issue_id: str, current_user: dict = Depends(get_current_user)):
     """Get a single issue by UUID or display_id (e.g. BUG-106, TSK-101)."""

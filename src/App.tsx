@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './context/ToastContext'
+import SessionExpiryWatcher from './components/ui/SessionExpiryWatcher'
 import LoginPage from './pages/LoginPage'
 import AcceptInvitePage from './pages/AcceptInvitePage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
@@ -62,6 +63,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
+          <SessionExpiryWatcher />
           <AppRoutes />
         </ToastProvider>
       </AuthProvider>

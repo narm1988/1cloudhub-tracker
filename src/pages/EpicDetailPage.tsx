@@ -9,6 +9,7 @@ import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
 import { useToast } from '../context/ToastContext'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
@@ -88,6 +89,14 @@ export default function EpicDetailPage() {
 
   return (
     <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Epics', href: '/epics' },
+          ...(epic.project ? [{ label: epic.project.name, href: `/projects/${epic.project.id}` }] : []),
+          { label: epic.title },
+        ]}
+      />
+
       {/* Back button */}
       <button
         onClick={() => navigate('/epics')}

@@ -8,11 +8,12 @@ import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { STATUS_META, PRIORITY_META, ISSUE_TYPE_META, LINK_TYPES } from '../lib/constants'
 import type { Status, Priority, IssueType, LinkType } from '../lib/constants'
-import type { Story, Issue, Comment, Attachment, User, IssueLink } from '../types'
+import type { Story, Issue, Comment, Attachment, User, IssueLink, Epic } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
 import { useToast } from '../context/ToastContext'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import {
@@ -75,7 +76,7 @@ export default function StoryDetailPage() {
 
   const [story, setStory] = useState<Story | null>(null)
   useDocumentTitle(isNew ? 'New story' : story ? `${story.display_id} · ${story.title}` : undefined)
-  const [epic, setEpic] = useState<{ id: string; title: string; project_id: string | null } | null>(null)
+  const [epic, setEpic] = useState<Epic | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
   const [comments, setComments] = useState<Comment[]>([])
   const [attachments, setAttachments] = useState<Attachment[]>([])
@@ -108,23 +109,18 @@ export default function StoryDetailPage() {
   }, [storyId])
 
   async function fetchAll() {
-    // First fetch the story to get its UUID (storyId might be a display_id)
-    const storyData = await fetchStory()
-    const uuid = storyData?.id || storyId!
-    // Only what the page needs to actually render gates the loading state.
-    await Promise.all([
-      fetchIssues(uuid),
-      fetchComments(uuid),
-      fetchAttachments(uuid),
-      fetchLinks(uuid),
-    ])
+    try {
+      const data = await api.getStoryFull(storyId!)
+      setStory(data.story)
+      setIssues(data.issues)
+      setComments(data.comments)
+      setAttachments(data.attachments)
+      setLinks(data.links)
+      setMembers(data.members)
+      setAllStories(data.all_stories as any)
+      if (data.epic) setEpic(data.epic as any)
+    } catch {}
     setLoading(false)
-    // Assignee picker + link-issue picker data — only needed once those
-    // dropdowns/modals are opened, so it loads in the background instead
-    // of blocking the whole page (fetchAllStories in particular has no
-    // filters and can return every story in the workspace).
-    fetchMembers()
-    fetchAllStories()
   }
 
   async function fetchStory() {
@@ -365,6 +361,17 @@ export default function StoryDetailPage() {
 
   return (
     <div className="max-w-[1600px]">
+      {!isNew && story && (
+        <Breadcrumbs
+          items={[
+            { label: 'Epics', href: '/epics' },
+            ...(epic?.project ? [{ label: epic.project.name, href: `/projects/${epic.project.id}` }] : []),
+            ...(epic ? [{ label: epic.title, href: `/epics/${epic.id}` }] : []),
+            { label: story.display_id },
+          ]}
+        />
+      )}
+
       {/* Back + Save bar */}
       <div className="flex items-center justify-between mb-4">
         <button

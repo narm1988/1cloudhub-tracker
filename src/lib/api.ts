@@ -20,6 +20,19 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY)
 }
 
+/** Reads the `exp` claim (ms since epoch) out of a JWT without verifying
+ * it — verification is the backend's job, this is only used client-side
+ * to schedule the session-expiry warning. */
+export function getTokenExpiry(token: string): number | null {
+  try {
+    const payload = token.split('.')[1]
+    const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
+    return typeof json.exp === 'number' ? json.exp * 1000 : null
+  } catch {
+    return null
+  }
+}
+
 interface AuthResponse {
   access_token: string
   user: User
@@ -79,6 +92,10 @@ export const api = {
 
   me() {
     return request<User>('/auth/me')
+  },
+
+  refreshToken() {
+    return request<{ access_token: string }>('/auth/refresh', { method: 'POST' })
   },
 
   logout() {
@@ -181,6 +198,20 @@ export const api = {
     return request<Story>(`/stories/${id}`)
   },
 
+  getStoryFull(id: string) {
+    return request<{
+      story: Story
+      issues: Issue[]
+      comments: Comment[]
+      attachments: Attachment[]
+      labels: Label[]
+      links: IssueLink[]
+      members: User[]
+      epic: { id: string; title: string } | null
+      all_stories: { id: string; display_id: string; title: string }[]
+    }>(`/stories/full/${id}`)
+  },
+
   createStory(data: Record<string, unknown>) {
     return request<Story>('/stories/', { method: 'POST', body: JSON.stringify(data) })
   },
@@ -200,6 +231,17 @@ export const api = {
 
   getIssue(id: string) {
     return request<Issue>(`/issues/${id}`)
+  },
+
+  getIssueFull(id: string) {
+    return request<{
+      issue: Issue
+      comments: Comment[]
+      attachments: Attachment[]
+      labels: Label[]
+      members: User[]
+      parent_story: { id: string; display_id: string; title: string } | null
+    }>(`/issues/full/${id}`)
   },
 
   createIssue(data: Record<string, unknown>) {

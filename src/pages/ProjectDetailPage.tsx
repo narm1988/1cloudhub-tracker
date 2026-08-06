@@ -7,6 +7,7 @@ import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+import Breadcrumbs from '../components/ui/Breadcrumbs'
 import { useToast } from '../context/ToastContext'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 
@@ -48,6 +49,8 @@ export default function ProjectDetailPage() {
 
   return (
     <div>
+      <Breadcrumbs items={[{ label: 'Projects', href: '/projects' }, { label: project.name }]} />
+
       <button
         onClick={() => navigate('/projects')}
         className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 mb-3"

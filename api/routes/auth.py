@@ -210,6 +210,16 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     return _public_profile(profile.data)
 
 
+@router.post("/refresh")
+async def refresh_token(current_user: dict = Depends(get_current_user)):
+    """Mint a fresh access token for the caller, sliding their session
+    forward. get_current_user already rejects an expired/invalid token
+    before this ever runs, so there's nothing to refresh once it's dead —
+    the frontend only calls this while the current token is still valid."""
+    token = create_access_token(current_user["id"], current_user["email"], current_user["role"])
+    return {"access_token": token}
+
+
 @router.post("/logout")
 async def logout():
     """Stateless JWT — nothing to invalidate server-side yet. Kept for

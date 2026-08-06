@@ -82,6 +82,66 @@ async def list_backlog_stories(
     return {"data": result.data or [], "total": result.count or 0}
 
 
+@router.get("/full/{story_id}")
+async def get_story_full(story_id: str, current_user: dict = Depends(get_current_user)):
+    """Get story + child issues + comments + attachments + labels + links + members in one call."""
+    supabase = get_supabase_admin()
+
+    select = "*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)"
+
+    # Resolve display_id to UUID
+    if "-" in story_id and len(story_id) < 20:
+        res = supabase.table("stories").select("id").eq("display_id", story_id.upper()).maybe_single().execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Story not found")
+        uuid = res.data["id"]
+    else:
+        uuid = story_id
+
+    story_res = supabase.table("stories").select(select).eq("id", uuid).maybe_single().execute()
+    if not story_res.data:
+        raise HTTPException(status_code=404, detail="Story not found")
+
+    issues_res = supabase.table("issues").select(
+        "*, assignee:profiles!issues_assignee_id_fkey(id, full_name, email)"
+    ).eq("story_id", uuid).order("created_at", desc=True).execute()
+
+    comments_res = supabase.table("comments").select(
+        "*, author:profiles!comments_author_id_fkey(id, full_name, email)"
+    ).eq("parent_id", uuid).eq("parent_type", "story").order("created_at", desc=True).execute()
+
+    attachments_res = supabase.table("attachments").select("*").eq("parent_id", uuid).eq("parent_type", "story").order("created_at", desc=True).execute()
+
+    labels_res = supabase.table("story_labels").select(
+        "label_id, labels:labels!story_labels_label_id_fkey(id, name, color)"
+    ).eq("story_id", uuid).execute()
+
+    links_res = supabase.table("issue_links").select("*").or_(f"source_id.eq.{uuid},target_id.eq.{uuid}").execute()
+
+    members_res = supabase.table("profiles").select("id, full_name, email, role").order("full_name").execute()
+
+    # Parent epic
+    epic = None
+    if story_res.data.get("epic_id"):
+        epic_res = supabase.table("epics").select("id, title").eq("id", story_res.data["epic_id"]).maybe_single().execute()
+        epic = epic_res.data
+
+    # All stories (for link modal)
+    all_stories_res = supabase.table("stories").select("id, display_id, title").order("created_at", desc=True).limit(100).execute()
+
+    return {
+        "story": story_res.data,
+        "issues": issues_res.data or [],
+        "comments": comments_res.data or [],
+        "attachments": attachments_res.data or [],
+        "labels": [row["labels"] for row in (labels_res.data or []) if row.get("labels")],
+        "links": links_res.data or [],
+        "members": members_res.data or [],
+        "epic": epic,
+        "all_stories": all_stories_res.data or [],
+    }
+
+
 @router.get("/{story_id}")
 async def get_story(story_id: str, current_user: dict = Depends(get_current_user)):
     """Get a single story by UUID or display_id (e.g. 1CH-112)."""
