@@ -17,18 +17,6 @@ function timeAgo(dateStr: string) {
   return `${days}d ago`
 }
 
-// Notifications only carry a plain message string (no type column), so the
-// icon is inferred from the display_id prefix embedded in that message by
-// the DB trigger — e.g. "You were assigned to BUG-101: ...".
-function notificationIcon(message: string) {
-  if (message.startsWith('New comment')) return { emoji: '💬', bg: '#F0F1F3' }
-  if (/\bBUG-/.test(message)) return { emoji: '🐛', bg: '#FDECEC' }
-  if (/\bTSK-/.test(message)) return { emoji: '✅', bg: '#EAF1FE' }
-  if (/\bSUB-/.test(message)) return { emoji: '📎', bg: '#F0F1F3' }
-  if (/\b1CH-/.test(message)) return { emoji: '📗', bg: '#EEF0FE' }
-  return { emoji: '🔔', bg: '#F0F1F3' }
-}
-
 export default function TopBar({
   collapsed,
   onToggleSidebar,
@@ -191,29 +179,20 @@ export default function TopBar({
                 </div>
 
                 {/* List */}
-                <div className="flex-1 overflow-y-auto">
-                  {visibleNotifications.map((n) => {
-                    const icon = notificationIcon(n.message)
-                    return (
-                      <div key={n.id} className={`px-4 py-2.5 border-b border-gray-50 ${!n.read ? 'bg-brand-soft/40' : ''}`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="w-6 h-6 rounded-md flex items-center justify-center text-[12px] shrink-0"
-                              style={{ backgroundColor: icon.bg }}
-                            >
-                              {icon.emoji}
-                            </span>
-                            {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
-                          </div>
-                          <span className="text-[11px] font-mono text-gray-400">{timeAgo(n.created_at)}</span>
+                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                  {visibleNotifications.map((n) => (
+                    <div key={n.id} className={`flex items-start justify-between gap-3 px-4 py-3 ${!n.read ? 'bg-brand-soft/30' : ''}`}>
+                      {/* Left: message + actions */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />}
+                          <p className="text-[12px] text-gray-900 leading-snug truncate">{n.message}</p>
                         </div>
-                        <p className="text-[12px] text-gray-900 leading-snug mb-1.5 pl-8">{n.message}</p>
-                        <div className="flex items-center gap-3 pl-8">
+                        <div className="flex items-center gap-3 mt-1">
                           {n.link && (
                             <button
                               onClick={() => viewNotification(n)}
-                              className="text-[11px] font-semibold text-brand hover:text-brand-deep transition-colors"
+                              className="text-[11px] font-medium text-brand hover:text-brand-deep transition-colors"
                             >
                               View →
                             </button>
@@ -228,8 +207,10 @@ export default function TopBar({
                           )}
                         </div>
                       </div>
-                    )
-                  })}
+                      {/* Right: timestamp */}
+                      <span className="text-[10px] font-mono text-gray-400 shrink-0 pt-0.5">{timeAgo(n.created_at)}</span>
+                    </div>
+                  ))}
                   {visibleNotifications.length === 0 && (
                     <p className="text-[12px] text-gray-400 text-center py-10">
                       {notifTab === 'unread' ? 'No unread notifications.' : 'No notifications yet.'}
