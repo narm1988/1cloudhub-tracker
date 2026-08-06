@@ -130,12 +130,19 @@ async def invite_user(body: InviteRequest, current_user: dict = Depends(get_curr
         raise HTTPException(status_code=403, detail="Only admins can invite users")
 
     invite_token = secrets.token_urlsafe(32)
-    supabase.table("invites").insert({
-        "email": body.email,
-        "role": body.role,
-        "invited_by": current_user["id"],
-        "token": invite_token,
-    }).execute()
+    try:
+        supabase.table("invites").insert({
+            "email": body.email,
+            "role": body.role,
+            "invited_by": current_user["id"],
+            "token": invite_token,
+            "accepted": False,
+        }).execute()
+    except Exception as e:
+        error_msg = str(e)
+        if "invites_email_domain_check" in error_msg:
+            raise HTTPException(status_code=400, detail="Only @1cloudhub.com email addresses can be invited.")
+        raise HTTPException(status_code=500, detail=f"Failed to create invite: {error_msg}")
 
     invite_link = f"{FRONTEND_URL}/accept-invite?token={invite_token}"
     email_sent = False
