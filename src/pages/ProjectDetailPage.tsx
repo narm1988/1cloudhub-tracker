@@ -357,9 +357,9 @@ function BacklogStoryRow({
           {story.story_points} pts
         </span>
       )}
-      <span className="text-[12px] shrink-0" style={{ color: PRIORITY_META[story.priority as Priority]?.color }}>{PRIORITY_META[story.priority as Priority]?.icon}</span>
-      {story.assignee && <span className="shrink-0"><Avatar name={story.assignee.full_name} size="sm" /></span>}
-      <span className="shrink-0"><StatusBadge status={story.status as Status} /></span>
+      <span className="text-[12px] shrink-0 w-4 text-center" style={{ color: PRIORITY_META[story.priority as Priority]?.color }}>{PRIORITY_META[story.priority as Priority]?.icon}</span>
+      <span className="shrink-0 w-5 flex justify-center">{story.assignee ? <Avatar name={story.assignee.full_name} size="sm" /> : null}</span>
+      <span className="shrink-0 w-[80px] text-right"><StatusBadge status={story.status as Status} /></span>
 
       {/* Sprint action */}
       {sprints && onMoveToSprint && (

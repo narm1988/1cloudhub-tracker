@@ -193,12 +193,12 @@ export default function SearchPage() {
                 i < results.length - 1 ? 'border-b border-gray-100' : ''
               }`}
             >
-              <span className="text-[13px]">{ISSUE_TYPE_META[item.type as keyof typeof ISSUE_TYPE_META]?.icon || '📗'}</span>
-              <span className="font-mono text-[12px] text-gray-400 shrink-0 w-16">{item.display_id}</span>
-              <span className="text-[13px] text-gray-900 font-medium flex-1 truncate">{item.title}</span>
-              <span className="text-[12px]" style={{ color: PRIORITY_META[item.priority as Priority]?.color }}>{PRIORITY_META[item.priority as Priority]?.icon}</span>
-              {item.assignee && <Avatar name={item.assignee.full_name} size="sm" />}
-              <StatusBadge status={item.status as Status} />
+              <span className="text-[13px] shrink-0">{ISSUE_TYPE_META[item.type as keyof typeof ISSUE_TYPE_META]?.icon || '📗'}</span>
+              <span className="font-mono text-[12px] text-gray-400 shrink-0 w-[70px]">{item.display_id}</span>
+              <span className="text-[13px] text-gray-900 font-medium flex-1 min-w-0 truncate">{item.title}</span>
+              <span className="text-[12px] shrink-0 w-4 text-center" style={{ color: PRIORITY_META[item.priority as Priority]?.color }}>{PRIORITY_META[item.priority as Priority]?.icon}</span>
+              <span className="shrink-0 w-5 flex justify-center">{item.assignee ? <Avatar name={item.assignee.full_name} size="sm" /> : null}</span>
+              <span className="shrink-0"><StatusBadge status={item.status as Status} /></span>
               {item.due_date && (
                 <span className="text-[12px] text-gray-400 shrink-0">
                   Due {new Date(item.due_date).toLocaleDateString()}

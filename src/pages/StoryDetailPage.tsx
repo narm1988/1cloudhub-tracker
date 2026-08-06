@@ -412,12 +412,12 @@ export default function StoryDetailPage() {
                         onClick={() => navigate(`/issues/${issue.id}`)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-gray-100 hover:border-brand/30 hover:shadow-sm cursor-pointer transition-all"
                       >
-                        <span className="text-[13px]">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
-                        <span className="font-mono text-[12px] text-gray-400 shrink-0">{issue.display_id}</span>
-                        <span className="text-[13px] text-gray-900 font-medium flex-1 truncate">{issue.title}</span>
-                        <span className="text-[12px]" style={{ color: PRIORITY_META[issue.priority as Priority]?.color }}>{PRIORITY_META[issue.priority as Priority]?.icon}</span>
-                        {issue.assignee && <Avatar name={issue.assignee.full_name} size="sm" />}
-                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap ${STATUS_META[issue.status as Status]?.tailwind}`}>
+                        <span className="text-[13px] shrink-0">{ISSUE_TYPE_META[issue.type as IssueType]?.icon}</span>
+                        <span className="font-mono text-[12px] text-gray-400 shrink-0 w-[70px]">{issue.display_id}</span>
+                        <span className="text-[13px] text-gray-900 font-medium flex-1 min-w-0 truncate">{issue.title}</span>
+                        <span className="text-[12px] shrink-0 w-4 text-center" style={{ color: PRIORITY_META[issue.priority as Priority]?.color }}>{PRIORITY_META[issue.priority as Priority]?.icon}</span>
+                        <span className="shrink-0 w-5 flex justify-center">{issue.assignee ? <Avatar name={issue.assignee.full_name} size="sm" /> : null}</span>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md whitespace-nowrap shrink-0 ${STATUS_META[issue.status as Status]?.tailwind}`}>
                           {issue.status}
                         </span>
                       </div>
