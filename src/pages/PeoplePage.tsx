@@ -6,10 +6,12 @@ import type { User } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+import { useToast } from '../context/ToastContext'
 
 const ALLOWED_DOMAIN = '1cloudhub.com'
 const PAGE_SIZE = 20
@@ -23,7 +25,9 @@ export default function PeoplePage() {
   const [inviteError, setInviteError] = useState('')
   const [inviting, setInviting] = useState(false)
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const [confirmPerson, setConfirmPerson] = useState<User | null>(null)
   const { user } = useAuth()
+  const toast = useToast()
 
   useEffect(() => {
     fetchPeople()
@@ -55,6 +59,7 @@ export default function PeoplePage() {
     try {
       await api.invite(normalized, role)
       setShowInvite(false)
+      toast.success(`Invite sent to ${normalized}`)
       fetchPeople()
     } catch (err) {
       setInviteError(err instanceof ApiError ? err.message : 'Failed to send invite.')
@@ -63,15 +68,20 @@ export default function PeoplePage() {
     }
   }
 
-  async function removePerson(person: User) {
-    if (!window.confirm(`Remove ${person.full_name} from the team? This cannot be undone.`)) return
+  function removePerson(person: User) {
+    setConfirmPerson(person)
+  }
 
+  async function confirmRemovePerson() {
+    const person = confirmPerson!
+    setConfirmPerson(null)
     setRemovingId(person.id)
     try {
       await api.removePerson(person.id)
       setPeople((prev) => prev.filter((p) => p.id !== person.id))
+      toast.success(`${person.full_name} removed from the team`)
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Failed to remove person.')
+      toast.error(err instanceof ApiError ? err.message : 'Failed to remove person.')
     } finally {
       setRemovingId(null)
     }
@@ -157,6 +167,16 @@ export default function PeoplePage() {
           sending={inviting}
           onClose={() => { setShowInvite(false); setInviteError('') }}
           onInvite={inviteUser}
+        />
+      )}
+
+      {confirmPerson && (
+        <ConfirmDialog
+          title="Remove person"
+          message={`Remove ${confirmPerson.full_name} from the team? This cannot be undone.`}
+          confirmLabel="Remove"
+          onConfirm={confirmRemovePerson}
+          onCancel={() => setConfirmPerson(null)}
         />
       )}
     </div>

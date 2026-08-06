@@ -7,6 +7,7 @@ import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+import { useToast } from '../context/ToastContext'
 
 const BACKLOG_PAGE_SIZE = 10
 
@@ -130,7 +131,7 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
                   key={story.id}
                   onClick={() => navigate(`/stories/${story.display_id}`)}
                   className="bg-white rounded-xl border border-gray-200 p-3.5 cursor-pointer hover:border-brand/30 hover:shadow-sm transition-all"
-                  style={{ borderLeftWidth: 3, borderLeftColor: STATUS_META[story.status as Status]?.color || '#6B7280' }}
+                  style={{ borderLeftWidth: 3, borderLeftColor: STATUS_META[story.status as Status]?.color || '#475569' }}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
@@ -159,6 +160,7 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
 /* ---- Backlog Tab: Sprint planning ---- */
 function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectKey: string }) {
   const { user } = useAuth()
+  const toast = useToast()
   // Sprint-assigned stories are fetched in full (sprints are naturally bounded);
   // the unassigned backlog is the one list that can grow large, so it's the
   // one that's actually paginated at the DB level.
@@ -211,7 +213,10 @@ function ProjectBacklog({ projectId, projectKey }: { projectId: string; projectK
   async function createSprint(name: string, goal: string, startDate: string, endDate: string) {
     try {
       await api.createSprint({ project_id: projectId, name, goal: goal || null, start_date: startDate || null, end_date: endDate || null })
-    } catch {}
+      toast.success('Sprint created')
+    } catch {
+      toast.error('Failed to create sprint.')
+    }
     setShowCreateSprint(false)
     refetchAll()
   }

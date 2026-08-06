@@ -7,6 +7,7 @@ import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import Avatar from '../components/ui/Avatar'
+import { useToast } from '../context/ToastContext'
 
 const PAGE_SIZE = 12
 
@@ -19,6 +20,7 @@ export default function ArchivedPage() {
   const [epicTotal, setEpicTotal] = useState(0)
   const [epicPage, setEpicPage] = useState(1)
   const [loading, setLoading] = useState(true)
+  const toast = useToast()
 
   useEffect(() => {
     if (tab === 'projects') fetchProjects()
@@ -48,15 +50,21 @@ export default function ArchivedPage() {
   async function unarchiveProject(id: string) {
     try {
       await api.unarchiveProject(id)
+      toast.success('Project restored')
       fetchProjects()
-    } catch {}
+    } catch {
+      toast.error('Failed to restore project.')
+    }
   }
 
   async function unarchiveEpic(id: string) {
     try {
       await api.unarchiveEpic(id)
+      toast.success('Epic restored')
       fetchEpics()
-    } catch {}
+    } catch {
+      toast.error('Failed to restore epic.')
+    }
   }
 
   return (

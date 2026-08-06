@@ -10,6 +10,7 @@ import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import Button from '../components/ui/Button'
+import { useToast } from '../context/ToastContext'
 
 const PAGE_SIZE = 12
 
@@ -21,6 +22,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToast()
   const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
@@ -41,8 +43,11 @@ export default function ProjectsPage() {
   async function archiveProject(id: string) {
     try {
       await api.archiveProject(id)
+      toast.success('Project archived')
       fetchProjects()
-    } catch {}
+    } catch {
+      toast.error('Failed to archive project.')
+    }
   }
 
   if (loading && projects.length === 0) {
@@ -131,7 +136,7 @@ export default function ProjectsPage() {
       {showCreate && (
         <CreateProjectModal
           onClose={() => setShowCreate(false)}
-          onCreated={() => { setShowCreate(false); fetchProjects() }}
+          onCreated={() => { setShowCreate(false); toast.success('Project created'); fetchProjects() }}
         />
       )}
     </div>

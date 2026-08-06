@@ -12,6 +12,8 @@ import type { Story, Issue, Comment, Attachment, User, IssueLink } from '../type
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import Modal from '../components/ui/Modal'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useToast } from '../context/ToastContext'
 import {
   SECTION_HEADER, DetailRow, InlineTitle, InlineDescription,
   StatusField, PriorityField, AssigneeField, CommentInput, FileUploadButton,
@@ -65,6 +67,7 @@ export default function StoryDetailPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToast()
 
   const isNew = storyId === 'new'
   const epicIdParam = searchParams.get('epicId')
@@ -81,6 +84,7 @@ export default function StoryDetailPage() {
 
   const [draft, setDraft] = useState<StoryDraft | null>(null)
   const [saving, setSaving] = useState(false)
+  const [confirmBack, setConfirmBack] = useState(false)
 
   const [showLinkModal, setShowLinkModal] = useState(false)
 
@@ -276,7 +280,7 @@ export default function StoryDetailPage() {
       await api.uploadAttachment(story!.id, 'story', file)
       fetchAttachments()
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Upload failed.')
+      toast.error(err instanceof ApiError ? err.message : 'Upload failed.')
     }
   }
 
@@ -286,15 +290,20 @@ export default function StoryDetailPage() {
   }
 
   async function addLink(targetId: string, linkType: LinkType) {
-    await api.createIssueLink({
-      source_id: storyId!,
-      source_type: 'story',
-      target_id: targetId,
-      target_type: 'story',
-      link_type: linkType,
-    })
-    setShowLinkModal(false)
-    fetchLinks()
+    try {
+      await api.createIssueLink({
+        source_id: storyId!,
+        source_type: 'story',
+        target_id: targetId,
+        target_type: 'story',
+        link_type: linkType,
+      })
+      setShowLinkModal(false)
+      toast.success('Issue linked')
+      fetchLinks()
+    } catch {
+      toast.error('Failed to link issue.')
+    }
   }
 
   async function removeLink(linkId: string) {
@@ -333,11 +342,18 @@ export default function StoryDetailPage() {
     setDraft({ ...current, ...patch })
   }
 
-  function handleBack() {
-    const dirty = isNew ? hasNewContent : isDirty
-    if (dirty && !window.confirm(isNew ? 'Discard this new story?' : 'You have unsaved changes. Leave without saving?')) return
+  function proceedBack() {
     if (isNew && epicIdParam) navigate(`/epics/${epicIdParam}`)
     else navigate(-1)
+  }
+
+  function handleBack() {
+    const dirty = isNew ? hasNewContent : isDirty
+    if (dirty) {
+      setConfirmBack(true)
+      return
+    }
+    proceedBack()
   }
 
   return (
@@ -674,6 +690,16 @@ export default function StoryDetailPage() {
           stories={allStories}
           onClose={() => setShowLinkModal(false)}
           onLink={addLink}
+        />
+      )}
+
+      {confirmBack && (
+        <ConfirmDialog
+          title={isNew ? 'Discard new story' : 'Unsaved changes'}
+          message={isNew ? 'Discard this new story?' : 'You have unsaved changes. Leave without saving?'}
+          confirmLabel={isNew ? 'Discard' : 'Leave'}
+          onConfirm={() => { setConfirmBack(false); proceedBack() }}
+          onCancel={() => setConfirmBack(false)}
         />
       )}
     </div>

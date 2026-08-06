@@ -1,16 +1,30 @@
+// lucide-react icon sizes currently range from 10-20px used interchangeably
+// with no rule for context. Not retrofitted across existing icons (~180
+// call sites, too high-risk to mass-edit blind) — reach for these on new
+// icons instead of picking another one-off number.
+export const ICON_SIZE = {
+  inline: 13,  // inline with 12-13px text: buttons, list-row actions
+  action: 15,  // section-header icons, standalone icon buttons
+  nav: 16,     // nav bar / toolbar icons
+} as const
+
 // 'Draft' was folded into 'Created' (same meaning, kept one canonical label).
 // Closed/Archived are terminal states reachable only from Done; Reopen sends
 // an item back to an active state (see the Reopen control on the detail pages).
 export const STATUS_OPTIONS = ['Created', 'In Progress', 'In Review', 'Done', 'Closed', 'Archived'] as const
 export type Status = typeof STATUS_OPTIONS[number]
 
+// color/bg are kept in sync with the hex the `tailwind` class actually
+// resolves to (its text-*/bg-* stop), so the left-border accent on story
+// cards (which reads .color directly, not through Tailwind) always matches
+// the status badge pill sitting right next to it.
 export const STATUS_META: Record<Status, { color: string; bg: string; tailwind: string }> = {
-  Created: { color: '#6B7280', bg: '#F0F1F3', tailwind: 'bg-slate-100 text-slate-600' },
-  'In Progress': { color: '#3B82F6', bg: '#EAF1FE', tailwind: 'bg-blue-50 text-blue-600' },
-  'In Review': { color: '#8B5CF6', bg: '#F2EEFD', tailwind: 'bg-violet-50 text-violet-600' },
-  Done: { color: '#1E9E6B', bg: '#E7F6EF', tailwind: 'bg-emerald-50 text-emerald-600' },
+  Created: { color: '#475569', bg: '#F1F5F9', tailwind: 'bg-slate-100 text-slate-600' },
+  'In Progress': { color: '#2563EB', bg: '#EFF6FF', tailwind: 'bg-blue-50 text-blue-600' },
+  'In Review': { color: '#7C3AED', bg: '#F5F3FF', tailwind: 'bg-violet-50 text-violet-600' },
+  Done: { color: '#059669', bg: '#ECFDF5', tailwind: 'bg-emerald-50 text-emerald-600' },
   Closed: { color: '#374151', bg: '#E5E7EB', tailwind: 'bg-gray-200 text-gray-700' },
-  Archived: { color: '#78716C', bg: '#F5F5F4', tailwind: 'bg-stone-100 text-stone-600' },
+  Archived: { color: '#57534E', bg: '#F5F5F4', tailwind: 'bg-stone-100 text-stone-600' },
 }
 
 // Statuses that Done/Closed/Archived items can be sent back to via "Reopen".

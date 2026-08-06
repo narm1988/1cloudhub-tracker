@@ -11,6 +11,7 @@ import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+import { useToast } from '../context/ToastContext'
 
 const PAGE_SIZE = 12
 
@@ -22,6 +23,7 @@ export default function EpicsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => {
     fetchProjects()
@@ -58,15 +60,21 @@ export default function EpicsPage() {
     try {
       await api.createEpic({ title, description, project_id: projectId })
       setShowCreateModal(false)
+      toast.success('Epic created')
       fetchEpics()
-    } catch {}
+    } catch {
+      toast.error('Failed to create epic.')
+    }
   }
 
   async function archiveEpic(id: string) {
     try {
       await api.archiveEpic(id)
+      toast.success('Epic archived')
       fetchEpics()
-    } catch {}
+    } catch {
+      toast.error('Failed to archive epic.')
+    }
   }
 
   if (loading && epics.length === 0) {

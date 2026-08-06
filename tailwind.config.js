@@ -53,10 +53,15 @@ export default {
         '3xl': ['1.875rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],  // 30px — PP --pp-font-size-3xl
         '4xl': ['2.25rem', { lineHeight: '1.25', letterSpacing: '-0.02em' }],   // 36px — PP --pp-font-size-4xl
 
-        // Semantic aliases kept for Sidebar compatibility
-        caption: ['0.75rem', { lineHeight: '1.4' }],        // 12px — sidebar captions
-        body: ['0.875rem', { lineHeight: '1.5' }],          // 14px — sidebar nav items
-        subhead: ['1.125rem', { lineHeight: '1.4' }],       // 18px — sidebar brand text
+        // Semantic aliases — corrected to the sizes the app actually converged
+        // on in practice (most UI text is hand-set with arbitrary text-[13px]
+        // etc. rather than these). Currently unused anywhere in src/, so free
+        // to reach for on new work instead of picking another one-off value.
+        caption: ['0.6875rem', { lineHeight: '1.4' }],      // 11px — badges, meta labels
+        body: ['0.8125rem', { lineHeight: '1.5' }],         // 13px — default UI text
+        subhead: ['0.9375rem', { lineHeight: '1.4' }],      // 15px — modal titles, brand text
+        heading: ['1.0625rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }], // 17px — page titles
+        title: ['1.375rem', { lineHeight: '1.25' }],        // 22px — auth screen headings
       },
       fontWeight: {
         normal: '400',

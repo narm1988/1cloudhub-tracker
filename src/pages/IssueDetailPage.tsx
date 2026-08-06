@@ -8,6 +8,8 @@ import type { Status, Priority, IssueType } from '../lib/constants'
 import type { Issue, Comment, Attachment, User } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useToast } from '../context/ToastContext'
 import {
   SECTION_HEADER, DetailRow, InlineTitle, InlineDescription,
   StatusField, PriorityField, AssigneeField, CommentInput, FileUploadButton,
@@ -67,6 +69,7 @@ export default function IssueDetailPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const toast = useToast()
 
   const isNew = issueId === 'new'
   const storyIdParam = searchParams.get('storyId')
@@ -81,6 +84,7 @@ export default function IssueDetailPage() {
 
   const [draft, setDraft] = useState<IssueDraft | null>(null)
   const [saving, setSaving] = useState(false)
+  const [confirmBack, setConfirmBack] = useState(false)
 
   useEffect(() => {
     if (!issueId) return
@@ -242,7 +246,7 @@ export default function IssueDetailPage() {
       await api.uploadAttachment(issueId!, 'issue', file)
       fetchAttachments()
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'Upload failed.')
+      toast.error(err instanceof ApiError ? err.message : 'Upload failed.')
     }
   }
 
@@ -283,11 +287,18 @@ export default function IssueDetailPage() {
     setDraft({ ...current, ...patch })
   }
 
-  function handleBack() {
-    const dirty = isNew ? hasNewContent : isDirty
-    if (dirty && !window.confirm(isNew ? 'Discard this new issue?' : 'You have unsaved changes. Leave without saving?')) return
+  function proceedBack() {
     if (isNew && storyIdParam) navigate(`/stories/${storyIdParam}`)
     else navigate(-1)
+  }
+
+  function handleBack() {
+    const dirty = isNew ? hasNewContent : isDirty
+    if (dirty) {
+      setConfirmBack(true)
+      return
+    }
+    proceedBack()
   }
 
   return (
@@ -530,6 +541,16 @@ export default function IssueDetailPage() {
         {!isNew && current.type === 'Bug' && <BugLifecycle status={current.status} />}
         </div>
       </div>
+
+      {confirmBack && (
+        <ConfirmDialog
+          title={isNew ? 'Discard new issue' : 'Unsaved changes'}
+          message={isNew ? 'Discard this new issue?' : 'You have unsaved changes. Leave without saving?'}
+          confirmLabel={isNew ? 'Discard' : 'Leave'}
+          onConfirm={() => { setConfirmBack(false); proceedBack() }}
+          onCancel={() => setConfirmBack(false)}
+        />
+      )}
     </div>
   )
 }

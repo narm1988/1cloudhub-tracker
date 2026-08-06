@@ -8,16 +8,20 @@ import type { Epic, Story } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useToast } from '../context/ToastContext'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 export default function EpicDetailPage() {
   const { epicId } = useParams<{ epicId: string }>()
   const navigate = useNavigate()
 
+  const toast = useToast()
   const [epic, setEpic] = useState<Epic | null>(null)
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
   const [movingToBacklog, setMovingToBacklog] = useState(false)
+  const [confirmBacklog, setConfirmBacklog] = useState(false)
 
   useEffect(() => {
     if (epicId) {
@@ -45,16 +49,20 @@ export default function EpicDetailPage() {
     }
   }
 
-  async function moveEpicToBacklog() {
+  function moveEpicToBacklog() {
     if (stories.length === 0) return
-    if (!window.confirm(
-      `Move "${epic?.title}" to backlog? This unschedules all ${stories.length} of its stories and their tasks/bugs/sub-tasks from any sprint.`
-    )) return
+    setConfirmBacklog(true)
+  }
 
+  async function confirmMoveEpicToBacklog() {
+    setConfirmBacklog(false)
     setMovingToBacklog(true)
     try {
       await api.moveEpicToBacklog(epicId!)
       await fetchStories()
+      toast.success('Moved to backlog')
+    } catch {
+      toast.error('Failed to move to backlog.')
     } finally {
       setMovingToBacklog(false)
     }
@@ -150,12 +158,21 @@ export default function EpicDetailPage() {
         })}
       </div>
 
+      {confirmBacklog && (
+        <ConfirmDialog
+          title="Move to backlog"
+          message={`Move "${epic?.title}" to backlog? This unschedules all ${stories.length} of its stories and their tasks/bugs/sub-tasks from any sprint.`}
+          confirmLabel="Move to backlog"
+          onConfirm={confirmMoveEpicToBacklog}
+          onCancel={() => setConfirmBacklog(false)}
+        />
+      )}
     </div>
   )
 }
 
 function StoryCard({ story, onClick }: { story: Story; onClick: () => void }) {
-  const statusColor = STATUS_META[story.status as Status]?.color || '#6B7280'
+  const statusColor = STATUS_META[story.status as Status]?.color || '#475569'
 
   return (
     <div
