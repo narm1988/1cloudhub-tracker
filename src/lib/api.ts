@@ -103,8 +103,8 @@ export const api = {
     return request<{ message: string }>(`/people/${userId}`, { method: 'DELETE' })
   },
 
-  listProjects(page: number, pageSize = 12) {
-    return request<{ data: Project[]; total: number }>(`/projects/${qs({ page, page_size: pageSize })}`)
+  listProjects(page: number, pageSize = 12, archived = false) {
+    return request<{ data: Project[]; total: number }>(`/projects/${qs({ page, page_size: pageSize, archived: archived ? 'true' : undefined })}`)
   },
 
   getProject(id: string) {
@@ -116,6 +116,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ name, key, description: description || null }),
     })
+  },
+
+  archiveProject(id: string) {
+    return request<{ message: string }>(`/projects/${id}/archive`, { method: 'POST' })
+  },
+
+  unarchiveProject(id: string) {
+    return request<{ message: string }>(`/projects/${id}/unarchive`, { method: 'POST' })
   },
 
   // ---- People ----

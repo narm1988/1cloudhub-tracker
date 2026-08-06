@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, FolderKanban, ChevronRight } from 'lucide-react'
+import { Plus, FolderKanban, ChevronRight, Archive } from 'lucide-react'
 import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import type { Project } from '../types'
@@ -33,10 +33,15 @@ export default function ProjectsPage() {
       const { data, total } = await api.listProjects(page, PAGE_SIZE)
       setProjects(data)
       setTotal(total)
-    } catch {
-      // Leave whatever was already loaded in place rather than blanking the page.
-    }
+    } catch {}
     setLoading(false)
+  }
+
+  async function archiveProject(id: string) {
+    try {
+      await api.archiveProject(id)
+      fetchProjects()
+    } catch {}
   }
 
   if (loading && projects.length === 0) {
@@ -86,6 +91,7 @@ export default function ProjectsPage() {
                 <th className="text-left text-[10px] font-bold tracking-wide uppercase text-gray-400 bg-gray-50 px-3 py-2 border-b border-gray-200">Description</th>
                 <th className="text-left text-[10px] font-bold tracking-wide uppercase text-gray-400 bg-gray-50 px-3 py-2 border-b border-gray-200">Created</th>
                 <th className="bg-gray-50 border-b border-gray-200 w-8"></th>
+                <th className="bg-gray-50 border-b border-gray-200 w-8"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -102,6 +108,15 @@ export default function ProjectsPage() {
                   <td className="px-3 py-2 text-[12px] text-gray-400 max-w-xs truncate">{project.description || '—'}</td>
                   <td className="px-3 py-2 font-mono tabular-nums text-[12px] text-gray-400">
                     {new Date(project.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-3 py-2 text-gray-300 group-hover:text-gray-400 transition-colors">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); archiveProject(project.id) }}
+                      title="Archive"
+                      className="text-gray-300 hover:text-gray-500 transition-colors"
+                    >
+                      <Archive size={13} />
+                    </button>
                   </td>
                   <td className="px-3 py-2 text-gray-300 group-hover:text-gray-400 transition-colors">
                     <ChevronRight size={14} />
