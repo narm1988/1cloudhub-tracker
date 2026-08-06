@@ -89,14 +89,35 @@ async def create_issue(body: IssueCreate, current_user: dict = Depends(get_curre
 
 @router.patch("/{issue_id}")
 async def update_issue(issue_id: str, body: IssueUpdate, current_user: dict = Depends(get_current_user)):
-    """Update an issue."""
+    """Update an issue. Creates a notification if assignee changes."""
     supabase = get_supabase_admin()
     updates = body.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
 
+    # Check if assignee is changing
+    new_assignee = updates.get("assignee_id")
+    old_issue = None
+    if new_assignee is not None:
+        old_issue = supabase.table("issues").select("assignee_id, display_id, title").eq("id", issue_id).single().execute()
+
     result = supabase.table("issues").update(updates).eq("id", issue_id).execute()
-    return result.data[0] if result.data else {}
+    updated = result.data[0] if result.data else {}
+
+    # Create notification if assignee changed to someone else
+    if new_assignee and old_issue and old_issue.data:
+        old_assignee = old_issue.data.get("assignee_id")
+        if new_assignee != old_assignee and new_assignee != current_user["id"]:
+            display_id = old_issue.data.get("display_id") or ""
+            title = old_issue.data.get("title") or ""
+            supabase.table("notifications").insert({
+                "user_id": new_assignee,
+                "message": f"You were assigned to {display_id}: {title}",
+                "link": f"/issues/{issue_id}",
+                "read": False,
+            }).execute()
+
+    return updated
 
 
 @router.delete("/{issue_id}")

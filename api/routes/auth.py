@@ -138,12 +138,17 @@ async def invite_user(body: InviteRequest, current_user: dict = Depends(get_curr
     }).execute()
 
     invite_link = f"{FRONTEND_URL}/accept-invite?token={invite_token}"
+    email_sent = False
     try:
         send_invite_email(body.email, invite_link)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Invite created but email failed to send: {e}")
+        email_sent = True
+    except Exception:
+        pass  # Email delivery is best-effort — invite record still exists
 
-    return {"message": f"Invite sent to {body.email}"}
+    if email_sent:
+        return {"message": f"Invite sent to {body.email}"}
+    else:
+        return {"message": f"Invite created for {body.email} (email delivery unavailable — share the link manually)", "invite_link": invite_link}
 
 
 @router.post("/accept-invite")
