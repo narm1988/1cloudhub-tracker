@@ -5,7 +5,10 @@ Deployed as a Vercel serverless function.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import auth, epics, stories, people, comments, attachments, projects
+from api.routes import (
+    auth, epics, stories, issues, people, comments, attachments, projects,
+    sprints, labels, issue_links, notifications, search, activity_log, notify,
+)
 
 app = FastAPI(
     title="1CloudHub Tracker API",
@@ -28,9 +31,17 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
 app.include_router(epics.router, prefix="/api/epics", tags=["Epics"])
 app.include_router(stories.router, prefix="/api/stories", tags=["Stories"])
+app.include_router(issues.router, prefix="/api/issues", tags=["Issues"])
 app.include_router(people.router, prefix="/api/people", tags=["People"])
 app.include_router(comments.router, prefix="/api/comments", tags=["Comments"])
 app.include_router(attachments.router, prefix="/api/attachments", tags=["Attachments"])
+app.include_router(sprints.router, prefix="/api/sprints", tags=["Sprints"])
+app.include_router(labels.router, prefix="/api/labels", tags=["Labels"])
+app.include_router(issue_links.router, prefix="/api/issue-links", tags=["Issue Links"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(search.router, prefix="/api/search", tags=["Search"])
+app.include_router(activity_log.router, prefix="/api/activity-log", tags=["Activity Log"])
+app.include_router(notify.router, prefix="/api/notify", tags=["Notify"])
 
 
 @app.get("/api/health")
@@ -67,47 +78,6 @@ def debug_supabase():
     except Exception as e:
         info["db_connection"] = "FAILED"
         info["db_error"] = str(e)
-
-    return info
-
-
-@app.get("/api/debug/jwt")
-def debug_jwt():
-    """Verifies JWT key pair is correctly configured by minting and verifying a test token."""
-    from api.config import JWT_PRIVATE_KEY, JWT_PUBLIC_KEY, JWT_KID, JWT_ISSUER, JWT_AUDIENCE
-    from api.lib.jwt import create_access_token, verify_access_token
-
-    info = {
-        "JWT_PRIVATE_KEY_length": len(JWT_PRIVATE_KEY),
-        "JWT_PRIVATE_KEY_starts": JWT_PRIVATE_KEY[:30] + "..." if JWT_PRIVATE_KEY else "(empty)",
-        "JWT_PUBLIC_KEY_length": len(JWT_PUBLIC_KEY),
-        "JWT_PUBLIC_KEY_starts": JWT_PUBLIC_KEY[:30] + "..." if JWT_PUBLIC_KEY else "(empty)",
-        "JWT_KID": JWT_KID or "(empty)",
-        "JWT_ISSUER": JWT_ISSUER,
-        "JWT_AUDIENCE": JWT_AUDIENCE,
-    }
-
-    if not JWT_PRIVATE_KEY or not JWT_PUBLIC_KEY:
-        info["test"] = "SKIPPED — keys not set"
-        return info
-
-    try:
-        token = create_access_token("test-user-id", "test@example.com", "member")
-        info["token_created"] = True
-        info["token_preview"] = token[:50] + "..."
-    except Exception as e:
-        info["token_created"] = False
-        info["create_error"] = str(e)
-        return info
-
-    try:
-        claims = verify_access_token(token)
-        info["token_verified"] = True
-        info["claims_sub"] = claims.get("sub")
-        info["claims_email"] = claims.get("email")
-    except Exception as e:
-        info["token_verified"] = False
-        info["verify_error"] = str(e)
 
     return info
 

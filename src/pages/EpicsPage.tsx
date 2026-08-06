@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Flag, ChevronRight } from 'lucide-react'
-import { supabase } from '../lib/supabase'
-import { useAuth } from '../context/AuthContext'
+import { api } from '../lib/api'
 import type { Epic, Project } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
@@ -23,7 +22,6 @@ export default function EpicsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   useEffect(() => {
     fetchProjects()
@@ -36,39 +34,34 @@ export default function EpicsPage() {
 
   async function fetchEpics() {
     setLoading(true)
-    const from = (page - 1) * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-
-    const { data, error, count } = await supabase
-      .from('epics')
-      .select('*, owner:profiles!epics_owner_id_fkey(id, full_name, email), project:projects(id, name, key)', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to)
-
-    if (!error && data) {
+    try {
+      const { data, total } = await api.listEpics(page, PAGE_SIZE)
       setEpics(data)
-      setTotal(count || 0)
+      setTotal(total)
+    } catch {
+      // Leave whatever was already loaded in place rather than blanking the page.
     }
     setLoading(false)
   }
 
   async function fetchProjects() {
-    const { data } = await supabase.from('projects').select('*').order('name')
-    if (data) setProjects(data)
+    try {
+      const { data } = await api.listProjects(1, 100)
+      setProjects(data)
+    } catch {
+      // Project picker just stays empty; the "create a project first" disabled
+      // state already covers the empty case.
+    }
   }
 
   async function createEpic(title: string, description: string, projectId: string) {
-    const { error } = await supabase.from('epics').insert({
-      title,
-      description,
-      owner_id: user?.id,
-      project_id: projectId,
-      status: 'Created',
-    })
-
-    if (!error) {
+    try {
+      await api.createEpic({ title, description, project_id: projectId })
       setShowCreateModal(false)
       fetchEpics()
+    } catch {
+      // Matches prior behavior: the modal stays open with no error banner
+      // on failure (CreateEpicModal never had one, unlike CreateProjectModal).
     }
   }
 
@@ -91,13 +84,13 @@ export default function EpicsPage() {
       {/* Header */}
       <div className="flex items-baseline justify-between mb-5">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900">Epics</h1>
-          <p className="text-[13px] text-gray-500 mt-1">
+          <h1 className="text-[17px] font-semibold tracking-[-0.01em] text-gray-900">Epics</h1>
+          <p className="text-[12px] text-gray-500 mt-1">
             <span className="font-mono tabular-nums">{total}</span> epics in your workspace
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} disabled={projects.length === 0} title={projects.length === 0 ? 'Create a project first' : undefined}>
-          <Plus size={14} /> New epic
+        <Button size="sm" onClick={() => setShowCreateModal(true)} disabled={projects.length === 0} title={projects.length === 0 ? 'Create a project first' : undefined}>
+          <Plus size={13} /> New epic
         </Button>
       </div>
 
@@ -213,6 +206,7 @@ function CreateEpicModal({
           />
         </div>
         <Button
+          size="sm"
           onClick={() => onCreate(title, description, projectId)}
           className="w-full"
           disabled={!title.trim() || !projectId}

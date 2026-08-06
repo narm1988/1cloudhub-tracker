@@ -19,23 +19,30 @@ class EpicUpdate(BaseModel):
     owner_id: Optional[str] = None
 
 
+_SELECT = "*, owner:profiles!epics_owner_id_fkey(id, full_name, email), project:projects(id, name, key)"
+
+
 @router.get("/")
-async def list_epics(current_user: dict = Depends(get_current_user)):
-    """List all epics the user has access to."""
+async def list_epics(page: int = 1, page_size: int = 12, current_user: dict = Depends(get_current_user)):
+    """List epics, paginated."""
     supabase = get_supabase_admin()
-    result = supabase.table("epics").select(
-        "*, owner:profiles!epics_owner_id_fkey(id, full_name, email)"
-    ).order("created_at", desc=True).execute()
-    return result.data or []
+    from_ = (page - 1) * page_size
+    to = from_ + page_size - 1
+    result = (
+        supabase.table("epics")
+        .select(_SELECT, count="exact")
+        .order("created_at", desc=True)
+        .range(from_, to)
+        .execute()
+    )
+    return {"data": result.data or [], "total": result.count or 0}
 
 
 @router.get("/{epic_id}")
 async def get_epic(epic_id: str, current_user: dict = Depends(get_current_user)):
     """Get a single epic by ID."""
     supabase = get_supabase_admin()
-    result = supabase.table("epics").select(
-        "*, owner:profiles!epics_owner_id_fkey(id, full_name, email)"
-    ).eq("id", epic_id).single().execute()
+    result = supabase.table("epics").select(_SELECT).eq("id", epic_id).single().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Epic not found")
     return result.data
@@ -59,7 +66,7 @@ async def create_epic(body: EpicCreate, current_user: dict = Depends(get_current
 async def update_epic(epic_id: str, body: EpicUpdate, current_user: dict = Depends(get_current_user)):
     """Update an epic."""
     supabase = get_supabase_admin()
-    updates = body.model_dump(exclude_none=True)
+    updates = body.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
 
@@ -78,3 +85,20 @@ async def delete_epic(epic_id: str, current_user: dict = Depends(get_current_use
 
     supabase.table("epics").delete().eq("id", epic_id).execute()
     return {"message": "Epic deleted"}
+
+
+@router.post("/{epic_id}/move-to-backlog")
+async def move_epic_to_backlog(epic_id: str, current_user: dict = Depends(get_current_user)):
+    """Unschedules every story under this epic, and every issue under those
+    stories, from whatever sprint they're in. Bulk server-side operation —
+    the frontend used to do this as two separate Supabase bulk updates."""
+    supabase = get_supabase_admin()
+
+    stories = supabase.table("stories").select("id").eq("epic_id", epic_id).execute()
+    story_ids = [s["id"] for s in (stories.data or [])]
+
+    supabase.table("stories").update({"sprint_id": None}).eq("epic_id", epic_id).execute()
+    if story_ids:
+        supabase.table("issues").update({"sprint_id": None}).in_("story_id", story_ids).execute()
+
+    return {"message": "Moved to backlog", "story_count": len(story_ids)}

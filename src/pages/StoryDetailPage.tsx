@@ -4,7 +4,7 @@ import {
   ArrowLeft, Plus, Link2, Paperclip, MessageSquare,
   X, Trash2, ChevronDown
 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { STATUS_META, PRIORITY_META, ISSUE_TYPE_META, LINK_TYPES } from '../lib/constants'
 import type { Status, Priority, IssueType, LinkType } from '../lib/constants'
@@ -19,6 +19,7 @@ import {
 import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
 import Card from '../components/ui/Card'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import { notifyAssignment } from '../lib/notifyAssignment'
 
 interface StoryDraft {
@@ -115,70 +116,72 @@ export default function StoryDetailPage() {
   }
 
   async function fetchStory() {
-    const { data } = await supabase
-      .from('stories')
-      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)')
-      .eq('id', storyId)
-      .single()
-    if (data) {
+    try {
+      const data = await api.getStory(storyId!)
       setStory(data)
       if (data.epic_id) fetchEpic(data.epic_id)
+    } catch {
+      // Falls through to the "Story not found" state below.
     }
   }
 
   async function fetchEpic(epicId: string) {
-    const { data } = await supabase.from('epics').select('id, title, project_id').eq('id', epicId).single()
-    if (data) setEpic(data)
+    try {
+      const data = await api.getEpic(epicId)
+      setEpic(data)
+    } catch {
+      // Parent-epic link just won't show; not fatal to the page.
+    }
   }
 
   async function fetchIssues() {
-    const { data } = await supabase
-      .from('issues')
-      .select('*, assignee:profiles!issues_assignee_id_fkey(id, full_name, email), reporter:profiles!issues_reporter_id_fkey(id, full_name, email)')
-      .eq('story_id', storyId)
-      .order('created_at', { ascending: false })
-    if (data) setIssues(data)
+    try {
+      setIssues(await api.listIssues(storyId))
+    } catch {
+      // Leave whatever was already loaded in place.
+    }
   }
 
   async function fetchComments() {
-    const { data } = await supabase
-      .from('comments')
-      .select('*, author:profiles!comments_author_id_fkey(id, full_name, email, avatar_url)')
-      .eq('parent_id', storyId)
-      .eq('parent_type', 'story')
-      .order('created_at')
-    if (data) setComments(data)
+    try {
+      setComments(await api.listComments(storyId!, 'story'))
+    } catch {
+      // Leave whatever was already loaded in place.
+    }
   }
 
   async function fetchAttachments() {
-    const { data } = await supabase
-      .from('attachments')
-      .select('*')
-      .eq('parent_id', storyId)
-      .eq('parent_type', 'story')
-      .order('created_at', { ascending: false })
-    if (data) setAttachments(data)
+    try {
+      setAttachments(await api.listAttachments(storyId!, 'story'))
+    } catch {
+      // Leave whatever was already loaded in place.
+    }
   }
 
   async function fetchLinks() {
-    const { data } = await supabase
-      .from('issue_links')
-      .select('*')
-      .or(`source_id.eq.${storyId},target_id.eq.${storyId}`)
-    if (data) setLinks(data)
+    try {
+      setLinks(await api.listIssueLinks(storyId!))
+    } catch {
+      // Leave whatever was already loaded in place.
+    }
   }
 
   async function fetchMembers() {
-    const { data } = await supabase.from('profiles').select('*')
-    if (data) setMembers(data)
+    try {
+      const { data } = await api.listPeople(1, 100)
+      setMembers(data)
+    } catch {
+      // Assignee picker just stays empty.
+    }
   }
 
   async function fetchAllStories() {
-    const { data } = await supabase
-      .from('stories')
-      .select('id, title, display_id')
-      .neq('id', storyId)
-    if (data) setAllStories(data)
+    try {
+      const data = await api.listStories()
+      setAllStories(data.filter((s) => s.id !== storyId))
+    } catch {
+      // "Link issue" picker just stays empty.
+    }
   }
 
   async function saveChanges() {
@@ -186,26 +189,19 @@ export default function StoryDetailPage() {
     setSaving(true)
 
     if (isNew) {
-      const { count } = await supabase.from('stories').select('id', { count: 'exact', head: true })
-      const displayId = `1CH-${100 + (count || 0) + 1}`
+      try {
+        const data = await api.createStory({
+          epic_id: epicIdParam,
+          title: current.title,
+          description: current.description || null,
+          status: current.status,
+          priority: current.priority,
+          assignee_id: current.assignee_id,
+          story_points: current.story_points,
+          start_date: current.start_date,
+          due_date: current.due_date,
+        })
 
-      const { data, error } = await supabase.from('stories').insert({
-        epic_id: epicIdParam,
-        project_id: epic?.project_id ?? null,
-        title: current.title,
-        description: current.description || null,
-        status: current.status,
-        priority: current.priority,
-        assignee_id: current.assignee_id,
-        story_points: current.story_points,
-        start_date: current.start_date,
-        due_date: current.due_date,
-        reporter_id: user?.id,
-        display_id: displayId,
-      }).select().single()
-
-      setSaving(false)
-      if (!error && data) {
         if (data.assignee_id) {
           notifyAssignment({
             assigneeId: data.assignee_id,
@@ -219,38 +215,43 @@ export default function StoryDetailPage() {
           })
         }
         navigate(`/stories/${data.id}`, { replace: true })
+      } finally {
+        setSaving(false)
       }
       return
     }
 
     const assigneeChanged = normalize(current.assignee_id) !== normalize(story?.assignee_id)
 
-    await supabase.from('stories').update({
-      title: current.title,
-      description: current.description || null,
-      status: current.status,
-      priority: current.priority,
-      assignee_id: current.assignee_id,
-      story_points: current.story_points,
-      start_date: current.start_date,
-      due_date: current.due_date,
-    }).eq('id', storyId)
-
-    if (assigneeChanged && current.assignee_id) {
-      notifyAssignment({
-        assigneeId: current.assignee_id,
-        itemType: 'Story',
-        displayId: story!.display_id,
+    try {
+      await api.updateStory(storyId!, {
         title: current.title,
-        breadcrumb: epic?.title,
+        description: current.description || null,
+        status: current.status,
         priority: current.priority,
-        dueDate: current.due_date,
-        itemPath: `/stories/${storyId}`,
+        assignee_id: current.assignee_id,
+        story_points: current.story_points,
+        start_date: current.start_date,
+        due_date: current.due_date,
       })
-    }
 
-    await fetchStory()
-    setSaving(false)
+      if (assigneeChanged && current.assignee_id) {
+        notifyAssignment({
+          assigneeId: current.assignee_id,
+          itemType: 'Story',
+          displayId: story!.display_id,
+          title: current.title,
+          breadcrumb: epic?.title,
+          priority: current.priority,
+          dueDate: current.due_date,
+          itemPath: `/stories/${storyId}`,
+        })
+      }
+
+      await fetchStory()
+    } finally {
+      setSaving(false)
+    }
   }
 
   function cancelChanges() {
@@ -267,63 +268,32 @@ export default function StoryDetailPage() {
   }
 
   async function addComment(content: string) {
-    await supabase.from('comments').insert({
-      parent_id: storyId,
-      parent_type: 'story',
-      author_id: user?.id,
-      content,
-    })
+    await api.createComment(storyId!, 'story', content)
     fetchComments()
   }
 
   async function deleteComment(commentId: string) {
-    await supabase.from('comments').delete().eq('id', commentId)
+    await api.deleteComment(commentId)
     fetchComments()
   }
 
   async function uploadFile(file: File) {
-    const fileExt = file.name.split('.').pop()
-    const filePath = `attachments/${storyId}/${Date.now()}.${fileExt}`
-
-    const { error: uploadError } = await supabase.storage
-      .from('tracker-files')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
-
-    if (uploadError) {
-      alert(`Upload failed: ${uploadError.message}. Make sure the "tracker-files" bucket exists in Supabase Storage and is set to public.`)
-      return
+    try {
+      await api.uploadAttachment(storyId!, 'story', file)
+      fetchAttachments()
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Upload failed.')
     }
-
-    const { data: urlData } = supabase.storage
-      .from('tracker-files')
-      .getPublicUrl(filePath)
-
-    await supabase.from('attachments').insert({
-      parent_id: storyId,
-      parent_type: 'story',
-      file_name: file.name,
-      file_url: urlData.publicUrl,
-      file_size: file.size,
-      uploaded_by: user?.id,
-    })
-    fetchAttachments()
   }
 
   async function deleteAttachment(att: Attachment) {
-    const path = att.file_url.split('/tracker-files/').pop()
-    if (path) {
-      await supabase.storage.from('tracker-files').remove([path])
-    }
-    await supabase.from('attachments').delete().eq('id', att.id)
+    await api.deleteAttachment(att.id)
     fetchAttachments()
   }
 
   async function addLink(targetId: string, linkType: LinkType) {
-    await supabase.from('issue_links').insert({
-      source_id: storyId,
+    await api.createIssueLink({
+      source_id: storyId!,
       source_type: 'story',
       target_id: targetId,
       target_type: 'story',
@@ -334,12 +304,17 @@ export default function StoryDetailPage() {
   }
 
   async function removeLink(linkId: string) {
-    await supabase.from('issue_links').delete().eq('id', linkId)
+    await api.deleteIssueLink(linkId)
     fetchLinks()
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>
+    return (
+      <div className="max-w-[1600px]">
+        <div className="h-4 w-16 rounded bg-gray-100 animate-pulse mb-4" />
+        <LoadingSkeleton variant="rows" count={5} />
+      </div>
+    )
   }
 
   if (!isNew && !story) {

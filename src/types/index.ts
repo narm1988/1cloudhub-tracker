@@ -106,6 +106,38 @@ export interface Attachment {
   created_at: string
 }
 
+export interface Sprint {
+  id: string
+  project_id: string
+  name: string
+  goal?: string
+  status: 'planned' | 'active' | 'completed'
+  start_date?: string
+  end_date?: string
+  created_at: string
+}
+
+export interface Label {
+  id: string
+  project_id?: string
+  name: string
+  color: string
+  created_at: string
+}
+
+export interface ActivityLogEntry {
+  id: string
+  parent_id: string
+  parent_type: 'story' | 'issue' | 'epic'
+  user_id?: string
+  user?: Pick<User, 'id' | 'full_name' | 'avatar_url'>
+  action: string
+  field_name?: string
+  old_value?: string
+  new_value?: string
+  created_at: string
+}
+
 export interface Notification {
   id: string
   user_id: string

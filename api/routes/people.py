@@ -13,11 +13,19 @@ class ProfileUpdate(BaseModel):
 
 
 @router.get("/")
-async def list_people(current_user: dict = Depends(get_current_user)):
-    """List all team members."""
+async def list_people(page: int = 1, page_size: int = 20, current_user: dict = Depends(get_current_user)):
+    """List team members, paginated."""
     supabase = get_supabase_admin()
-    result = supabase.table("profiles").select("*").order("full_name").execute()
-    return result.data or []
+    from_ = (page - 1) * page_size
+    to = from_ + page_size - 1
+    result = (
+        supabase.table("profiles")
+        .select("*", count="exact")
+        .order("full_name")
+        .range(from_, to)
+        .execute()
+    )
+    return {"data": result.data or [], "total": result.count or 0}
 
 
 @router.get("/{user_id}")
@@ -41,7 +49,7 @@ async def update_person(user_id: str, body: ProfileUpdate, current_user: dict = 
         if not profile.data or profile.data.get("role") != "admin":
             raise HTTPException(status_code=403, detail="Not authorized")
 
-    updates = body.model_dump(exclude_none=True)
+    updates = body.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
 

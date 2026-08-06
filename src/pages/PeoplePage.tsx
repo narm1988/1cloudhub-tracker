@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Plus, Shield, Trash2 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
 import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import type { User } from '../types'
@@ -33,17 +32,12 @@ export default function PeoplePage() {
 
   async function fetchPeople() {
     setLoading(true)
-    const from = (page - 1) * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-
-    const { data, count } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact' })
-      .order('full_name')
-      .range(from, to)
-    if (data) {
+    try {
+      const { data, total } = await api.listPeople(page, PAGE_SIZE)
       setPeople(data)
-      setTotal(count || 0)
+      setTotal(total)
+    } catch {
+      // Leave whatever was already loaded in place rather than blanking the page.
     }
     setLoading(false)
   }
@@ -98,7 +92,7 @@ export default function PeoplePage() {
   return (
     <div>
       <div className="mb-5">
-        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900">People</h1>
+        <h1 className="text-[17px] font-semibold tracking-[-0.01em] text-gray-900">People</h1>
         <p className="text-[13px] text-gray-500 mt-1">
           Admins can invite teammates and tag them to projects.
         </p>
@@ -152,8 +146,8 @@ export default function PeoplePage() {
       <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPageChange={setPage} />
 
       {user?.role === 'admin' && (
-        <Button onClick={() => setShowInvite(true)} className="mt-4">
-          <Plus size={14} /> Invite person
+        <Button size="sm" onClick={() => setShowInvite(true)} className="mt-4">
+          <Plus size={13} /> Invite person
         </Button>
       )}
 
@@ -214,6 +208,7 @@ function InviteModal({
         </div>
 
         <Button
+          size="sm"
           onClick={() => onInvite(email, role)}
           className="w-full"
           disabled={!email.trim() || sending}

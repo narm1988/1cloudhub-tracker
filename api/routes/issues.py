@@ -6,12 +6,14 @@ from api.lib.display_id import create_with_display_id
 
 router = APIRouter()
 
+_TYPE_PREFIX = {"Bug": "BUG", "Sub-task": "SUB", "Task": "TSK"}
 
-class StoryCreate(BaseModel):
-    epic_id: str
+
+class IssueCreate(BaseModel):
+    story_id: str
     title: str
     description: Optional[str] = None
-    type: str = "Story"
+    type: str = "Task"
     status: str = "Created"
     priority: str = "Medium"
     assignee_id: Optional[str] = None
@@ -20,7 +22,7 @@ class StoryCreate(BaseModel):
     due_date: Optional[str] = None
 
 
-class StoryUpdate(BaseModel):
+class IssueUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
@@ -33,39 +35,42 @@ class StoryUpdate(BaseModel):
     sprint_id: Optional[str] = None
 
 
+_SELECT = (
+    "*, assignee:profiles!issues_assignee_id_fkey(id, full_name, email), "
+    "reporter:profiles!issues_reporter_id_fkey(id, full_name, email)"
+)
+
+
 @router.get("/")
-async def list_stories(epic_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
-    """List stories, optionally filtered by epic."""
+async def list_issues(story_id: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    """List issues, optionally filtered by story."""
     supabase = get_supabase_admin()
-    query = supabase.table("stories").select(
-        "*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)"
-    )
-    if epic_id:
-        query = query.eq("epic_id", epic_id)
+    query = supabase.table("issues").select(_SELECT)
+    if story_id:
+        query = query.eq("story_id", story_id)
     result = query.order("created_at", desc=True).execute()
     return result.data or []
 
 
-@router.get("/{story_id}")
-async def get_story(story_id: str, current_user: dict = Depends(get_current_user)):
-    """Get a single story."""
+@router.get("/{issue_id}")
+async def get_issue(issue_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a single issue."""
     supabase = get_supabase_admin()
-    result = supabase.table("stories").select(
-        "*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)"
-    ).eq("id", story_id).single().execute()
+    result = supabase.table("issues").select(_SELECT).eq("id", issue_id).single().execute()
     if not result.data:
-        raise HTTPException(status_code=404, detail="Story not found")
+        raise HTTPException(status_code=404, detail="Issue not found")
     return result.data
 
 
 @router.post("/")
-async def create_story(body: StoryCreate, current_user: dict = Depends(get_current_user)):
-    """Create a new story/task."""
+async def create_issue(body: IssueCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new issue (Task/Bug/Sub-task)."""
     supabase = get_supabase_admin()
+    prefix = _TYPE_PREFIX.get(body.type, "TSK")
 
     def build_row(display_id: str) -> dict:
         return {
-            "epic_id": body.epic_id,
+            "story_id": body.story_id,
             "title": body.title,
             "description": body.description,
             "type": body.type,
@@ -79,34 +84,34 @@ async def create_story(body: StoryCreate, current_user: dict = Depends(get_curre
             "due_date": body.due_date,
         }
 
-    return create_with_display_id(supabase, "stories", "1CH", build_row)
+    return create_with_display_id(supabase, "issues", prefix, build_row)
 
 
-@router.patch("/{story_id}")
-async def update_story(story_id: str, body: StoryUpdate, current_user: dict = Depends(get_current_user)):
-    """Update a story."""
+@router.patch("/{issue_id}")
+async def update_issue(issue_id: str, body: IssueUpdate, current_user: dict = Depends(get_current_user)):
+    """Update an issue."""
     supabase = get_supabase_admin()
     updates = body.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    result = supabase.table("stories").update(updates).eq("id", story_id).execute()
+    result = supabase.table("issues").update(updates).eq("id", issue_id).execute()
     return result.data[0] if result.data else {}
 
 
-@router.delete("/{story_id}")
-async def delete_story(story_id: str, current_user: dict = Depends(get_current_user)):
-    """Delete a story (reporter or admin only)."""
+@router.delete("/{issue_id}")
+async def delete_issue(issue_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete an issue (reporter or admin only)."""
     supabase = get_supabase_admin()
 
-    story = supabase.table("stories").select("reporter_id").eq("id", story_id).single().execute()
-    if not story.data:
-        raise HTTPException(status_code=404, detail="Story not found")
+    issue = supabase.table("issues").select("reporter_id").eq("id", issue_id).single().execute()
+    if not issue.data:
+        raise HTTPException(status_code=404, detail="Issue not found")
 
-    if story.data.get("reporter_id") != current_user["id"]:
+    if issue.data.get("reporter_id") != current_user["id"]:
         profile = supabase.table("profiles").select("role").eq("id", current_user["id"]).single().execute()
         if not profile.data or profile.data.get("role") != "admin":
             raise HTTPException(status_code=403, detail="Not authorized")
 
-    supabase.table("stories").delete().eq("id", story_id).execute()
-    return {"message": "Story deleted"}
+    supabase.table("issues").delete().eq("id", issue_id).execute()
+    return {"message": "Issue deleted"}

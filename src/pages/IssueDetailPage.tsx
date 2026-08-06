@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Paperclip, MessageSquare, Trash2, ChevronDown } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { ISSUE_TYPES, ISSUE_TYPE_META } from '../lib/constants'
 import type { Status, Priority, IssueType } from '../lib/constants'
@@ -15,6 +15,7 @@ import {
 import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
 import Card from '../components/ui/Card'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 import { notifyAssignment } from '../lib/notifyAssignment'
 
 interface IssueDraft {
@@ -103,45 +104,47 @@ export default function IssueDetailPage() {
   }
 
   async function fetchIssue() {
-    const { data } = await supabase
-      .from('issues')
-      .select('*, assignee:profiles!issues_assignee_id_fkey(id, full_name, email), reporter:profiles!issues_reporter_id_fkey(id, full_name, email)')
-      .eq('id', issueId)
-      .single()
-    if (data) {
+    try {
+      const data = await api.getIssue(issueId!)
       setIssue(data)
       if (data.story_id) fetchParentStory(data.story_id)
+    } catch {
+      // Falls through to the "Issue not found" state below.
     }
   }
 
   async function fetchParentStory(storyId: string) {
-    const { data } = await supabase.from('stories').select('id, title, display_id').eq('id', storyId).single()
-    if (data) setParentStory(data)
+    try {
+      const data = await api.getStory(storyId)
+      setParentStory(data)
+    } catch {
+      // Parent-story link just won't show; not fatal to the page.
+    }
   }
 
   async function fetchComments() {
-    const { data } = await supabase
-      .from('comments')
-      .select('*, author:profiles!comments_author_id_fkey(id, full_name, email, avatar_url)')
-      .eq('parent_id', issueId)
-      .eq('parent_type', 'issue')
-      .order('created_at')
-    if (data) setComments(data)
+    try {
+      setComments(await api.listComments(issueId!, 'issue'))
+    } catch {
+      // Leave whatever was already loaded in place.
+    }
   }
 
   async function fetchAttachments() {
-    const { data } = await supabase
-      .from('attachments')
-      .select('*')
-      .eq('parent_id', issueId)
-      .eq('parent_type', 'issue')
-      .order('created_at', { ascending: false })
-    if (data) setAttachments(data)
+    try {
+      setAttachments(await api.listAttachments(issueId!, 'issue'))
+    } catch {
+      // Leave whatever was already loaded in place.
+    }
   }
 
   async function fetchMembers() {
-    const { data } = await supabase.from('profiles').select('*')
-    if (data) setMembers(data)
+    try {
+      const { data } = await api.listPeople(1, 100)
+      setMembers(data)
+    } catch {
+      // Assignee picker just stays empty.
+    }
   }
 
   async function saveChanges() {
@@ -149,27 +152,20 @@ export default function IssueDetailPage() {
     setSaving(true)
 
     if (isNew) {
-      const { count } = await supabase.from('issues').select('id', { count: 'exact', head: true })
-      const prefix = current.type === 'Bug' ? 'BUG' : current.type === 'Sub-task' ? 'SUB' : 'TSK'
-      const displayId = `${prefix}-${100 + (count || 0) + 1}`
+      try {
+        const data = await api.createIssue({
+          story_id: storyIdParam,
+          title: current.title,
+          description: current.description || null,
+          type: current.type,
+          status: current.status,
+          priority: current.priority,
+          assignee_id: current.assignee_id,
+          story_points: current.story_points,
+          start_date: current.start_date,
+          due_date: current.due_date,
+        })
 
-      const { data, error } = await supabase.from('issues').insert({
-        story_id: storyIdParam,
-        title: current.title,
-        description: current.description || null,
-        type: current.type,
-        status: current.status,
-        priority: current.priority,
-        assignee_id: current.assignee_id,
-        story_points: current.story_points,
-        start_date: current.start_date,
-        due_date: current.due_date,
-        reporter_id: user?.id,
-        display_id: displayId,
-      }).select().single()
-
-      setSaving(false)
-      if (!error && data) {
         if (data.assignee_id) {
           notifyAssignment({
             assigneeId: data.assignee_id,
@@ -183,39 +179,44 @@ export default function IssueDetailPage() {
           })
         }
         navigate(`/issues/${data.id}`, { replace: true })
+      } finally {
+        setSaving(false)
       }
       return
     }
 
     const assigneeChanged = normalize(current.assignee_id) !== normalize(issue?.assignee_id)
 
-    await supabase.from('issues').update({
-      title: current.title,
-      description: current.description || null,
-      type: current.type,
-      status: current.status,
-      priority: current.priority,
-      assignee_id: current.assignee_id,
-      story_points: current.story_points,
-      start_date: current.start_date,
-      due_date: current.due_date,
-    }).eq('id', issueId)
-
-    if (assigneeChanged && current.assignee_id) {
-      notifyAssignment({
-        assigneeId: current.assignee_id,
-        itemType: current.type,
-        displayId: issue!.display_id,
+    try {
+      await api.updateIssue(issueId!, {
         title: current.title,
-        breadcrumb: parentStory ? `${parentStory.display_id} · ${parentStory.title}` : undefined,
+        description: current.description || null,
+        type: current.type,
+        status: current.status,
         priority: current.priority,
-        dueDate: current.due_date,
-        itemPath: `/issues/${issueId}`,
+        assignee_id: current.assignee_id,
+        story_points: current.story_points,
+        start_date: current.start_date,
+        due_date: current.due_date,
       })
-    }
 
-    await fetchIssue()
-    setSaving(false)
+      if (assigneeChanged && current.assignee_id) {
+        notifyAssignment({
+          assigneeId: current.assignee_id,
+          itemType: current.type,
+          displayId: issue!.display_id,
+          title: current.title,
+          breadcrumb: parentStory ? `${parentStory.display_id} · ${parentStory.title}` : undefined,
+          priority: current.priority,
+          dueDate: current.due_date,
+          itemPath: `/issues/${issueId}`,
+        })
+      }
+
+      await fetchIssue()
+    } finally {
+      setSaving(false)
+    }
   }
 
   function cancelChanges() {
@@ -228,57 +229,36 @@ export default function IssueDetailPage() {
   }
 
   async function addComment(content: string) {
-    await supabase.from('comments').insert({
-      parent_id: issueId,
-      parent_type: 'issue',
-      author_id: user?.id,
-      content,
-    })
+    await api.createComment(issueId!, 'issue', content)
     fetchComments()
   }
 
   async function deleteComment(commentId: string) {
-    await supabase.from('comments').delete().eq('id', commentId)
+    await api.deleteComment(commentId)
     fetchComments()
   }
 
   async function uploadFile(file: File) {
-    const fileExt = file.name.split('.').pop()
-    const filePath = `attachments/${issueId}/${Date.now()}.${fileExt}`
-
-    const { error: uploadError } = await supabase.storage
-      .from('tracker-files')
-      .upload(filePath, file, { cacheControl: '3600', upsert: false })
-
-    if (uploadError) {
-      alert(`Upload failed: ${uploadError.message}. Make sure the "tracker-files" bucket exists in Supabase Storage and is set to public.`)
-      return
+    try {
+      await api.uploadAttachment(issueId!, 'issue', file)
+      fetchAttachments()
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Upload failed.')
     }
-
-    const { data: urlData } = supabase.storage.from('tracker-files').getPublicUrl(filePath)
-
-    await supabase.from('attachments').insert({
-      parent_id: issueId,
-      parent_type: 'issue',
-      file_name: file.name,
-      file_url: urlData.publicUrl,
-      file_size: file.size,
-      uploaded_by: user?.id,
-    })
-    fetchAttachments()
   }
 
   async function deleteAttachment(att: Attachment) {
-    const path = att.file_url.split('/tracker-files/').pop()
-    if (path) {
-      await supabase.storage.from('tracker-files').remove([path])
-    }
-    await supabase.from('attachments').delete().eq('id', att.id)
+    await api.deleteAttachment(att.id)
     fetchAttachments()
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>
+    return (
+      <div className="max-w-[1600px]">
+        <div className="h-4 w-16 rounded bg-gray-100 animate-pulse mb-4" />
+        <LoadingSkeleton variant="rows" count={5} />
+      </div>
+    )
   }
 
   if (!isNew && !issue) {
@@ -394,7 +374,8 @@ export default function IssueDetailPage() {
                           </div>
                           <button
                             onClick={() => deleteAttachment(att)}
-                            className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100"
+                            aria-label={`Delete ${att.file_name}`}
+                            className="text-gray-300 hover:text-danger transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:ring-1 focus-visible:ring-brand/30 rounded"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -420,7 +401,11 @@ export default function IssueDetailPage() {
                           <span className="text-[13px] font-semibold text-gray-900">{comment.author?.full_name}</span>
                           <span className="text-[12px] text-gray-400">{new Date(comment.created_at).toLocaleString()}</span>
                           {comment.author_id === user?.id && (
-                            <button onClick={() => deleteComment(comment.id)} className="text-gray-300 hover:text-danger ml-auto">
+                            <button
+                              onClick={() => deleteComment(comment.id)}
+                              aria-label="Delete comment"
+                              className="text-gray-300 hover:text-danger ml-auto focus-visible:ring-1 focus-visible:ring-brand/30 rounded"
+                            >
                               <Trash2 size={12} />
                             </button>
                           )}

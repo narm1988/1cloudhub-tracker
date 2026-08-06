@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, BookOpen, ArrowDownToLine } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { STATUS_OPTIONS, STATUS_META, PRIORITY_META } from '../lib/constants'
 import type { Status, Priority } from '../lib/constants'
 import type { Epic, Story } from '../types'
 import Button from '../components/ui/Button'
 import Avatar from '../components/ui/Avatar'
 import StatusBadge from '../components/ui/StatusBadge'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
 export default function EpicDetailPage() {
   const { epicId } = useParams<{ epicId: string }>()
@@ -26,22 +27,22 @@ export default function EpicDetailPage() {
   }, [epicId])
 
   async function fetchEpic() {
-    const { data } = await supabase
-      .from('epics')
-      .select('*, owner:profiles!epics_owner_id_fkey(id, full_name, email)')
-      .eq('id', epicId)
-      .single()
-    if (data) setEpic(data)
+    try {
+      const data = await api.getEpic(epicId!)
+      setEpic(data)
+    } catch {
+      // Falls through to the "Epic not found" state below.
+    }
     setLoading(false)
   }
 
   async function fetchStories() {
-    const { data } = await supabase
-      .from('stories')
-      .select('*, assignee:profiles!stories_assignee_id_fkey(id, full_name, email), reporter:profiles!stories_reporter_id_fkey(id, full_name, email)')
-      .eq('epic_id', epicId)
-      .order('created_at', { ascending: false })
-    if (data) setStories(data)
+    try {
+      const data = await api.listStories(epicId)
+      setStories(data)
+    } catch {
+      // Leave whatever was already loaded in place.
+    }
   }
 
   async function moveEpicToBacklog() {
@@ -51,17 +52,22 @@ export default function EpicDetailPage() {
     )) return
 
     setMovingToBacklog(true)
-    const storyIds = stories.map((s) => s.id)
-
-    await supabase.from('stories').update({ sprint_id: null }).eq('epic_id', epicId)
-    await supabase.from('issues').update({ sprint_id: null }).in('story_id', storyIds)
-
-    setMovingToBacklog(false)
-    await fetchStories()
+    try {
+      await api.moveEpicToBacklog(epicId!)
+      await fetchStories()
+    } finally {
+      setMovingToBacklog(false)
+    }
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>
+    return (
+      <div>
+        <div className="h-4 w-20 rounded bg-gray-100 animate-pulse mb-4" />
+        <div className="h-[17px] w-56 rounded bg-gray-200 animate-pulse mb-6" />
+        <LoadingSkeleton variant="rows" count={4} />
+      </div>
+    )
   }
 
   if (!epic) {
@@ -84,7 +90,7 @@ export default function EpicDetailPage() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <span className="font-mono text-[12px] text-gray-400">{epic.id.slice(0, 8)}</span>
-          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900 mt-0.5">{epic.title}</h1>
+          <h1 className="text-[17px] font-semibold tracking-[-0.01em] text-gray-900 mt-0.5">{epic.title}</h1>
           {epic.description && (
             <p className="text-[13px] text-gray-500 mt-1.5 max-w-xl">{epic.description}</p>
           )}
@@ -96,15 +102,16 @@ export default function EpicDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
+            size="sm"
             variant="secondary"
             onClick={moveEpicToBacklog}
             disabled={movingToBacklog || stories.length === 0}
             title="Unschedule this epic's stories and their issues from any sprint"
           >
-            <ArrowDownToLine size={14} /> {movingToBacklog ? 'Moving...' : 'Move to backlog'}
+            <ArrowDownToLine size={13} /> {movingToBacklog ? 'Moving...' : 'Move to backlog'}
           </Button>
-          <Button onClick={() => navigate(`/stories/new?epicId=${epicId}`)}>
-            <Plus size={14} /> New story
+          <Button size="sm" onClick={() => navigate(`/stories/new?epicId=${epicId}`)}>
+            <Plus size={13} /> New story
           </Button>
         </div>
       </div>

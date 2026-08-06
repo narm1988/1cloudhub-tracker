@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, Filter } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 import { STATUS_OPTIONS, PRIORITY_OPTIONS, PRIORITY_META, ISSUE_TYPE_META } from '../lib/constants'
 import type { Status, Priority } from '../lib/constants'
 import type { User } from '../types'
@@ -68,57 +68,29 @@ export default function SearchPage() {
 
     // Fetch members for filter dropdown (once)
     if (members.length === 0) {
-      const { data } = await supabase.from('profiles').select('*')
-      if (data) setMembers(data)
+      try {
+        const { data } = await api.listPeople(1, 100)
+        setMembers(data)
+      } catch {
+        // Filter dropdown just stays empty.
+      }
     }
 
-    let storyQuery = supabase
-      .from('stories')
-      .select('id, display_id, title, status, priority, due_date, assignee:profiles!stories_assignee_id_fkey(full_name)')
-      .order('updated_at', { ascending: false })
-      .limit(100)
-
-    let issueQuery = supabase
-      .from('issues')
-      .select('id, type, display_id, title, status, priority, due_date, assignee:profiles!issues_assignee_id_fkey(full_name)')
-      .order('updated_at', { ascending: false })
-      .limit(100)
-
-    if (query.trim()) {
-      storyQuery = storyQuery.or(`title.ilike.%${query}%,display_id.ilike.%${query}%,description.ilike.%${query}%`)
-      issueQuery = issueQuery.or(`title.ilike.%${query}%,display_id.ilike.%${query}%,description.ilike.%${query}%`)
+    try {
+      const { data, total: resultTotal } = await api.search({
+        q: query.trim() || undefined,
+        status: statusFilter || undefined,
+        priority: priorityFilter || undefined,
+        assignee_id: assigneeFilter || undefined,
+        page: p,
+        page_size: PAGE_SIZE,
+      })
+      setResults(data as unknown as SearchResult[])
+      setTotal(resultTotal)
+    } catch {
+      setResults([])
+      setTotal(0)
     }
-    if (statusFilter) {
-      storyQuery = storyQuery.eq('status', statusFilter)
-      issueQuery = issueQuery.eq('status', statusFilter)
-    }
-    if (priorityFilter) {
-      storyQuery = storyQuery.eq('priority', priorityFilter)
-      issueQuery = issueQuery.eq('priority', priorityFilter)
-    }
-    if (assigneeFilter) {
-      storyQuery = storyQuery.eq('assignee_id', assigneeFilter)
-      issueQuery = issueQuery.eq('assignee_id', assigneeFilter)
-    }
-
-    const [{ data: stories }, { data: issues }] = await Promise.all([storyQuery, issueQuery])
-
-    // Stories/issues come from two separate queries, so pagination happens
-    // client-side over the merged set rather than at the DB level.
-    const combined: SearchResult[] = [
-      ...(stories || []).map((s: any) => ({
-        id: s.id, kind: 'story' as const, type: 'Story', display_id: s.display_id, title: s.title,
-        status: s.status, priority: s.priority, due_date: s.due_date, assignee: s.assignee,
-      })),
-      ...(issues || []).map((i: any) => ({
-        id: i.id, kind: 'issue' as const, type: i.type, display_id: i.display_id, title: i.title,
-        status: i.status, priority: i.priority, due_date: i.due_date, assignee: i.assignee,
-      })),
-    ]
-
-    setTotal(combined.length)
-    const from = (p - 1) * PAGE_SIZE
-    setResults(combined.slice(from, from + PAGE_SIZE))
     setLoading(false)
   }
 
@@ -129,7 +101,7 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900 mb-5">Search & Filter</h1>
+      <h1 className="text-[17px] font-semibold tracking-[-0.01em] text-gray-900 mb-5">Search & Filter</h1>
 
       {/* Search bar */}
       <div className="flex gap-3 mb-4">
@@ -152,7 +124,7 @@ export default function SearchPage() {
         >
           <Filter size={14} /> Filters
         </button>
-        <Button onClick={() => { setPage(1); handleSearch(1) }}>Search</Button>
+        <Button size="sm" onClick={() => { setPage(1); handleSearch(1) }}>Search</Button>
       </div>
 
       {/* Filters */}
