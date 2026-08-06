@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Tags } from 'lucide-react'
 import { api } from '../../lib/api'
+import Button from '../ui/Button'
 
 const LABEL_COLORS = ['#5B5FEF', '#1E9E6B', '#C6820F', '#E5484D', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6']
 
@@ -142,13 +143,9 @@ export default function LabelsField({
                 ))}
               </div>
             </div>
-            <button
-              onClick={createAndAttachLabel}
-              disabled={!newLabelName.trim()}
-              className="w-full mt-1.5 text-xs font-semibold px-3 py-1.5 bg-brand text-white rounded-lg disabled:opacity-50"
-            >
+            <Button size="sm" className="w-full mt-1.5" onClick={createAndAttachLabel} disabled={!newLabelName.trim()}>
               Create
-            </button>
+            </Button>
           </div>
         </div>
       )}

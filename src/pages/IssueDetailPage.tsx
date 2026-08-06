@@ -14,6 +14,7 @@ import {
 } from '../components/detail/DetailFields'
 import AuditLogSection from '../components/detail/AuditLogSection'
 import LabelsField from '../components/detail/LabelsField'
+import BugLifecycle from '../components/detail/BugLifecycle'
 import Card from '../components/ui/Card'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
 
@@ -98,7 +99,9 @@ export default function IssueDetailPage() {
   }, [issueId])
 
   async function fetchAll() {
-    await Promise.all([fetchIssue(), fetchComments(), fetchAttachments(), fetchMembers()])
+    const issueData = await fetchIssue()
+    const uuid = issueData?.id || issueId!
+    await Promise.all([fetchComments(uuid), fetchAttachments(uuid), fetchMembers()])
     setLoading(false)
   }
 
@@ -107,8 +110,9 @@ export default function IssueDetailPage() {
       const data = await api.getIssue(issueId!)
       setIssue(data)
       if (data.story_id) fetchParentStory(data.story_id)
+      return data
     } catch {
-      // Falls through to the "Issue not found" state below.
+      return null
     }
   }
 
@@ -121,20 +125,16 @@ export default function IssueDetailPage() {
     }
   }
 
-  async function fetchComments() {
+  async function fetchComments(uuid?: string) {
     try {
-      setComments(await api.listComments(issueId!, 'issue'))
-    } catch {
-      // Leave whatever was already loaded in place.
-    }
+      setComments(await api.listComments(uuid || issue?.id || issueId!, 'issue'))
+    } catch {}
   }
 
-  async function fetchAttachments() {
+  async function fetchAttachments(uuid?: string) {
     try {
-      setAttachments(await api.listAttachments(issueId!, 'issue'))
-    } catch {
-      // Leave whatever was already loaded in place.
-    }
+      setAttachments(await api.listAttachments(uuid || issue?.id || issueId!, 'issue'))
+    } catch {}
   }
 
   async function fetchMembers() {
@@ -187,7 +187,7 @@ export default function IssueDetailPage() {
     const assigneeChanged = normalize(current.assignee_id) !== normalize(issue?.assignee_id)
 
     try {
-      await api.updateIssue(issueId!, {
+      await api.updateIssue(issue!.id, {
         title: current.title,
         description: current.description || null,
         type: current.type,
@@ -228,7 +228,7 @@ export default function IssueDetailPage() {
   }
 
   async function addComment(content: string) {
-    await api.createComment(issueId!, 'issue', content)
+    await api.createComment(issue!.id, 'issue', content)
     fetchComments()
   }
 
@@ -437,13 +437,14 @@ export default function IssueDetailPage() {
               </Card>
 
               {/* Audit Log */}
-              <AuditLogSection parentId={issueId!} parentType="issue" />
+              <AuditLogSection parentId={issue!.id} parentType="issue" />
             </>
           )}
         </div>
 
         {/* ---- Sidebar ---- */}
-        <Card className="lg:sticky lg:top-4">
+        <div className="flex flex-col gap-5 lg:sticky lg:top-4">
+        <Card>
           <h3 className={`${SECTION_HEADER} mb-1`}>Details</h3>
 
           <div className="divide-y divide-gray-100">
@@ -458,7 +459,7 @@ export default function IssueDetailPage() {
 
             {!isNew && (
               <div className="py-2.5">
-                <LabelsField parentId={issueId!} kind="issue" />
+                <LabelsField parentId={issue!.id} kind="issue" />
               </div>
             )}
 
@@ -525,6 +526,9 @@ export default function IssueDetailPage() {
             </div>
           )}
         </Card>
+
+        {!isNew && current.type === 'Bug' && <BugLifecycle status={current.status} />}
+        </div>
       </div>
     </div>
   )

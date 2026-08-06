@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, Cloud } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import Button from '../components/ui/Button'
 
 const STARS = [
   { top: '12%', left: '8%', size: 3, delay: 0 },
@@ -205,13 +206,9 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-5 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-9 rounded-md bg-brand text-white text-[13px] font-medium hover:bg-brand-deep transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center gap-3 my-4 animate-fade-in-up" style={{ animationDelay: '0.22s' }}>
@@ -220,10 +217,12 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="lg"
             onClick={handleMicrosoftSignIn}
-            className="w-full h-9 rounded-md border border-gray-200 bg-white text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors inline-flex items-center justify-center gap-2 animate-fade-in-up"
+            className="w-full animate-fade-in-up"
             style={{ animationDelay: '0.24s' }}
           >
             <svg width="14" height="14" viewBox="0 0 21 21">
@@ -233,7 +232,7 @@ export default function LoginPage() {
               <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
             </svg>
             Sign in with Microsoft
-          </button>
+          </Button>
 
           <p className="text-[12px] text-gray-400 text-center mt-5 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             No account? Ask your workspace admin to send you an invite.

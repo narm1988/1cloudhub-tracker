@@ -474,7 +474,7 @@ function CreateSprintModal({
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-        <Button onClick={() => onCreate(name, goal, startDate, endDate)} className="w-full" disabled={!name.trim()}>
+        <Button size="sm" onClick={() => onCreate(name, goal, startDate, endDate)} className="w-full" disabled={!name.trim()}>
           Create sprint
         </Button>
       </div>

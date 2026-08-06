@@ -9,6 +9,7 @@ import Input from '../components/ui/Input'
 import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+import Button from '../components/ui/Button'
 
 const PAGE_SIZE = 12
 
@@ -66,12 +67,9 @@ export default function ProjectsPage() {
           <p className="text-[12px] text-gray-500 mt-1"><span className="font-mono tabular-nums">{total}</span> projects in your workspace</p>
         </div>
         {isAdmin && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="h-[30px] px-3 rounded-md bg-brand text-white text-[12px] font-semibold flex items-center gap-1.5 hover:bg-brand-deep transition-colors"
-          >
+          <Button size="sm" onClick={() => setShowCreate(true)}>
             <Plus size={13} /> New project
-          </button>
+          </Button>
         )}
       </div>
 
@@ -219,13 +217,9 @@ function CreateProjectModal({
           />
         </div>
 
-        <button
-          onClick={handleCreate}
-          disabled={!name.trim() || !key.trim() || creating}
-          className="w-full h-[30px] rounded-md bg-brand text-white text-[12px] font-semibold flex items-center justify-center gap-1.5 hover:bg-brand-deep transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Button size="sm" className="w-full" onClick={handleCreate} disabled={!name.trim() || !key.trim() || creating}>
           {creating ? 'Creating...' : 'Create project'}
-        </button>
+        </Button>
       </div>
     </Modal>
   )

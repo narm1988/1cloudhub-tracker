@@ -70,7 +70,7 @@ export default function ArchivedPage() {
       <div className="flex gap-1 mb-4 border-b border-gray-200">
         <button
           onClick={() => setTab('projects')}
-          className={`px-3 py-2 text-[13px] font-medium border-b-2 transition-colors ${
+          className={`px-3 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
             tab === 'projects' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -78,7 +78,7 @@ export default function ArchivedPage() {
         </button>
         <button
           onClick={() => setTab('epics')}
-          className={`px-3 py-2 text-[13px] font-medium border-b-2 transition-colors ${
+          className={`px-3 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
             tab === 'epics' ? 'border-brand text-brand' : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >

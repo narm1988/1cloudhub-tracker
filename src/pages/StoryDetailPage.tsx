@@ -102,12 +102,14 @@ export default function StoryDetailPage() {
   }, [storyId])
 
   async function fetchAll() {
+    // First fetch the story to get its UUID (storyId might be a display_id)
+    const storyData = await fetchStory()
+    const uuid = storyData?.id || storyId!
     await Promise.all([
-      fetchStory(),
-      fetchIssues(),
-      fetchComments(),
-      fetchAttachments(),
-      fetchLinks(),
+      fetchIssues(uuid),
+      fetchComments(uuid),
+      fetchAttachments(uuid),
+      fetchLinks(uuid),
       fetchMembers(),
       fetchAllStories(),
     ])
@@ -119,8 +121,9 @@ export default function StoryDetailPage() {
       const data = await api.getStory(storyId!)
       setStory(data)
       if (data.epic_id) fetchEpic(data.epic_id)
+      return data
     } catch {
-      // Falls through to the "Story not found" state below.
+      return null
     }
   }
 
@@ -133,36 +136,28 @@ export default function StoryDetailPage() {
     }
   }
 
-  async function fetchIssues() {
+  async function fetchIssues(uuid?: string) {
     try {
-      setIssues(await api.listIssues(storyId))
-    } catch {
-      // Leave whatever was already loaded in place.
-    }
+      setIssues(await api.listIssues(uuid || storyId))
+    } catch {}
   }
 
-  async function fetchComments() {
+  async function fetchComments(uuid?: string) {
     try {
-      setComments(await api.listComments(storyId!, 'story'))
-    } catch {
-      // Leave whatever was already loaded in place.
-    }
+      setComments(await api.listComments(uuid || storyId!, 'story'))
+    } catch {}
   }
 
-  async function fetchAttachments() {
+  async function fetchAttachments(uuid?: string) {
     try {
-      setAttachments(await api.listAttachments(storyId!, 'story'))
-    } catch {
-      // Leave whatever was already loaded in place.
-    }
+      setAttachments(await api.listAttachments(uuid || storyId!, 'story'))
+    } catch {}
   }
 
-  async function fetchLinks() {
+  async function fetchLinks(uuid?: string) {
     try {
-      setLinks(await api.listIssueLinks(storyId!))
-    } catch {
-      // Leave whatever was already loaded in place.
-    }
+      setLinks(await api.listIssueLinks(uuid || storyId!))
+    } catch {}
   }
 
   async function fetchMembers() {
@@ -223,7 +218,7 @@ export default function StoryDetailPage() {
     const assigneeChanged = normalize(current.assignee_id) !== normalize(story?.assignee_id)
 
     try {
-      await api.updateStory(storyId!, {
+      await api.updateStory(story!.id, {
         title: current.title,
         description: current.description || null,
         status: current.status,
@@ -267,7 +262,7 @@ export default function StoryDetailPage() {
   }
 
   async function addComment(content: string) {
-    await api.createComment(storyId!, 'story', content)
+    await api.createComment(story!.id, 'story', content)
     fetchComments()
   }
 
@@ -278,7 +273,7 @@ export default function StoryDetailPage() {
 
   async function uploadFile(file: File) {
     try {
-      await api.uploadAttachment(storyId!, 'story', file)
+      await api.uploadAttachment(story!.id, 'story', file)
       fetchAttachments()
     } catch (err) {
       alert(err instanceof ApiError ? err.message : 'Upload failed.')
@@ -580,7 +575,7 @@ export default function StoryDetailPage() {
               </Card>
 
               {/* Audit Log */}
-              <AuditLogSection parentId={storyId!} parentType="story" />
+              <AuditLogSection parentId={story!.id} parentType="story" />
             </>
           )}
         </div>
@@ -601,7 +596,7 @@ export default function StoryDetailPage() {
 
             {!isNew && (
               <div className="py-2.5">
-                <LabelsField parentId={storyId!} kind="story" />
+                <LabelsField parentId={story!.id} kind="story" />
               </div>
             )}
 
@@ -757,7 +752,7 @@ function LinkIssueModal({
           </select>
         </div>
 
-        <Button onClick={() => onLink(targetId, linkType)} className="w-full" disabled={!targetId}>
+        <Button size="sm" onClick={() => onLink(targetId, linkType)} className="w-full" disabled={!targetId}>
           Link issue
         </Button>
       </div>
