@@ -115,7 +115,29 @@ async def create_story(body: StoryCreate, current_user: dict = Depends(get_curre
             "due_date": body.due_date,
         }
 
-    return create_with_display_id(supabase, "stories", "1CH", build_row)
+    result = create_with_display_id(supabase, "stories", "1CH", build_row)
+
+    # Notify assignee on creation
+    if body.assignee_id and body.assignee_id != current_user["id"]:
+        display_id = result.get("display_id", "")
+        supabase.table("notifications").insert({
+            "user_id": body.assignee_id,
+            "message": f"You were assigned to {display_id}: {body.title}",
+            "link": f"/stories/{result.get('id', '')}",
+            "read": False,
+        }).execute()
+
+    # Activity log with user attribution
+    if result.get("id"):
+        supabase.table("activity_log").insert({
+            "parent_id": result["id"],
+            "parent_type": "story",
+            "user_id": current_user["id"],
+            "action": "created",
+            "new_value": body.title,
+        }).execute()
+
+    return result
 
 
 @router.patch("/{story_id}")
@@ -128,9 +150,7 @@ async def update_story(story_id: str, body: StoryUpdate, current_user: dict = De
 
     # Check if assignee is changing — need old value for notification
     new_assignee = updates.get("assignee_id")
-    old_story = None
-    if new_assignee is not None:
-        old_story = supabase.table("stories").select("assignee_id, display_id, title").eq("id", story_id).single().execute()
+    old_story = supabase.table("stories").select("*").eq("id", story_id).single().execute()
 
     result = supabase.table("stories").update(updates).eq("id", story_id).execute()
     updated = result.data[0] if result.data else {}
@@ -147,6 +167,23 @@ async def update_story(story_id: str, body: StoryUpdate, current_user: dict = De
                 "link": f"/stories/{story_id}",
                 "read": False,
             }).execute()
+
+    # Write activity log entries with proper user attribution
+    if old_story and old_story.data:
+        for field, new_val in updates.items():
+            if field == "sprint_id":
+                continue  # Sprint moves are too noisy
+            old_val = old_story.data.get(field)
+            if str(new_val) != str(old_val):
+                supabase.table("activity_log").insert({
+                    "parent_id": story_id,
+                    "parent_type": "story",
+                    "user_id": current_user["id"],
+                    "action": "updated",
+                    "field_name": field,
+                    "old_value": str(old_val) if old_val else None,
+                    "new_value": str(new_val) if new_val else None,
+                }).execute()
 
     return updated
 

@@ -64,7 +64,7 @@ async def get_issue(issue_id: str, current_user: dict = Depends(get_current_user
 
 @router.post("/")
 async def create_issue(body: IssueCreate, current_user: dict = Depends(get_current_user)):
-    """Create a new issue (Task/Bug/Sub-task)."""
+    """Create a new issue (Task/Bug/Sub-task). Notifies assignee if set."""
     supabase = get_supabase_admin()
     prefix = _TYPE_PREFIX.get(body.type, "TSK")
 
@@ -84,7 +84,29 @@ async def create_issue(body: IssueCreate, current_user: dict = Depends(get_curre
             "due_date": body.due_date,
         }
 
-    return create_with_display_id(supabase, "issues", prefix, build_row)
+    result = create_with_display_id(supabase, "issues", prefix, build_row)
+
+    # Create notification for assignee (if assigned to someone else)
+    if body.assignee_id and body.assignee_id != current_user["id"]:
+        display_id = result.get("display_id", "")
+        supabase.table("notifications").insert({
+            "user_id": body.assignee_id,
+            "message": f"You were assigned to {display_id}: {body.title}",
+            "link": f"/issues/{result.get('id', '')}",
+            "read": False,
+        }).execute()
+
+    # Write activity log entry with proper user attribution
+    if result.get("id"):
+        supabase.table("activity_log").insert({
+            "parent_id": result["id"],
+            "parent_type": "issue",
+            "user_id": current_user["id"],
+            "action": "created",
+            "new_value": body.title,
+        }).execute()
+
+    return result
 
 
 @router.patch("/{issue_id}")
@@ -116,6 +138,21 @@ async def update_issue(issue_id: str, body: IssueUpdate, current_user: dict = De
                 "link": f"/issues/{issue_id}",
                 "read": False,
             }).execute()
+
+    # Write activity log entries with proper user attribution
+    if old_issue and old_issue.data:
+        for field, new_val in updates.items():
+            old_val = old_issue.data.get(field)
+            if str(new_val) != str(old_val):
+                supabase.table("activity_log").insert({
+                    "parent_id": issue_id,
+                    "parent_type": "issue",
+                    "user_id": current_user["id"],
+                    "action": "updated",
+                    "field_name": field,
+                    "old_value": str(old_val) if old_val else None,
+                    "new_value": str(new_val) if new_val else None,
+                }).execute()
 
     return updated
 

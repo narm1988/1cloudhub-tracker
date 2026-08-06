@@ -293,12 +293,27 @@ export default function IssueDetailPage() {
   return (
     <div className="max-w-[1600px]">
       {/* Back */}
-      <button
-        onClick={handleBack}
-        className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700 mb-4"
-      >
-        <ArrowLeft size={14} /> Back
-      </button>
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-1.5 text-gray-500 text-[13px] hover:text-gray-700"
+        >
+          <ArrowLeft size={14} /> Back
+        </button>
+        {showBar && (
+          <div className="flex items-center gap-2 animate-fade-in-up">
+            <span className="text-[12px] text-gray-500 mr-2">
+              {isNew ? 'Not yet saved' : 'Unsaved changes'}
+            </span>
+            <Button variant="secondary" size="sm" onClick={cancelChanges} disabled={saving}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={saveChanges} disabled={saving}>
+              {saving ? 'Saving...' : 'Save changes'}
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
         {/* ---- Main column ---- */}
@@ -511,23 +526,6 @@ export default function IssueDetailPage() {
           )}
         </Card>
       </div>
-
-      {/* Save / Cancel bar */}
-      {showBar && (
-        <div className="sticky bottom-0 z-30 -mx-6 -mb-6 mt-4 bg-white border-t border-gray-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-6 py-3.5 flex items-center justify-between animate-fade-in-up">
-          <span className="text-[13px] text-gray-600">
-            {isNew ? 'This item has not been created yet.' : 'You have unsaved changes.'}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={cancelChanges} disabled={saving}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={saveChanges} disabled={saving || !current.title.trim()}>
-              {saving ? 'Saving...' : isNew ? `Create ${current.type.toLowerCase()}` : 'Save changes'}
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
