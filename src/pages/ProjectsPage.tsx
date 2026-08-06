@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, FolderKanban, ChevronRight } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { api, ApiError } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import type { Project } from '../types'
-import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
-import Card from '../components/ui/Card'
 import Pagination from '../components/ui/Pagination'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingSkeleton from '../components/ui/LoadingSkeleton'
@@ -31,17 +29,12 @@ export default function ProjectsPage() {
 
   async function fetchProjects() {
     setLoading(true)
-    const from = (page - 1) * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-
-    const { data, count } = await supabase
-      .from('projects')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(from, to)
-    if (data) {
+    try {
+      const { data, total } = await api.listProjects(page, PAGE_SIZE)
       setProjects(data)
-      setTotal(count || 0)
+      setTotal(total)
+    } catch {
+      // Leave whatever was already loaded in place rather than blanking the page.
     }
     setLoading(false)
   }
@@ -49,28 +42,31 @@ export default function ProjectsPage() {
   if (loading && projects.length === 0) {
     return (
       <div>
-        <div className="flex items-baseline justify-between mb-5">
+        <div className="flex items-baseline justify-between mb-4">
           <div>
-            <div className="h-6 w-28 rounded bg-gray-200 animate-pulse" />
-            <div className="h-4 w-40 rounded bg-gray-100 animate-pulse mt-2.5" />
+            <div className="h-[17px] w-24 rounded bg-gray-200 animate-pulse" />
+            <div className="h-3.5 w-40 rounded bg-gray-100 animate-pulse mt-2" />
           </div>
         </div>
-        <LoadingSkeleton variant="cards" count={3} />
+        <LoadingSkeleton variant="rows" count={3} />
       </div>
     )
   }
 
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-5 animate-fade-in-up">
+      <div className="flex items-baseline justify-between mb-4 animate-fade-in-up">
         <div>
-          <h3 className="text-[22px] font-semibold tracking-[-0.02em] text-gray-900">Projects</h3>
-          <p className="text-[13px] text-gray-500 mt-1"><span className="font-mono tabular-nums">{total}</span> projects in your workspace</p>
+          <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-gray-900">Projects</h3>
+          <p className="text-[12px] text-gray-500 mt-1"><span className="font-mono tabular-nums">{total}</span> projects in your workspace</p>
         </div>
         {isAdmin && (
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus size={14} /> New project
-          </Button>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="h-[30px] px-3 rounded-md bg-brand text-white text-[12px] font-semibold flex items-center gap-1.5 hover:bg-brand-deep transition-colors"
+          >
+            <Plus size={13} /> New project
+          </button>
         )}
       </div>
 
@@ -81,36 +77,39 @@ export default function ProjectsPage() {
           description={isAdmin ? 'Create a project to organize your epics and stories.' : 'Ask an admin to create a project to get started.'}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {projects.map((project, i) => (
-            <Card
-              key={project.id}
-              onClick={() => navigate(`/projects/${project.id}`)}
-              className="group cursor-pointer hover:border-brand/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 animate-fade-in-up"
-              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-brand-soft flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-                    <FolderKanban size={18} className="text-brand" />
-                  </div>
-                  <span className="font-mono text-[12px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-                    {project.key}
-                  </span>
-                </div>
-                <ChevronRight size={14} className="text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </div>
-              <h3 className="text-[15px] font-medium text-gray-900 mb-1">{project.name}</h3>
-              {project.description && (
-                <p className="text-[13px] text-gray-500 leading-relaxed line-clamp-2">
-                  {project.description}
-                </p>
-              )}
-              <div className="mt-3 text-[12px] text-gray-400">
-                Created {new Date(project.created_at).toLocaleDateString()}
-              </div>
-            </Card>
-          ))}
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="text-left text-[10px] font-bold tracking-wide uppercase text-gray-400 bg-gray-50 px-3 py-2 border-b border-gray-200">Key</th>
+                <th className="text-left text-[10px] font-bold tracking-wide uppercase text-gray-400 bg-gray-50 px-3 py-2 border-b border-gray-200">Name</th>
+                <th className="text-left text-[10px] font-bold tracking-wide uppercase text-gray-400 bg-gray-50 px-3 py-2 border-b border-gray-200">Description</th>
+                <th className="text-left text-[10px] font-bold tracking-wide uppercase text-gray-400 bg-gray-50 px-3 py-2 border-b border-gray-200">Created</th>
+                <th className="bg-gray-50 border-b border-gray-200 w-8"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {projects.map((project) => (
+                <tr
+                  key={project.id}
+                  onClick={() => navigate(`/projects/${project.id}`)}
+                  className="cursor-pointer hover:bg-gray-50 transition-colors group"
+                >
+                  <td className="px-3 py-2">
+                    <span className="font-mono text-[11px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{project.key}</span>
+                  </td>
+                  <td className="px-3 py-2 text-[13px] font-semibold text-gray-900">{project.name}</td>
+                  <td className="px-3 py-2 text-[12px] text-gray-400 max-w-xs truncate">{project.description || '—'}</td>
+                  <td className="px-3 py-2 font-mono tabular-nums text-[12px] text-gray-400">
+                    {new Date(project.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-3 py-2 text-gray-300 group-hover:text-gray-400 transition-colors">
+                    <ChevronRight size={14} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -137,7 +136,7 @@ function CreateProjectModal({
   const [key, setKey] = useState('')
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
-  const { user } = useAuth()
+  const [creating, setCreating] = useState(false)
 
   function handleNameChange(value: string) {
     setName(value)
@@ -156,22 +155,14 @@ function CreateProjectModal({
   async function handleCreate() {
     if (!name.trim() || !key.trim()) return
     setError('')
-
-    const { error: dbError } = await supabase.from('projects').insert({
-      name: name.trim(),
-      key: key.trim().toUpperCase(),
-      description: description.trim() || null,
-      created_by: user?.id,
-    })
-
-    if (dbError) {
-      if (dbError.code === '23505') {
-        setError('A project with this key already exists.')
-      } else {
-        setError(dbError.message)
-      }
-    } else {
+    setCreating(true)
+    try {
+      await api.createProject(name.trim(), key.trim().toUpperCase(), description.trim())
       onCreated()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Failed to create project.')
+    } finally {
+      setCreating(false)
     }
   }
 
@@ -213,9 +204,13 @@ function CreateProjectModal({
           />
         </div>
 
-        <Button onClick={handleCreate} className="w-full" disabled={!name.trim() || !key.trim()}>
-          Create project
-        </Button>
+        <button
+          onClick={handleCreate}
+          disabled={!name.trim() || !key.trim() || creating}
+          className="w-full h-[30px] rounded-md bg-brand text-white text-[12px] font-semibold flex items-center justify-center gap-1.5 hover:bg-brand-deep transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {creating ? 'Creating...' : 'Create project'}
+        </button>
       </div>
     </Modal>
   )

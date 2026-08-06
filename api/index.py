@@ -5,7 +5,7 @@ Deployed as a Vercel serverless function.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import auth, epics, stories, people, comments, attachments
+from api.routes import auth, epics, stories, people, comments, attachments, projects
 
 app = FastAPI(
     title="1CloudHub Tracker API",
@@ -25,6 +25,7 @@ app.add_middleware(
 
 # Register route modules
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
 app.include_router(epics.router, prefix="/api/epics", tags=["Epics"])
 app.include_router(stories.router, prefix="/api/stories", tags=["Stories"])
 app.include_router(people.router, prefix="/api/people", tags=["People"])

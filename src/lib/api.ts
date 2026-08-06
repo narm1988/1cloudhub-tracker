@@ -1,4 +1,4 @@
-import type { User } from '../types'
+import type { Project, User } from '../types'
 
 // Same-origin in production (vercel.json rewrites /api/* to the Python
 // function); override for local dev if the backend runs on a different port.
@@ -86,6 +86,21 @@ export const api = {
 
   removePerson(userId: string) {
     return request<{ message: string }>(`/people/${userId}`, { method: 'DELETE' })
+  },
+
+  listProjects(page: number, pageSize = 12) {
+    return request<{ data: Project[]; total: number }>(`/projects/?page=${page}&page_size=${pageSize}`)
+  },
+
+  getProject(id: string) {
+    return request<Project>(`/projects/${id}`)
+  },
+
+  createProject(name: string, key: string, description: string) {
+    return request<Project>('/projects/', {
+      method: 'POST',
+      body: JSON.stringify({ name, key, description: description || null }),
+    })
   },
 }
 

@@ -114,32 +114,32 @@ export default function TopBar({
   const visibleNotifications = notifTab === 'unread' ? notifications.filter((n) => !n.read) : notifications
 
   return (
-    <header className="h-[60px] bg-white border-b border-gray-200 flex items-center px-6 gap-4 shrink-0 relative">
+    <header className="h-[48px] bg-white border-b border-gray-200 flex items-center px-4 gap-3 shrink-0 relative">
       {/* Sidebar collapse toggle */}
       <button
         onClick={onToggleSidebar}
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         aria-pressed={collapsed}
-        className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-1.5 -ml-1.5 transition-colors"
+        className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md p-1.5 -ml-1.5 transition-colors"
       >
-        <PanelLeft size={18} />
+        <PanelLeft size={16} />
       </button>
 
       {/* Search */}
-      <div className="relative w-72">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <div className="relative w-64">
+        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           placeholder='Search 1CH-104, "migration"…'
           aria-label="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit() }}
-          className="w-full pl-8 pr-3 h-8 rounded-md border border-gray-200 text-[13px] shadow-sm outline-none bg-paper focus:border-brand focus:ring-2 focus:ring-brand/10"
+          className="w-full pl-7 pr-3 h-7 rounded-md border border-gray-200 text-[12px] shadow-sm outline-none bg-paper focus:border-brand focus:ring-2 focus:ring-brand/10"
         />
       </div>
 
       {/* Right side */}
-      <div className="ml-auto flex items-center gap-4">
+      <div className="ml-auto flex items-center gap-3">
         {/* Notifications */}
         <div className="relative">
           <button
@@ -147,7 +147,7 @@ export default function TopBar({
             className="relative text-gray-500 hover:text-gray-700 transition-colors"
             aria-label="Notifications"
           >
-            <Bell size={18} />
+            <Bell size={16} />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-[10px] font-mono tabular-nums font-bold flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -161,25 +161,25 @@ export default function TopBar({
                 className="fixed inset-0 bg-black/15 z-40 animate-fade-in"
                 onClick={() => setShowNotifs(false)}
               />
-              <div className="fixed top-0 right-0 bottom-0 w-[360px] bg-white shadow-2xl z-50 flex flex-col animate-drawer-slide-in">
+              <div className="fixed top-0 right-0 bottom-0 w-[320px] bg-white shadow-2xl z-50 flex flex-col animate-drawer-slide-in">
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                  <h2 className="text-[15px] font-semibold text-gray-900">Notifications</h2>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <h2 className="text-[13px] font-semibold text-gray-900">Notifications</h2>
                   <button
                     onClick={() => setShowNotifs(false)}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
                     aria-label="Close notifications"
                   >
-                    <X size={18} />
+                    <X size={16} />
                   </button>
                 </div>
 
                 {/* Tabs + bulk action */}
-                <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setNotifTab('all')}
-                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-md transition-colors ${
                         notifTab === 'all' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                       }`}
                     >
@@ -187,7 +187,7 @@ export default function TopBar({
                     </button>
                     <button
                       onClick={() => setNotifTab('unread')}
-                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-md transition-colors ${
                         notifTab === 'unread' ? 'bg-brand text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                       }`}
                     >
@@ -208,25 +208,25 @@ export default function TopBar({
                   {visibleNotifications.map((n) => {
                     const icon = notificationIcon(n.message)
                     return (
-                      <div key={n.id} className={`px-5 py-3.5 border-b border-gray-50 ${!n.read ? 'bg-brand-soft/40' : ''}`}>
+                      <div key={n.id} className={`px-4 py-2.5 border-b border-gray-50 ${!n.read ? 'bg-brand-soft/40' : ''}`}>
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <span
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0"
+                              className="w-6 h-6 rounded-md flex items-center justify-center text-[12px] shrink-0"
                               style={{ backgroundColor: icon.bg }}
                             >
                               {icon.emoji}
                             </span>
                             {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-brand" />}
                           </div>
-                          <span className="text-[12px] font-mono text-gray-400">{timeAgo(n.created_at)}</span>
+                          <span className="text-[11px] font-mono text-gray-400">{timeAgo(n.created_at)}</span>
                         </div>
-                        <p className="text-[13px] text-gray-900 leading-snug mb-2 pl-9">{n.message}</p>
-                        <div className="flex items-center gap-3 pl-9">
+                        <p className="text-[12px] text-gray-900 leading-snug mb-1.5 pl-8">{n.message}</p>
+                        <div className="flex items-center gap-3 pl-8">
                           {n.link && (
                             <button
                               onClick={() => viewNotification(n)}
-                              className="text-[12px] font-semibold text-brand hover:text-brand-deep transition-colors"
+                              className="text-[11px] font-semibold text-brand hover:text-brand-deep transition-colors"
                             >
                               View →
                             </button>
@@ -234,7 +234,7 @@ export default function TopBar({
                           {!n.read && (
                             <button
                               onClick={() => markRead(n)}
-                              className="text-[12px] text-gray-400 hover:text-gray-600 transition-colors"
+                              className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
                             >
                               Mark read
                             </button>
@@ -244,7 +244,7 @@ export default function TopBar({
                     )
                   })}
                   {visibleNotifications.length === 0 && (
-                    <p className="text-[13px] text-gray-400 text-center py-10">
+                    <p className="text-[12px] text-gray-400 text-center py-10">
                       {notifTab === 'unread' ? 'No unread notifications.' : 'No notifications yet.'}
                     </p>
                   )}
@@ -255,18 +255,18 @@ export default function TopBar({
         </div>
 
         {/* User */}
-        <span className="text-[13px] text-gray-500">
+        <span className="text-[12px] text-gray-500">
           Welcome, <strong className="text-gray-900 font-semibold">{user?.full_name}</strong>
         </span>
         <span
-          className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${
+          className={`flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
             user?.role === 'admin' ? 'bg-brand-soft text-brand' : 'bg-gray-100 text-gray-500'
           }`}
         >
           {user?.role === 'admin' && <Shield size={10} />}
           {user?.role === 'admin' ? 'Admin' : 'Member'}
         </span>
-        <Avatar name={user?.full_name || 'User'} size="md" />
+        <Avatar name={user?.full_name || 'User'} size="sm" />
       </div>
     </header>
   )
