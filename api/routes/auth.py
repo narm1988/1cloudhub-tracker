@@ -50,7 +50,7 @@ async def login(body: LoginRequest):
     supabase = get_supabase_admin()
     profile = supabase.table("profiles").select("*").eq("email", body.email).maybe_single().execute()
 
-    if not profile.data or not profile.data.get("password_hash"):
+    if not profile or not profile.data or not profile.data.get("password_hash"):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     if not pwd_context.verify(body.password, profile.data["password_hash"]):
@@ -97,7 +97,7 @@ async def entra_callback(code: Optional[str] = None, error: Optional[str] = None
         supabase = get_supabase_admin()
         existing = supabase.table("profiles").select("*").eq("email", email).maybe_single().execute()
 
-        if existing.data:
+        if existing and existing.data:
             update_fields = {}
             if entra_role is not None:
                 update_fields["role"] = entra_role
@@ -170,7 +170,9 @@ async def accept_invite(body: AcceptInviteRequest):
         .maybe_single()
         .execute()
     )
-    if not invite.data:
+    # maybe_single() returns None outright (not a response with .data = None)
+    # when zero rows match, rather than raising — a supabase-py quirk.
+    if not invite or not invite.data:
         raise HTTPException(status_code=400, detail="Invite link is invalid or has already been used")
 
     # expires_at is a plain column check, not RLS — fine to compare in Python
