@@ -170,7 +170,7 @@ function StoryCard({ story, onClick }: { story: Story; onClick: () => void }) {
           </div>
           <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
         </div>
-        <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+        <span className="text-[12px]" style={{ color: PRIORITY_META[story.priority as Priority]?.color }}>{PRIORITY_META[story.priority as Priority]?.icon}</span>
       </div>
 
       {/* Perforation */}

@@ -181,7 +181,7 @@ export function PriorityField({
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1.5 hover:bg-gray-50 rounded-md px-1.5 -mx-1.5 py-1 transition-colors"
       >
-        <span className="text-[13px] leading-none">{meta.icon}</span>
+        <span className="text-[13px] leading-none" style={{ color: meta.color }}>{meta.icon}</span>
         <span className="text-[13px] text-gray-900 font-medium">{value}</span>
         <ChevronDown size={12} className="text-gray-400" />
       </button>
@@ -198,7 +198,7 @@ export function PriorityField({
                   p === value ? 'bg-brand-soft text-brand font-semibold' : 'text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <span className="text-[13px] leading-none">{PRIORITY_META[p].icon}</span>
+                <span className="text-[13px] leading-none" style={{ color: PRIORITY_META[p].color }}>{PRIORITY_META[p].icon}</span>
                 {p}
               </button>
             ))}

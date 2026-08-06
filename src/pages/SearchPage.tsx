@@ -196,7 +196,7 @@ export default function SearchPage() {
               <span className="text-[13px]">{ISSUE_TYPE_META[item.type as keyof typeof ISSUE_TYPE_META]?.icon || '📗'}</span>
               <span className="font-mono text-[12px] text-gray-400 shrink-0 w-16">{item.display_id}</span>
               <span className="text-[13px] text-gray-900 font-medium flex-1 truncate">{item.title}</span>
-              <span className="text-[12px]">{PRIORITY_META[item.priority as Priority]?.icon}</span>
+              <span className="text-[12px]" style={{ color: PRIORITY_META[item.priority as Priority]?.color }}>{PRIORITY_META[item.priority as Priority]?.icon}</span>
               {item.assignee && <Avatar name={item.assignee.full_name} size="sm" />}
               <StatusBadge status={item.status as Status} />
               {item.due_date && (

@@ -134,7 +134,7 @@ function ProjectBoard({ projectId, projectKey }: { projectId: string; projectKey
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-mono text-[12px] text-gray-400">{story.display_id}</span>
-                    <span className="text-[12px]">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+                    <span className="text-[12px]" style={{ color: PRIORITY_META[story.priority as Priority]?.color }}>{PRIORITY_META[story.priority as Priority]?.icon}</span>
                   </div>
                   <div className="text-[13px] text-gray-900 font-medium leading-snug mb-2">{story.title}</div>
                   <div className="flex items-center justify-between">
@@ -357,7 +357,7 @@ function BacklogStoryRow({
           {story.story_points} pts
         </span>
       )}
-      <span className="text-[12px] shrink-0">{PRIORITY_META[story.priority as Priority]?.icon}</span>
+      <span className="text-[12px] shrink-0" style={{ color: PRIORITY_META[story.priority as Priority]?.color }}>{PRIORITY_META[story.priority as Priority]?.icon}</span>
       {story.assignee && <span className="shrink-0"><Avatar name={story.assignee.full_name} size="sm" /></span>}
       <span className="shrink-0"><StatusBadge status={story.status as Status} /></span>
 

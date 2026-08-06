@@ -31,11 +31,11 @@ export const ISSUE_TYPE_META: Record<IssueType, { icon: string; color: string; t
 export const PRIORITY_OPTIONS = ['Critical', 'High', 'Medium', 'Low'] as const
 export type Priority = typeof PRIORITY_OPTIONS[number]
 
-export const PRIORITY_META: Record<Priority, { icon: string; tailwind: string }> = {
-  Critical: { icon: '🔴', tailwind: 'text-red-600' },
-  High: { icon: '🟠', tailwind: 'text-orange-500' },
-  Medium: { icon: '🟡', tailwind: 'text-yellow-500' },
-  Low: { icon: '🟢', tailwind: 'text-green-500' },
+export const PRIORITY_META: Record<Priority, { icon: string; color: string; tailwind: string }> = {
+  Critical: { icon: '●', color: '#DC2626', tailwind: 'text-red-600' },
+  High: { icon: '●', color: '#EA580C', tailwind: 'text-orange-500' },
+  Medium: { icon: '●', color: '#CA8A04', tailwind: 'text-yellow-600' },
+  Low: { icon: '●', color: '#16A34A', tailwind: 'text-green-500' },
 }
 
 export const LINK_TYPES = ['blocks', 'is blocked by', 'relates to', 'duplicates', 'is duplicated by'] as const
