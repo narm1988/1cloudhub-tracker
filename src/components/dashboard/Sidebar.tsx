@@ -1,13 +1,15 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LayoutGrid, Users, Settings, LogOut, Cloud, FolderKanban, Search } from 'lucide-react'
+import { LayoutGrid, Users, Settings, LogOut, Cloud, FolderKanban, Search, Archive, History } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 
 const NAV_ITEMS = [
   { key: 'projects', label: 'Projects', icon: FolderKanban, path: '/projects', hoverClass: 'group-hover:-rotate-[8deg] group-hover:scale-110' },
   { key: 'epics', label: 'Epics', icon: LayoutGrid, path: '/epics', hoverClass: 'group-hover:scale-[1.15]' },
+  { key: 'archived', label: 'Archived', icon: Archive, path: '/archived', hoverClass: 'group-hover:-translate-y-0.5' },
   { key: 'search', label: 'Search', icon: Search, path: '/search', hoverClass: 'group-hover:-rotate-[15deg] group-hover:scale-110' },
   { key: 'people', label: 'People', icon: Users, path: '/people', admin: true, hoverClass: 'group-hover:-translate-y-0.5' },
+  { key: 'audit-log', label: 'Audit Log', icon: History, path: '/audit-log', admin: true, hoverClass: 'group-hover:rotate-[15deg]' },
   { key: 'settings', label: 'Settings', icon: Settings, path: '/settings', hoverClass: 'group-hover:rotate-90' },
 ]
 

@@ -128,8 +128,8 @@ export const api = {
   },
 
   // ---- Epics ----
-  listEpics(page: number, pageSize = 12) {
-    return request<{ data: Epic[]; total: number }>(`/epics/${qs({ page, page_size: pageSize })}`)
+  listEpics(page: number, pageSize = 12, archived = false) {
+    return request<{ data: Epic[]; total: number }>(`/epics/${qs({ page, page_size: pageSize, archived: archived ? 'true' : undefined })}`)
   },
 
   getEpic(id: string) {
@@ -146,6 +146,14 @@ export const api = {
 
   deleteEpic(id: string) {
     return request<{ message: string }>(`/epics/${id}`, { method: 'DELETE' })
+  },
+
+  archiveEpic(id: string) {
+    return request<{ message: string }>(`/epics/${id}/archive`, { method: 'POST' })
+  },
+
+  unarchiveEpic(id: string) {
+    return request<{ message: string }>(`/epics/${id}/unarchive`, { method: 'POST' })
   },
 
   moveEpicToBacklog(id: string) {
@@ -317,6 +325,10 @@ export const api = {
   // ---- Activity log (read-only) ----
   listActivity(parentId: string, parentType: 'story' | 'issue' | 'epic') {
     return request<ActivityLogEntry[]>(`/activity-log/${qs({ parent_id: parentId, parent_type: parentType })}`)
+  },
+
+  listGlobalActivity(page: number, pageSize = 25) {
+    return request<{ data: ActivityLogEntry[]; total: number }>(`/activity-log/global${qs({ page, page_size: pageSize })}`)
   },
 
   // ---- Assignment notification email ----

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Flag, ChevronRight } from 'lucide-react'
+import { Plus, Flag, ChevronRight, Archive } from 'lucide-react'
 import { api } from '../lib/api'
 import type { Epic, Project } from '../types'
 import Button from '../components/ui/Button'
@@ -59,10 +59,14 @@ export default function EpicsPage() {
       await api.createEpic({ title, description, project_id: projectId })
       setShowCreateModal(false)
       fetchEpics()
-    } catch {
-      // Matches prior behavior: the modal stays open with no error banner
-      // on failure (CreateEpicModal never had one, unlike CreateProjectModal).
-    }
+    } catch {}
+  }
+
+  async function archiveEpic(id: string) {
+    try {
+      await api.archiveEpic(id)
+      fetchEpics()
+    } catch {}
   }
 
   if (loading && epics.length === 0) {
@@ -139,6 +143,13 @@ export default function EpicsPage() {
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 shrink-0">
                 {epic.status}
               </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); archiveEpic(epic.id) }}
+                title="Archive"
+                className="text-gray-300 hover:text-gray-500 shrink-0 transition-colors"
+              >
+                <Archive size={13} />
+              </button>
               <ChevronRight size={14} className="text-gray-400 shrink-0" />
             </div>
           ))}

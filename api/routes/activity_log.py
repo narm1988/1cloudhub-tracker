@@ -21,3 +21,18 @@ async def list_activity(parent_id: str, parent_type: ParentType, current_user: d
         .execute()
     )
     return result.data or []
+
+
+@router.get("/global")
+async def list_global_activity(page: int = 1, page_size: int = 25, current_user: dict = Depends(get_current_user)):
+    """Paginated global audit log of all user actions across the workspace."""
+    supabase = get_supabase_admin()
+    offset = (page - 1) * page_size
+    result = (
+        supabase.table("activity_log")
+        .select("*, user:profiles(id, full_name, avatar_url)", count="exact")
+        .order("created_at", desc=True)
+        .range(offset, offset + page_size - 1)
+        .execute()
+    )
+    return {"data": result.data or [], "total": result.count or 0}

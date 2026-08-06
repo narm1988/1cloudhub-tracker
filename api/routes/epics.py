@@ -23,18 +23,17 @@ _SELECT = "*, owner:profiles!epics_owner_id_fkey(id, full_name, email), project:
 
 
 @router.get("/")
-async def list_epics(page: int = 1, page_size: int = 12, current_user: dict = Depends(get_current_user)):
-    """List epics, paginated."""
+async def list_epics(page: int = 1, page_size: int = 12, archived: bool = False, current_user: dict = Depends(get_current_user)):
+    """List epics, paginated. By default excludes archived."""
     supabase = get_supabase_admin()
     from_ = (page - 1) * page_size
     to = from_ + page_size - 1
-    result = (
-        supabase.table("epics")
-        .select(_SELECT, count="exact")
-        .order("created_at", desc=True)
-        .range(from_, to)
-        .execute()
-    )
+    query = supabase.table("epics").select(_SELECT, count="exact")
+    if archived:
+        query = query.eq("archived", True)
+    else:
+        query = query.or_("archived.is.null,archived.eq.false")
+    result = query.order("created_at", desc=True).range(from_, to).execute()
     return {"data": result.data or [], "total": result.count or 0}
 
 
@@ -102,3 +101,23 @@ async def move_epic_to_backlog(epic_id: str, current_user: dict = Depends(get_cu
         supabase.table("issues").update({"sprint_id": None}).in_("story_id", story_ids).execute()
 
     return {"message": "Moved to backlog", "story_count": len(story_ids)}
+
+
+@router.post("/{epic_id}/archive")
+async def archive_epic(epic_id: str, current_user: dict = Depends(get_current_user)):
+    """Archive an epic."""
+    supabase = get_supabase_admin()
+    result = supabase.table("epics").update({"archived": True}).eq("id", epic_id).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Epic not found")
+    return {"message": "Epic archived"}
+
+
+@router.post("/{epic_id}/unarchive")
+async def unarchive_epic(epic_id: str, current_user: dict = Depends(get_current_user)):
+    """Unarchive an epic."""
+    supabase = get_supabase_admin()
+    result = supabase.table("epics").update({"archived": False}).eq("id", epic_id).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Epic not found")
+    return {"message": "Epic unarchived"}

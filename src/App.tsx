@@ -14,6 +14,8 @@ import IssueDetailPage from './pages/IssueDetailPage'
 import SearchPage from './pages/SearchPage'
 import PeoplePage from './pages/PeoplePage'
 import SettingsPage from './pages/SettingsPage'
+import ArchivedPage from './pages/ArchivedPage'
+import AuditLogPage from './pages/AuditLogPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -46,6 +48,8 @@ function AppRoutes() {
         <Route path="search" element={<SearchPage />} />
         <Route path="people" element={<PeoplePage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="archived" element={<ArchivedPage />} />
+        <Route path="audit-log" element={<AuditLogPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
