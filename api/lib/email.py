@@ -12,6 +12,7 @@ Required env vars:
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.utils import formatdate, make_msgid
 from html import escape
 from typing import Optional
 
@@ -19,14 +20,22 @@ from api.config import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM
 
 
 def _send(to_email: str, subject: str, html_body: str, text_body: str = "") -> None:
-    """Send an email via SMTP."""
+    """Send an email via SMTP.
+
+    Always attaches a plain-text part alongside the HTML one, and sets
+    Date/Message-ID — an HTML-only message missing these is a well-known
+    spam-filter trigger (Microsoft 365/Exchange in particular), and a
+    message that SMTP accepts without error can still be silently dropped
+    or spam-foldered downstream with zero indication back to this code.
+    """
     msg = MIMEMultipart("alternative")
     msg["From"] = SMTP_FROM
     msg["To"] = to_email
     msg["Subject"] = subject
+    msg["Date"] = formatdate(localtime=True)
+    msg["Message-ID"] = make_msgid()
 
-    if text_body:
-        msg.attach(MIMEText(text_body, "plain"))
+    msg.attach(MIMEText(text_body or "This email requires an HTML-capable mail client to view.", "plain"))
     msg.attach(MIMEText(html_body, "html"))
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
@@ -99,4 +108,20 @@ def send_assignment_email(
       </div>
     </div>
     """
-    _send(to_email, subject, html)
+
+    text_lines = [
+        f"Hi {assignee_first_name},",
+        "",
+        f"{assigned_by_name} assigned you a {item_type.lower()}.",
+        "",
+        f"{meta['label']} · {display_id}",
+        title,
+    ]
+    if breadcrumb:
+        text_lines.append(breadcrumb)
+    if due_date:
+        text_lines.append(f"Due {due_date}")
+    text_lines += ["", f"View in Tracker: {item_url}"]
+    text = "\n".join(text_lines)
+
+    _send(to_email, subject, html, text)
