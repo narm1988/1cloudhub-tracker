@@ -392,7 +392,7 @@ export const api = {
     priority?: string
     due_date?: string
   }) {
-    return request<{ success: boolean }>('/notify/assignment', { method: 'POST', body: JSON.stringify(data) })
+    return request<{ success: boolean; skipped?: string }>('/notify/assignment', { method: 'POST', body: JSON.stringify(data) })
   },
 }
 
