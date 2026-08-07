@@ -25,6 +25,12 @@ export default function SessionExpiryWatcher() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const lastActivity = useRef(Date.now())
+  // Frozen the instant the warning opens. Passive activity (e.g. moving the
+  // mouse toward the dialog's own buttons) still updates lastActivity above,
+  // but must NOT touch this — otherwise the dialog vanishes on its own
+  // before anyone gets a chance to click "Stay logged in". Only an explicit
+  // click, or it actually running out, clears it.
+  const idleDeadline = useRef<number | null>(null)
   const [idleMsRemaining, setIdleMsRemaining] = useState<number | null>(null)
 
   const markActive = useCallback(() => {
@@ -32,6 +38,7 @@ export default function SessionExpiryWatcher() {
   }, [])
 
   const handleLogOut = useCallback(async () => {
+    idleDeadline.current = null
     setIdleMsRemaining(null)
     await signOut()
     navigate('/login')
@@ -40,6 +47,7 @@ export default function SessionExpiryWatcher() {
 
   async function handleStayLoggedIn() {
     markActive()
+    idleDeadline.current = null
     try {
       const { access_token } = await api.refreshToken()
       setToken(access_token)
@@ -52,6 +60,10 @@ export default function SessionExpiryWatcher() {
   }
 
   const evaluate = useCallback(async () => {
+    // A warning is already up and driven entirely by the frozen deadline —
+    // don't let the background poll second-guess it mid-countdown.
+    if (idleDeadline.current !== null) return
+
     const idleFor = Date.now() - lastActivity.current
     const idleRemaining = IDLE_LIMIT_MS - idleFor
 
@@ -61,6 +73,7 @@ export default function SessionExpiryWatcher() {
     }
 
     if (idleRemaining <= WARNING_WINDOW_MS) {
+      idleDeadline.current = Date.now() + idleRemaining
       setIdleMsRemaining(idleRemaining)
       return
     }
@@ -82,7 +95,8 @@ export default function SessionExpiryWatcher() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleLogOut])
 
-  // Real activity resets the idle clock.
+  // Real activity resets the idle clock (but not a deadline already frozen
+  // for an open warning — see evaluate() above).
   useEffect(() => {
     if (!user) return
     ACTIVITY_EVENTS.forEach((evt) => window.addEventListener(evt, markActive, { passive: true }))
@@ -105,6 +119,7 @@ export default function SessionExpiryWatcher() {
   useEffect(() => {
     if (!user) {
       setIdleMsRemaining(null)
+      idleDeadline.current = null
       return
     }
     lastActivity.current = Date.now()
@@ -112,21 +127,17 @@ export default function SessionExpiryWatcher() {
     return () => clearInterval(poll)
   }, [user, evaluate])
 
-  // While the warning is up, tick every second — re-derived from real
-  // elapsed time each tick (not just decremented by 1s) so a throttled
-  // background tick can't drift it. Also dismisses itself automatically if
-  // real activity comes in (mouse move, keypress) while it's showing.
+  // While the warning is up, tick every second off the frozen deadline —
+  // immune to any activity that happens while it's showing, and re-derived
+  // from real elapsed time each tick so a throttled background tick can't
+  // drift it.
   useEffect(() => {
     if (idleMsRemaining === null) return
     const tick = setInterval(() => {
-      const idleFor = Date.now() - lastActivity.current
-      const remaining = IDLE_LIMIT_MS - idleFor
+      if (idleDeadline.current === null) return
+      const remaining = idleDeadline.current - Date.now()
       if (remaining <= 0) {
         handleLogOut()
-        return
-      }
-      if (remaining > WARNING_WINDOW_MS) {
-        setIdleMsRemaining(null)
         return
       }
       setIdleMsRemaining(remaining)
