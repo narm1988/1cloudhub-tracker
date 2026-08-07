@@ -95,7 +95,7 @@ export default function LoginPage() {
           </div>
           <div>
             <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
-            <div className="text-[10px] tracking-[0.12em] text-gray-500 mt-0.5 uppercase">Tracker</div>
+            <div className="text-[10px] tracking-[0.12em] text-gray-500 mt-0.5 uppercase">Orbit</div>
           </div>
         </div>
 
@@ -140,7 +140,7 @@ export default function LoginPage() {
             <div className="w-6 h-6 rounded-md bg-brand flex items-center justify-center">
               <Cloud size={12} className="text-white" />
             </div>
-            <span className="text-[13px] font-semibold text-gray-800">1CloudHub Tracker</span>
+            <span className="text-[13px] font-semibold text-gray-800">1CloudHub Orbit</span>
           </div>
 
           <div className="animate-fade-in-up" style={{ animationDelay: '0.05s' }}>

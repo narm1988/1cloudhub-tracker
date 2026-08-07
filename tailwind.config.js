@@ -166,6 +166,11 @@ export default {
           '0%, 100%': { transform: 'translate(0,0)', opacity: '0.35' },
           '50%': { transform: 'translate(6px,-10px)', opacity: '0.7' },
         },
+        cometStreak: {
+          '0%, 72%': { opacity: '0', transform: 'rotate(-22deg) translateX(0)' },
+          '74%': { opacity: '1' },
+          '85%, 100%': { opacity: '0', transform: 'rotate(-22deg) translateX(180px)' },
+        },
         drawerSlideIn: {
           '0%': { transform: 'translateX(100%)' },
           '100%': { transform: 'translateX(0)' },
@@ -185,6 +190,7 @@ export default {
         'light-sweep': 'lightSweep 6s ease-in-out infinite',
         'ember-rise': 'emberRise 5s ease-in-out infinite',
         'ribbon-sway': 'ribbonSway 8s ease-in-out infinite',
+        'comet-streak': 'cometStreak 10s linear infinite',
         'dust-drift': 'dustDrift 9s ease-in-out infinite',
         'drawer-slide-in': 'drawerSlideIn 0.25s cubic-bezier(0.2,0.8,0.3,1) both',
       },

@@ -42,6 +42,11 @@ const CURTAIN_RIBBONS = [
   { left: '80%', c1: 2, c2: 0, duration: 6.5, delay: -1 },
 ]
 
+const COMET_STREAKS = [
+  { top: '14%', duration: 10, delay: 0 },
+  { top: '58%', duration: 14, delay: -6 },
+]
+
 export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -116,6 +121,25 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         })}
       </div>
 
+      {/* Comet streaks — sparse shooting-star accents, opt-in per theme */}
+      {theme.comets && (
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {COMET_STREAKS.map((c, i) => (
+            <div
+              key={i}
+              className="absolute h-[1.5px] w-20 -left-20 rounded-full animate-comet-streak"
+              style={{
+                top: c.top,
+                background: 'linear-gradient(90deg, transparent, #E0F2FE, #fff, transparent)',
+                filter: 'drop-shadow(0 0 5px rgba(224,242,254,0.7))',
+                animationDuration: `${c.duration}s`,
+                animationDelay: `${c.delay}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Logo, orbited by a small satellite dot */}
       <div className={`relative z-10 flex items-center gap-2.5 pb-5 ${collapsed ? 'justify-center px-0' : 'px-2'}`}>
         <div className="relative w-7 h-7 shrink-0">
@@ -136,7 +160,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         {!collapsed && (
           <div>
             <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
-            <div className="text-[10px] tracking-[0.12em] mt-0.5 uppercase" style={{ color: theme.subText }}>TRACKER</div>
+            <div className="text-[10px] tracking-[0.12em] mt-0.5 uppercase" style={{ color: theme.subText }}>ORBIT</div>
           </div>
         )}
       </div>

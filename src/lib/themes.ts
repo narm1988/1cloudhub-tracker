@@ -17,6 +17,7 @@ export interface SidebarTheme {
   particleColor2?: string
   animationStyle?: 'blobs' | 'curtain'
   ribbonColors?: [string, string, string]
+  comets?: boolean
 }
 
 export const SIDEBAR_THEMES: SidebarTheme[] = [
@@ -36,6 +37,7 @@ export const SIDEBAR_THEMES: SidebarTheme[] = [
     blend: 'screen',
     particle: 'stars',
     particleColor: '255,255,255',
+    comets: true,
   },
   {
     id: 'borealis',
