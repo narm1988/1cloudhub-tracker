@@ -265,7 +265,7 @@ export default function StoryDetailPage() {
   }
 
   async function createIssue(type: IssueType) {
-    navigate(`/issues/new?storyId=${storyId}&type=${encodeURIComponent(type)}`)
+    navigate(`/issues/new?storyId=${story!.id}&type=${encodeURIComponent(type)}`)
   }
 
   async function addComment(content: string) {
