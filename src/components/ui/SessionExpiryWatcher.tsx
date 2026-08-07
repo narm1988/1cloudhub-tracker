@@ -50,8 +50,6 @@ export default function SessionExpiryWatcher() {
   }
 
   const evaluate = useCallback(async () => {
-    if (document.visibilityState === 'hidden') return
-
     const idleFor = Date.now() - lastActivity.current
     const idleRemaining = IDLE_LIMIT_MS - idleFor
 

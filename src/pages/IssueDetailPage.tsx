@@ -197,7 +197,7 @@ export default function IssueDetailPage() {
             priority: data.priority,
             due_date: data.due_date,
             item_path: `/issues/${data.display_id}`,
-          }).catch(() => {})
+          }).catch(() => toast.error('Assignment email could not be sent — check SMTP settings.'))
         }
         navigate(`/issues/${data.display_id}`, { replace: true })
       } finally {
@@ -231,7 +231,7 @@ export default function IssueDetailPage() {
           priority: current.priority,
           due_date: current.due_date || undefined,
           item_path: `/issues/${issueId}`,
-        }).catch(() => {})
+        }).catch(() => toast.error('Assignment email could not be sent — check SMTP settings.'))
       }
 
       await fetchIssue()

@@ -71,7 +71,7 @@ export default function AuditLogPage() {
       <div className="mb-4">
         <h1 className="text-[17px] font-semibold tracking-[-0.01em] text-gray-900">Audit Log</h1>
         <p className="text-[12px] text-gray-500 mt-1">
-          <span className="font-mono tabular-nums">{total}</span> actions recorded
+          <span className="font-mono tabular-nums">{total}</span> actions recorded by you
         </p>
       </div>
 

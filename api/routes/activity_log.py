@@ -25,12 +25,16 @@ async def list_activity(parent_id: str, parent_type: ParentType, current_user: d
 
 @router.get("/global")
 async def list_global_activity(page: int = 1, page_size: int = 25, current_user: dict = Depends(get_current_user)):
-    """Paginated global audit log of all user actions across the workspace."""
+    """Paginated audit log of the current user's own actions. Scoped to the
+    caller — an admin viewing this sees only their own history, not every
+    user's, so this is a personal activity feed rather than a workspace-wide
+    audit trail."""
     supabase = get_supabase_admin()
     offset = (page - 1) * page_size
     result = (
         supabase.table("activity_log")
         .select("*, user:profiles(id, full_name, avatar_url)", count="exact")
+        .eq("user_id", current_user["id"])
         .order("created_at", desc=True)
         .range(offset, offset + page_size - 1)
         .execute()

@@ -213,7 +213,7 @@ export default function StoryDetailPage() {
             priority: data.priority,
             due_date: data.due_date,
             item_path: `/stories/${data.display_id}`,
-          }).catch(() => {})
+          }).catch(() => toast.error('Assignment email could not be sent — check SMTP settings.'))
         }
         navigate(`/stories/${data.display_id}`, { replace: true })
       } finally {
@@ -246,7 +246,7 @@ export default function StoryDetailPage() {
           priority: current.priority,
           due_date: current.due_date || undefined,
           item_path: `/stories/${storyId}`,
-        }).catch(() => {})
+        }).catch(() => toast.error('Assignment email could not be sent — check SMTP settings.'))
       }
 
       await fetchStory()
