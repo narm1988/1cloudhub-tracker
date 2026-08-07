@@ -18,7 +18,7 @@ export default function DashboardLayout() {
   }, [])
 
   return (
-    <div className="flex min-h-screen bg-paper font-body">
+    <div className="flex min-h-screen bg-[#fafafa]">
       <Sidebar collapsed={collapsed} />
       <div className="flex-1 flex flex-col min-w-0">
         <TopBar collapsed={collapsed} onToggleSidebar={() => setCollapsed((c) => !c)} />
