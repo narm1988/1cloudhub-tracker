@@ -11,12 +11,14 @@ import Button from './Button'
 // reaches this, because SILENT_REFRESH_MARGIN_MS below keeps minting a fresh
 // token in the background for as long as there's real activity. This is what
 // makes it "due to inactivity" rather than "exactly N minutes after login."
-// TEMP: shortened to 5 min / 1 min warning for testing — revert to
-// 60 * 60 * 1000 / 5 * 60 * 1000 before shipping.
-const IDLE_LIMIT_MS = 5 * 60 * 1000
-const WARNING_WINDOW_MS = 1 * 60 * 1000
+// TEMP: shortened for testing — the warning now covers most of the window
+// instead of a hard-to-catch sliver at the end. Revert to
+// IDLE_LIMIT_MS = 60 * 60 * 1000, WARNING_WINDOW_MS = 5 * 60 * 1000,
+// CHECK_INTERVAL_MS = 15 * 1000 before shipping.
+const IDLE_LIMIT_MS = 90 * 1000
+const WARNING_WINDOW_MS = 60 * 1000
 const SILENT_REFRESH_MARGIN_MS = 3 * 60 * 1000
-const CHECK_INTERVAL_MS = 15 * 1000
+const CHECK_INTERVAL_MS = 5 * 1000
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'] as const
 
 export default function SessionExpiryWatcher() {
