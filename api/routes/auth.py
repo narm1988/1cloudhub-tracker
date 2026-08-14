@@ -1,3 +1,4 @@
+import logging
 import secrets
 from datetime import datetime, timezone
 from typing import Optional
@@ -12,6 +13,8 @@ from api.deps import get_current_user, get_supabase_admin
 from api.lib.email import send_invite_email
 from api.lib.entra import acquire_token, get_auth_url
 from api.lib.jwt import create_access_token
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -77,6 +80,7 @@ async def entra_callback(code: Optional[str] = None, error: Optional[str] = None
     try:
         result = acquire_token(code)
     except ValueError as e:
+        logger.exception("Entra token exchange failed")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=token_exchange_failed&detail={e}")
 
     claims = result.get("id_token_claims", {})
@@ -117,6 +121,7 @@ async def entra_callback(code: Optional[str] = None, error: Optional[str] = None
         token = create_access_token(profile["id"], profile["email"], profile["role"])
         return RedirectResponse(f"{FRONTEND_URL}/auth/callback?token={token}")
     except Exception as e:
+        logger.exception("Entra callback failed while resolving profile for %s", email)
         return RedirectResponse(f"{FRONTEND_URL}/login?error=profile_error&detail={e}")
 
 
