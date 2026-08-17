@@ -153,14 +153,19 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
               style={{ backgroundColor: theme.accent, boxShadow: `0 0 10px 3px ${theme.accent}E6` }}
             />
           </div>
-          <div className="relative w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme.accent }}>
+          <div className="relative w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
             <Cloud size={14} className="text-white" />
           </div>
         </div>
         {!collapsed && (
           <div>
             <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
-            <div className="text-[13px] font-bold tracking-[0.14em] mt-1 uppercase" style={{ color: theme.accent }}>ORBIT</div>
+            <div
+              className="text-[13px] font-bold tracking-[0.14em] mt-1 uppercase"
+              style={{ color: theme.id === 'midnight' || theme.id === 'borealis' ? '#FFFFFF' : theme.accent }}
+            >
+              ORBIT
+            </div>
           </div>
         )}
       </div>
