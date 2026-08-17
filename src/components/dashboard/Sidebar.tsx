@@ -145,12 +145,12 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         <div className="relative w-7 h-7 shrink-0">
           <div
             className="absolute -inset-2 rounded-full border border-dashed animate-orbit-spin-slow"
-            style={{ borderColor: theme.borderColor }}
+            style={{ borderColor: `${theme.accent}66` }}
           />
           <div className="absolute -inset-2 animate-orbit-spin">
             <span
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: theme.accent, boxShadow: `0 0 6px 2px ${theme.accent}B3` }}
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
+              style={{ backgroundColor: theme.accent, boxShadow: `0 0 10px 3px ${theme.accent}E6` }}
             />
           </div>
           <div className="relative w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: theme.accent }}>
@@ -160,7 +160,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         {!collapsed && (
           <div>
             <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
-            <div className="text-[10px] tracking-[0.12em] mt-0.5 uppercase" style={{ color: theme.subText }}>ORBIT</div>
+            <div className="text-[13px] font-bold tracking-[0.14em] mt-1 uppercase" style={{ color: theme.accent }}>ORBIT</div>
           </div>
         )}
       </div>
