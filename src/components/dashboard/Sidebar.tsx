@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LayoutGrid, Users, Settings, LogOut, Cloud, FolderKanban, Search, Archive, History } from 'lucide-react'
+import { LayoutGrid, Users, Settings, LogOut, FolderKanban, Search, Archive, History } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 
@@ -52,6 +52,8 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
   const navigate = useNavigate()
   const { signOut, user } = useAuth()
   const { theme } = useTheme()
+  const isDarkTheme = theme.id === 'midnight' || theme.id === 'borealis'
+  const orbitRingColor = isDarkTheme ? 'rgba(255,255,255,0.4)' : `${theme.accent}66`
 
   const handleSignOut = async () => {
     await signOut()
@@ -145,7 +147,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
         <div className="relative w-7 h-7 shrink-0">
           <div
             className="absolute -inset-2 rounded-full border border-dashed animate-orbit-spin-slow"
-            style={{ borderColor: `${theme.accent}66` }}
+            style={{ borderColor: orbitRingColor }}
           />
           <div className="absolute -inset-2 animate-orbit-spin">
             <span
@@ -153,16 +155,18 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
               style={{ backgroundColor: theme.accent, boxShadow: `0 0 10px 3px ${theme.accent}E6` }}
             />
           </div>
-          <div className="relative w-7 h-7 rounded-lg bg-brand flex items-center justify-center">
-            <Cloud size={14} className="text-white" />
-          </div>
+          <img
+            src="/1cloudhub-logo-icon.png"
+            alt="1CloudHub"
+            className="absolute inset-0 m-auto h-7 w-auto object-contain"
+          />
         </div>
         {!collapsed && (
           <div>
             <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
             <div
               className="text-[13px] font-bold tracking-[0.14em] mt-1 uppercase"
-              style={{ color: theme.id === 'midnight' || theme.id === 'borealis' ? '#FFFFFF' : theme.accent }}
+              style={{ color: isDarkTheme ? '#FFFFFF' : theme.accent }}
             >
               ORBIT
             </div>

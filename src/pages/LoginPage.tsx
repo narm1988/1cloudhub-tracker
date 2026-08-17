@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Mail, Lock, Eye, EyeOff, Cloud } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Button from '../components/ui/Button'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -89,9 +89,11 @@ export default function LoginPage() {
             <div className="absolute -inset-2 animate-orbit-spin">
               <span className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-brand shadow-[0_0_10px_3px_rgba(91,95,239,0.9)]" />
             </div>
-            <div className="relative w-7 h-7 rounded-md bg-brand flex items-center justify-center">
-              <Cloud size={14} className="text-white" />
-            </div>
+            <img
+              src="/1cloudhub-logo-icon.png"
+              alt="1CloudHub"
+              className="absolute inset-0 m-auto h-7 w-auto object-contain"
+            />
           </div>
           <div>
             <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
@@ -137,9 +139,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="w-full max-w-[340px]" autoComplete="off">
           {/* Mobile logo */}
           <div className="lg:hidden mb-6 flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-brand flex items-center justify-center">
-              <Cloud size={12} className="text-white" />
-            </div>
+            <img src="/1cloudhub-logo-icon.png" alt="1CloudHub" className="h-6 w-auto object-contain" />
             <span className="text-[13px] font-semibold text-gray-800">1CloudHub Orbit</span>
           </div>
 
