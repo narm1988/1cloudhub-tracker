@@ -85,9 +85,9 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex items-center gap-2.5 relative z-10">
           <div className="relative w-7 h-7 shrink-0">
-            <div className="absolute -inset-2 rounded-full border border-dashed border-white/15 animate-orbit-spin-slow" />
+            <div className="absolute -inset-2 rounded-full border border-dashed border-white/40 animate-orbit-spin-slow" />
             <div className="absolute -inset-2 animate-orbit-spin">
-              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-brand shadow-[0_0_6px_2px_rgba(91,95,239,0.7)]" />
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-brand shadow-[0_0_10px_3px_rgba(91,95,239,0.9)]" />
             </div>
             <div className="relative w-7 h-7 rounded-md bg-brand flex items-center justify-center">
               <Cloud size={14} className="text-white" />
@@ -95,7 +95,7 @@ export default function LoginPage() {
           </div>
           <div>
             <div className="font-semibold text-[15px] tracking-tight leading-none">1CloudHub</div>
-            <div className="text-[10px] tracking-[0.12em] text-gray-500 mt-0.5 uppercase">Orbit</div>
+            <div className="text-[13px] font-bold tracking-[0.14em] text-white/90 mt-1 uppercase">Orbit</div>
           </div>
         </div>
 
@@ -134,7 +134,7 @@ export default function LoginPage() {
 
       {/* Right form panel */}
       <div className="flex-1 flex items-center justify-center p-6">
-        <form onSubmit={handleSubmit} className="w-full max-w-[340px]">
+        <form onSubmit={handleSubmit} className="w-full max-w-[340px]" autoComplete="off">
           {/* Mobile logo */}
           <div className="lg:hidden mb-6 flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-brand flex items-center justify-center">
@@ -171,6 +171,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@1cloudhub.com"
                   className="w-full h-9 pl-9 pr-3 rounded-md border border-gray-200 bg-white text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -193,6 +194,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   className="w-full h-9 pl-9 pr-9 rounded-md border border-gray-200 bg-white text-[13px] text-gray-900 placeholder:text-gray-400 outline-none focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all"
+                  autoComplete="new-password"
                   required
                 />
                 <button
