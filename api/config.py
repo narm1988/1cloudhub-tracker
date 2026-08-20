@@ -38,3 +38,8 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Gmail: use App Password, not login password
 SMTP_FROM = os.getenv("SMTP_FROM", "") or SMTP_USER  # defaults to SMTP_USER if not set
+
+# ==============================================
+# Microsoft Teams — Incoming Webhook for notifications
+# ==============================================
+TEAMS_WEBHOOK_URL = os.getenv("TEAMS_WEBHOOK_URL", "")  # Teams channel webhook URL

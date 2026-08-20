@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from api.deps import get_supabase_admin, get_current_user
 from api.lib.display_id import create_with_display_id
+from api.lib.teams import send_teams_notification
 
 router = APIRouter()
 
@@ -149,6 +150,19 @@ async def create_issue(body: IssueCreate, current_user: dict = Depends(get_curre
             "read": False,
         }).execute()
 
+        # Teams channel notification
+        assignee = supabase.table("profiles").select("full_name").eq("id", body.assignee_id).maybe_single().execute()
+        assigner = supabase.table("profiles").select("full_name").eq("id", current_user["id"]).maybe_single().execute()
+        send_teams_notification(
+            assignee_name=(assignee.data or {}).get("full_name", "Someone"),
+            assigned_by=(assigner.data or {}).get("full_name", "Someone"),
+            item_type=body.type,
+            display_id=display_id,
+            title=body.title,
+            priority=body.priority,
+            item_path=f"/issues/{display_id}",
+        )
+
     # Write activity log entry with proper user attribution
     if result.get("id"):
         supabase.table("activity_log").insert({
@@ -191,6 +205,19 @@ async def update_issue(issue_id: str, body: IssueUpdate, current_user: dict = De
                 "link": f"/issues/{display_id}",
                 "read": False,
             }).execute()
+
+            # Teams channel notification
+            assignee = supabase.table("profiles").select("full_name").eq("id", new_assignee).maybe_single().execute()
+            assigner = supabase.table("profiles").select("full_name").eq("id", current_user["id"]).maybe_single().execute()
+            send_teams_notification(
+                assignee_name=(assignee.data or {}).get("full_name", "Someone"),
+                assigned_by=(assigner.data or {}).get("full_name", "Someone"),
+                item_type=updated.get("type", "Issue"),
+                display_id=display_id,
+                title=title,
+                priority=updated.get("priority"),
+                item_path=f"/issues/{display_id}",
+            )
 
     # Write activity log entries with proper user attribution
     if old_issue and old_issue.data:
